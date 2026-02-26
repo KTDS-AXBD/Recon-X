@@ -147,3 +147,44 @@ Phase 1 Sprint Backlog has 8 Epics (E-01 through E-08), ~40 stories defined in t
 
 ## Repo Structure (planned — monorepo)
 Section 29.5 of the PRD defines the planned Cloudflare Workers monorepo layout with one `wrangler.toml` per service. Each SVC deploys independently. As directories are created, update this file with the actual structure.
+
+---
+
+## IMPORTANT: Workflow Principles (Discovery-X 운영 원칙 이식)
+
+### SDD-primary
+SPEC.md 기반 SDD(Spec-Driven Development)를 주 워크플로우로 사용한다.
+- 세션 시작: `/s-start [작업]`
+- 세션 종료: `/s-end [메모]`
+- 세션 히스토리: `docs/CHANGELOG.md` (SPEC.md에 세션 로그 누적 금지)
+
+### Validation Discipline
+코드 변경 후 아래 검증을 기본 수행:
+```bash
+pnpm typecheck && pnpm lint
+```
+(초기 스캐폴딩 단계에서는 실제 명령은 추후 package 구성 후 활성화)
+
+### Skills & Agents
+이 저장소는 Discovery-X에서 사용하던 `.claude` 운영 체계를 이식했다.
+
+주요 스킬:
+- `/s-start`
+- `/s-end`
+- `/deploy`
+- `/lint`
+- `/team`
+- `/sync` / `/git-sync`
+- `/db-migrate`
+
+에이전트:
+- `security-reviewer`
+- `migration-checker`
+- `status-transition-reviewer`
+
+### Project Management Rules
+1. SPEC.md를 SSOT로 유지
+2. 변경 이력은 CHANGELOG.md에 기록
+3. 작은 단위 커밋 + 명확한 커밋 메시지(Conventional Commits)
+4. 보안/권한/감사 설계를 초기에 반영
+

@@ -67,8 +67,14 @@
 - **Cloudflare 인프라**: ✅ D1(×10) / R2(×2) / Queue(×2) / KV(×2) 프로비저닝 완료, wrangler.toml ID 반영
 - **CI/CD Workflows**: ✅ GitHub Actions (CI + 4개 deploy workflow)
 - **typecheck**: ✅ 13개 패키지 전체 통과
-- **Wrangler Secrets**: ❌ 미설정 — 첫 배포 후 터미널에서 설정 필요 (아래 참조)
-- **서비스 배포**: ❌ 미배포 (wrangler deploy 미실행)
+- **서비스 배포**: ✅ svc-llm-router / svc-security / svc-ingestion 배포 완료 (2026-02-26)
+  - https://svc-llm-router.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅
+  - https://svc-security.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅
+  - https://svc-ingestion.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅
+- **Wrangler Secrets**: ⚠️ INTERNAL_API_SECRET 설정 완료. 아래 secrets는 실제값 설정 필요:
+  - svc-llm-router: `ANTHROPIC_API_KEY`, `CLOUDFLARE_AI_GATEWAY_URL` (현재 placeholder)
+  - svc-security: `JWT_SECRET` (현재 placeholder)
+  - svc-ontology (미배포): `NEO4J_URI`, `NEO4J_PASSWORD`
 - **Test Coverage**: 0%
 
 ---
@@ -103,19 +109,27 @@
   echo "VALUE" | wrangler secret put NEO4J_PASSWORD
   ```
 
-### 🔜 Phase C — 첫 배포 + Pipeline Stage 1 Full Impl
-> 우선순위: svc-llm-router → svc-security → svc-ingestion 순서로 배포
+### ✅ Phase C-0 — 첫 배포 + Smoke Test (완료)
 
-- [ ] `wrangler deploy` (svc-llm-router, svc-security, svc-ingestion)
-- [ ] Wrangler secrets 설정 (배포 후)
-- [ ] `GET /health` 엔드포인트 smoke test
+- [x] `wrangler deploy` (svc-llm-router, svc-security, svc-ingestion) — 2026-02-26
+- [x] INTERNAL_API_SECRET 설정 (모든 서비스)
+- [x] `GET /health` 엔드포인트 smoke test — 전 서비스 HTTP 200 확인
+
+### 🔜 Phase C-1 — Secrets 완성 + Pipeline Stage 1 Full Impl
 - [ ] **E-01** — 마스킹 미들웨어: PII 토크나이징 → svc-security 연동
 - [ ] **E-02** — Stage 1 완성: Unstructured.io 연동, 파일 분류 로직
 - [ ] **E-03** — Stage 2 완성: svc-extraction — Claude Sonnet/Haiku로 구조 추출
 
-### 🔜 Phase C — Pipeline Stage 1 Full Impl (E-01~E-03)
-> svc-ingestion 고도화: 실제 파싱 파이프라인 연결
-
+- [ ] **실 Secrets 설정** — 배포된 서비스에 실값 주입 필요:
+  ```bash
+  # svc-llm-router
+  cd services/svc-llm-router
+  echo "sk-ant-..." | wrangler secret put ANTHROPIC_API_KEY
+  echo "https://gateway.ai.cloudflare.com/..." | wrangler secret put CLOUDFLARE_AI_GATEWAY_URL
+  # svc-security
+  cd services/svc-security
+  echo "your-jwt-secret" | wrangler secret put JWT_SECRET
+  ```
 - [ ] **E-01** — 마스킹 미들웨어: PII 토크나이징 → svc-security 연동
 - [ ] **E-02** — Stage 1 완성: Unstructured.io 연동, 파일 분류 로직
 - [ ] **E-03** — Stage 2 완성: svc-extraction — Claude Sonnet/Haiku로 구조 추출
@@ -154,3 +168,4 @@
 - 2026-02-26: typecheck 13/13 통과 확인
 - 2026-02-26: Cloudflare 인프라 프로비저닝 완료 — D1/R2/Queue/KV ID wrangler.toml 반영
 - 2026-02-26: D1 마이그레이션 remote 적용 완료 (Cloudflare REST API 직접 사용)
+- 2026-02-26: svc-llm-router / svc-security / svc-ingestion wrangler deploy 완료 — 전 서비스 /health HTTP 200 확인

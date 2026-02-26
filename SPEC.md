@@ -71,10 +71,12 @@
   - https://svc-llm-router.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅
   - https://svc-security.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅
   - https://svc-ingestion.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅
-- **Wrangler Secrets**: ⚠️ INTERNAL_API_SECRET 설정 완료. 아래 secrets는 실제값 설정 필요:
-  - svc-llm-router: `ANTHROPIC_API_KEY`, `CLOUDFLARE_AI_GATEWAY_URL` (현재 placeholder)
-  - svc-security: `JWT_SECRET` (현재 placeholder)
-  - svc-ontology (미배포): `NEO4J_URI`, `NEO4J_PASSWORD`
+- **Wrangler Secrets**: ✅ 핵심 secrets 설정 완료 (2026-02-26)
+  - svc-llm-router: `INTERNAL_API_SECRET` / `ANTHROPIC_API_KEY` / `CLOUDFLARE_AI_GATEWAY_URL` ✅
+  - svc-security: `INTERNAL_API_SECRET` / `JWT_SECRET` ✅
+  - svc-ingestion: `INTERNAL_API_SECRET` ✅
+  - ⚠️ **AI Gateway 대시보드 생성 필요**: https://dash.cloudflare.com/02ae9a2bead25d99caa8f3258b81f568/ai-gateway → "ai-foundry" 게이트웨이 생성
+  - svc-ontology (미배포): `NEO4J_URI`, `NEO4J_PASSWORD` — Neo4j 연동 시점에 설정
 - **Test Coverage**: 0%
 
 ---
@@ -169,3 +171,4 @@
 - 2026-02-26: Cloudflare 인프라 프로비저닝 완료 — D1/R2/Queue/KV ID wrangler.toml 반영
 - 2026-02-26: D1 마이그레이션 remote 적용 완료 (Cloudflare REST API 직접 사용)
 - 2026-02-26: svc-llm-router / svc-security / svc-ingestion wrangler deploy 완료 — 전 서비스 /health HTTP 200 확인
+- 2026-02-26: Wrangler secrets 실값 설정 완료 (ANTHROPIC_API_KEY, JWT_SECRET auto-gen, CLOUDFLARE_AI_GATEWAY_URL)

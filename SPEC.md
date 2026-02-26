@@ -79,6 +79,10 @@
 - **AI Gateway**: ✅ `ai-foundry` 게이트웨이 생성 완료, Authentication Off, Anthropic 라우팅 확인
 - **E2E LLM 파이프라인**: ✅ `/complete` HTTP 200, `/stream` SSE 정상 수신 확인 (2026-02-26)
   - `INTERNAL_API_SECRET` printf 방식으로 재설정 (echo newline 이슈 해결)
+- **E-01 마스킹 미들웨어**: ✅ `POST /mask` 구현 + 배포 완료 (2026-02-26)
+  - PII 5종 탐지: SSN, PHONE, EMAIL, ACCOUNT, CORP_ID
+  - `@ai-foundry/types` security.ts 추가 (MaskRequest/MaskResponse)
+  - D1 `masking_tokens` 저장 (original_hash only)
 - **Test Coverage**: 0%
 
 ---
@@ -116,8 +120,8 @@
 - [x] `/stream` E2E 테스트 — SSE 스트림 정상 수신 확인
 - [x] `printf` 방식으로 INTERNAL_API_SECRET 재설정 (echo newline 이슈 해결)
 
-### 🔜 Phase C-2 — Pipeline Stage 1 Full Impl (E-01~E-03)
-- [ ] **E-01** — 마스킹 미들웨어: PII 토크나이징 → svc-security 연동
+### ✅ Phase C-2 (진행 중) — Pipeline Stage 1 Full Impl (E-01~E-03)
+- [x] **E-01** — 마스킹 미들웨어: `POST /mask` (svc-security) 구현 + E2E 검증
 - [ ] **E-02** — Stage 1 완성: Unstructured.io 연동, 파일 분류 로직
 - [ ] **E-03** — Stage 2 완성: svc-extraction — Claude Sonnet/Haiku로 구조 추출
 
@@ -158,3 +162,4 @@
 - 2026-02-26: svc-llm-router / svc-security / svc-ingestion wrangler deploy 완료 — 전 서비스 /health HTTP 200 확인
 - 2026-02-26: Wrangler secrets 실값 설정 완료 (ANTHROPIC_API_KEY, JWT_SECRET auto-gen, CLOUDFLARE_AI_GATEWAY_URL)
 - 2026-02-26: AI Gateway 'ai-foundry' 생성 + E2E LLM 파이프라인 검증 완료 (/complete + /stream)
+- 2026-02-26: E-01 마스킹 미들웨어 구현 (svc-security POST /mask, PII 5종, D1 audit 저장)

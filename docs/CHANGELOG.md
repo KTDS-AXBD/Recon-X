@@ -2,6 +2,25 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 004 — 2026-02-26
+
+- ✅ **E-01 PII 마스킹 미들웨어** 구현 및 배포 (svc-security)
+  - `POST /mask` 엔드포인트 신규 추가
+  - PII 5종 정규식 패턴: SSN(주민번호), PHONE(전화번호), EMAIL, ACCOUNT(계좌번호), CORP_ID(법인번호)
+  - 겹치는 패턴 중복 제거 로직 (먼저 정의된 패턴 우선)
+  - 동일 값 → 동일 토큰 (한 요청 내 일관성 보장)
+  - D1 `masking_tokens` 저장: `original_hash`만 기록 (원본 복원 불가 — 보안 설계)
+  - `dataClassification: public` → pass-through (마스킹 없음)
+  - `@ai-foundry/types`에 `security.ts` 추가 (MaskRequest / MaskResponse Zod 스키마)
+- ✅ svc-security `INTERNAL_API_SECRET` printf 방식 재설정 (echo newline 이슈 해결)
+
+**검증**
+- typecheck: 15/15 pass
+- lint: skip (미구성)
+- E2E: `/mask` HTTP 200, 토큰 생성/중복제거 확인
+
+---
+
 ## 세션 003 — 2026-02-26
 
 - ✅ `wrangler deploy` 3개 서비스 배포 (tmux /team 병렬 실행)

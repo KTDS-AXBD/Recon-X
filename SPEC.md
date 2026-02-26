@@ -50,35 +50,67 @@
 
 ---
 
-## 5) Current Status (session-end에서 숫자 갱신)
+## 5) Current Status
 
 - **Last Updated**: 2026-02-26
 - **Repo Bootstrap**: ✅
 - **PRD Seed Document**: ✅ (`docs/AI_Foundry_PRD_TDS_v0.6.docx`)
 - **.claude Skills/Agents Migration**: ✅
-- **Core App Code**: 0%
-- **CI/CD**: 0%
+- **Monorepo Scaffold**: ✅ (Bun workspaces + Turborepo, 118 files)
+- **Shared Packages**: ✅ `@ai-foundry/types`, `@ai-foundry/utils`
+- **svc-llm-router (SVC-06)**: ✅ 전체 구현 (tier routing, AI Gateway, streaming, cost log)
+- **svc-security (SVC-07)**: ✅ 전체 구현 (RBAC, audit log)
+- **svc-ingestion (SVC-01)**: ✅ 전체 구현 (upload → R2 + D1 + Queue)
+- **Skeleton Services**: ✅ SVC-02~05, 08~10 (svc-policy는 HitlSession DO stub 포함)
+- **app-web**: ✅ React + Vite SPA scaffold, 13 페이지 stub
+- **D1 Migrations**: ✅ 10개 DB 초기 SQL 작성 완료
+- **CI/CD Workflows**: ✅ GitHub Actions (CI + 4개 deploy workflow)
+- **typecheck**: ✅ 13개 패키지 전체 통과
+- **Cloudflare 인프라 프로비저닝**: ❌ 미완료 (D1/R2/Queue/KV ID 미설정)
+- **Wrangler Secrets**: ❌ 미설정 (INTERNAL_API_SECRET 등)
 - **Test Coverage**: 0%
 
 ---
 
-## 6) Execution Plan (next)
+## 6) Execution Plan
 
-### Phase A — Foundation Setup
-- [ ] monorepo 디렉토리 구조 확정
-- [ ] package manager / workspace 전략 확정
-- [ ] 공통 lint/typecheck/test 기준 확정
-- [ ] env/dev/stage/prod 설정 뼈대
+### ✅ Phase A — Foundation Setup (완료)
+- [x] monorepo 디렉토리 구조 (Bun workspaces + Turborepo)
+- [x] 공통 타입/유틸 패키지 (@ai-foundry/types, @ai-foundry/utils)
+- [x] tsconfig.base.json (strict TypeScript)
+- [x] GitHub Actions CI/CD
+- [x] D1 마이그레이션 스키마 10개
 
-### Phase B — Pipeline First Slice
-- [ ] SVC-01 ingestion skeleton
-- [ ] SVC-02 extraction skeleton
-- [ ] Queue event contract v0 정의
+### 🔜 Phase B — Infra Provisioning (다음 우선순위)
+> `infra/scripts/` 스크립트를 실행하고 wrangler.toml에 ID를 기입하는 작업
 
-### Phase C — Governance Baseline
-- [ ] Prompt Registry 구조
-- [ ] Audit log schema
-- [ ] Masking middleware 최소 구현
+- [ ] `create-d1-dbs.sh` 실행 → 각 wrangler.toml의 `database_id` 업데이트
+- [ ] `create-r2-buckets.sh` 실행
+- [ ] `create-queues.sh` 실행
+- [ ] `create-kv-namespaces.sh` 실행
+- [ ] D1 마이그레이션 적용 (`wrangler d1 execute` × 10)
+- [ ] Wrangler secrets 설정 (서비스별 `INTERNAL_API_SECRET`, `ANTHROPIC_API_KEY`, etc.)
+
+### 🔜 Phase C — Pipeline Stage 1 Full Impl (E-01~E-03)
+> svc-ingestion 고도화: 실제 파싱 파이프라인 연결
+
+- [ ] **E-01** — 마스킹 미들웨어: PII 토크나이징 → svc-security 연동
+- [ ] **E-02** — Stage 1 완성: Unstructured.io 연동, 파일 분류 로직
+- [ ] **E-03** — Stage 2 완성: svc-extraction — Claude Sonnet/Haiku로 구조 추출
+
+### 🔜 Phase D — Governance Baseline (E-04~E-05)
+- [ ] **E-04** — Prompt Registry: svc-governance에 버전 관리/롤아웃 구현
+- [ ] **E-05** — RBAC 적용: 모든 서비스에서 svc-security 통한 권한 검증
+
+### 🔜 Phase E — Policy Inference + HITL (E-06~E-08, Phase 2)
+- [ ] **E-06** — Stage 3: svc-policy 전체 구현 (Claude Opus 연동)
+- [ ] **E-07** — HitlSession DO: 실제 리뷰 워크플로우 구현
+- [ ] **E-08** — Review UI: app-web Persona B 화면 구현
+
+### 🔜 Phase F — Ontology + Skill Packaging (Phase 3)
+- [ ] Stage 4: svc-ontology — Neo4j Aura + SKOS/JSON-LD
+- [ ] Stage 5: svc-skill — Skill Spec 완성, R2 패키징
+- [ ] MCP 어댑터 생성
 
 ---
 
@@ -94,3 +126,7 @@
 
 - 2026-02-26: 신규 repo 생성 및 PRD seed 문서 반입
 - 2026-02-26: Discovery-X 기반 Claude Code 운영 체계(.claude skills/agents) 이식
+- 2026-02-26: 모노레포 스캐폴딩 완료 — Bun workspaces + Turborepo, 10 Workers 서비스, React+Vite SPA
+- 2026-02-26: 공유 패키지 exports를 `./src/index.ts` (raw TS)로 설정 — Wrangler esbuild가 빌드 처리
+- 2026-02-26: `packages/utils`에 `@cloudflare/workers-types` 추가 — Response/console 타입 해결
+- 2026-02-26: typecheck 13/13 통과 확인

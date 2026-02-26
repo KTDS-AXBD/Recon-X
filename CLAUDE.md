@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Full product requirements and technical design are in `docs/AI_Foundry_PRD_TDS_v0.6.docx`. This is the authoritative reference for all design decisions.
 
-> **Status**: Pre-development. No application code exists yet. This repo will become the implementation home.
+> **Status**: Phase 1 진행 중. 모노레포 스캐폴딩 완료 (2026-02-26). SVC-01/06/07 전체 구현, 나머지 스켈레톤. 다음 단계: Cloudflare 인프라 프로비저닝 → Stage 1/2 전체 구현.
 
 ---
 

@@ -11,7 +11,8 @@ user-invocable: true
 1. 코드/문서 변경을 안전하게 커밋
 2. SPEC 상태값 갱신
 3. CHANGELOG에 세션 기록 남김
-4. 다음 세션이 바로 이어질 수 있게 컨텍스트 고정
+4. 오토메모리(MEMORY.md + 토픽 파일) 갱신
+5. 다음 세션이 바로 이어질 수 있게 컨텍스트 고정
 
 ## 사전 확인
 
@@ -37,7 +38,15 @@ user-invocable: true
 - §6 Execution Plan 체크박스
 - 필요 시 §8 Decision Log
 
-### Phase 3) CHANGELOG prepend
+### Phase 3) 오토메모리 갱신
+메모리 파일(`~/.claude-work/.claude/projects/.../memory/`)을 갱신한다:
+- `MEMORY.md`: Project Status, Phase Completion 테이블, Next Work, Known Blockers 업데이트
+- `deployment.md`: 배포 상태/Secrets 변경 시 갱신
+- `patterns.md`: 새로운 아키텍처 패턴 발견 시 추가
+
+**원칙**: CLAUDE.md나 SPEC.md에 이미 있는 정보는 중복 기록하지 않는다.
+
+### Phase 4) CHANGELOG prepend
 `docs/CHANGELOG.md` 상단에 이번 세션 추가:
 
 ```markdown
@@ -49,14 +58,14 @@ user-invocable: true
 - typecheck/lint: pass | skip(사유)
 ```
 
-### Phase 4) 문서 커밋
+### Phase 5) 문서 커밋
 
 ```bash
 git add SPEC.md docs/CHANGELOG.md
 git commit -m "docs: update SPEC/CHANGELOG — 세션 NNN"
 ```
 
-### Phase 5) 마무리 요약
+### Phase 6) 마무리 요약
 아래를 출력:
 - 커밋 목록(해시 + 메시지)
 - SPEC 변경 포인트

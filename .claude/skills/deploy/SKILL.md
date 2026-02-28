@@ -89,6 +89,7 @@ GitHub Actions 파이프라인 진행 상황을 실시간으로 확인한다.
 ### 8. 결과 안내
 
 배포 완료 후:
-- 프로덕션: 각 서비스 Workers URL 접근 가능 여부 확인 후 안내
+- 프로덕션: 각 서비스 Workers URL `/health` HTTP 200 확인 후 안내
 - 프리뷰: wrangler 출력에서 배포 URL 추출하여 안내
 - 실패 시: GitHub Actions 로그 확인 방법 안내 (`gh run view --log-failed`)
+- 배포 URL 목록은 오토메모리 `deployment.md` 참조 (11 Workers: 10 SVC + svc-queue-router)

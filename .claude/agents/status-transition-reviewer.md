@@ -10,11 +10,13 @@ ai-foundry 파이프라인 이벤트 시퀀스와 HITL 상태 전환 코드가 `
 ## 검증 대상 파일
 
 - `packages/types/src/events.ts` — PipelineEvent 6종 정의 (SSOT)
-- `services/svc-ingestion/src/` — document.uploaded 발행
+- `services/svc-queue-router/src/` — **유일한 Queue consumer** (event type별 service binding fan-out)
+- `services/svc-ingestion/src/` — document.uploaded 발행 + POST /internal/queue-event 수신
 - `services/svc-extraction/src/` — extraction.completed 발행
-- `services/svc-policy/src/` — policy.candidate_ready / policy.approved 발행
-- `services/svc-ontology/src/` — ontology.normalized 발행
-- `services/svc-skill/src/` — skill.packaged 발행
+- `services/svc-policy/src/` — policy.candidate_ready / policy.approved 발행 + POST /internal/queue-event 수신
+- `services/svc-ontology/src/` — ontology.normalized 발행 + POST /internal/queue-event 수신
+- `services/svc-skill/src/` — skill.packaged 발행 + POST /internal/queue-event 수신
+- `services/svc-notification/src/` — POST /internal/queue-event 수신 (알림)
 - `services/svc-policy/src/` — HitlSession Durable Object (HITL 상태 관리)
 
 ## 파이프라인 이벤트 순서 (불변)
@@ -52,9 +54,27 @@ Stage 5: skill.packaged           (svc-skill → Queue)
 - svc-extraction이 직접 svc-policy를 호출하여 상태 변경 (Queue 우회)
 - 한 서비스가 다음 단계 이벤트를 연쇄적으로 동기 발행
 
-### 2. Queue 경유 의무 (동기 호출 금지)
+### 2. Queue 경유 의무 (동기 호출 금지) + Queue Router 패턴
 
 파이프라인 단계 간 전환은 반드시 Cloudflare Queue를 통해야 한다. 서비스 간 직접 HTTP 호출로 다음 단계를 트리거하는 것은 금지된다.
+
+**Queue Router 아키텍처** (Cloudflare Queues single-consumer 제약 해결):
+```
+서비스 → env.QUEUE_PIPELINE.send(event)
+  → svc-queue-router (sole consumer)
+    → event type별 service binding fan-out
+      → POST /internal/queue-event (대상 서비스)
+```
+
+**라우팅 테이블** (svc-queue-router):
+| event type | 대상 서비스 |
+|------------|-----------|
+| `document.uploaded` | svc-ingestion |
+| `extraction.completed` | svc-policy |
+| `policy.candidate_ready` | svc-notification |
+| `policy.approved` | svc-ontology |
+| `ontology.normalized` | svc-skill |
+| `skill.packaged` | svc-notification |
 
 **필수 패턴:**
 ```typescript
@@ -68,6 +88,7 @@ await env.QUEUE_PIPELINE.send(event);
 await fetch("https://svc-extraction.workers.dev/process", { ... });
 // 서비스 바인딩으로 동기 파이프라인 진행
 await env.EXTRACTION.fetch(request);
+// 개별 서비스에서 [[queues.consumers]] 직접 선언 (queue-router만 소비자)
 ```
 
 ### 3. PipelineEvent 타입 준수

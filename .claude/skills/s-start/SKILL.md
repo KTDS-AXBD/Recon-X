@@ -12,13 +12,17 @@ user-invocable: true
 - 오늘 작업 범위를 SPEC 기준으로 고정
 - 문서 중심(Pre-development) 단계에서 흔들리지 않게 시작
 
-## 3-Tier
+## 3-Tier 컨텍스트 로딩
 
 ```
-Tier 1 (자동): CLAUDE.md + MEMORY.md
-Tier 2 (필수 Read): SPEC.md
+Tier 1 (자동): CLAUDE.md + MEMORY.md (자동 로드)
+Tier 2 (필수 Read): SPEC.md + memory/deployment.md + memory/patterns.md
 Tier 3 (선택 검색): docs/CHANGELOG.md
 ```
+
+> **메모리 토픽 파일** (`~/.claude-work/.claude/projects/.../memory/`):
+> - `deployment.md` — Worker URLs, Cloudflare 리소스, Secrets 상태
+> - `patterns.md` — Queue Router, Neo4j, HITL DO, Wrangler 팁
 
 ## 시작 체크
 
@@ -31,8 +35,10 @@ Tier 3 (선택 검색): docs/CHANGELOG.md
 ## 지시사항
 
 ### 1) 현재 컨텍스트 요약
-- MEMORY.md에서 최근 작업/다음 작업 확인
-- CLAUDE.md에서 아키텍처/제약(6-layer, 5-stage, 10 SVC) 재확인
+- MEMORY.md에서 Phase 상태, Known Blockers, 다음 작업 확인
+- memory/deployment.md에서 배포 상태, Secrets 현황 확인 (필요 시)
+- memory/patterns.md에서 Queue Router, HITL 등 고유 패턴 확인 (필요 시)
+- CLAUDE.md에서 아키텍처/제약(6-layer, 5-stage, 11 Workers) 재확인
 
 ### 2) SPEC.md 확인 (필수)
 아래 섹션 중심으로 확인:
@@ -72,5 +78,6 @@ grep -n "세션" docs/CHANGELOG.md | head -n 10
 ```
 
 ## res-ai-foundry 전용 주의
-- 아직 초기 단계이므로 “코드 구현”보다 “구조/계약/문서 정합성”을 우선
+- Phase G (Integration) 진행 중 — 5-Stage 파이프라인 전체 구현 완료, E2E 통합 테스트 단계
 - PRD 원문(`docs/AI_Foundry_PRD_TDS_v0.6.docx`)과 SPEC 불일치 시 SPEC을 즉시 갱신
+- MEMORY.md의 Known Blockers를 반드시 확인하여 작업 시작 전 블로커를 인지

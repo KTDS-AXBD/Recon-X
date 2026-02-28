@@ -28,7 +28,7 @@ user-invocable: true
 - 민감정보(.env, .dev.vars, key 파일) 커밋 금지
 
 검증은 프로젝트 단계에 맞춰 분기:
-- `package.json` 존재 시: `pnpm typecheck && pnpm lint` 실행
+- `package.json` 존재 시: `bun run typecheck && bun run lint` 실행
 - 아직 미구성 시: 검증 스킵 사유를 CHANGELOG에 기록
 
 ### Phase 2) SPEC.md 갱신

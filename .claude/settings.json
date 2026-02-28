@@ -1,8 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pnpm *)",
-      "Bash(pnpm run *)",
+      "Bash(bun *)",
+      "Bash(bun run *)",
+      "Bash(bunx *)",
       "Bash(git status *)",
       "Bash(git diff *)",
       "Bash(git log *)",
@@ -21,7 +22,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm typecheck 2>&1 | tail -20; pnpm lint 2>&1 | tail -20"
+            "command": "bun run typecheck 2>&1 | tail -20; bun run lint 2>&1 | tail -20"
           }
         ]
       }

@@ -29,7 +29,7 @@ fi
 
 ### WSL 직접 실행 (WSL_DIRECT)
 - tmux 명령을 **직접** 호출: `tmux new-session ...`
-- 경로: `$PWD` 기반 (예: `/home/sinclair/projects/Discovery-X`)
+- 경로: `$PWD` 기반 (예: `/home/sinclair/work/axbd/res-ai-foundry`)
 - claude 경로: `/home/sinclair/.local/bin/claude`
 
 ### Git Bash 실행 (GIT_BASH)
@@ -120,7 +120,7 @@ fi
 ```
 
 **3b. worker runner 스크립트**를 생성한다 (worker 수만큼 반복).
-`PROJECT_DIR`은 `$PWD`로 결정한다 (WSL 내부: `/home/.../Discovery-X`):
+`PROJECT_DIR`은 `$PWD`로 결정한다 (WSL 내부: `/home/.../res-ai-foundry`):
 
 ```bash
 PROJECT_DIR="$PWD"
@@ -321,17 +321,17 @@ echo "ALL_DONE=$ALL_DONE"
 모든 worker 완료 후, 리더가 직접 검증한다:
 
 ```bash
-pnpm lint
+bun run lint
 ```
 - 0 errors 확인. 에러 있으면 직접 수정.
 
 ```bash
-pnpm typecheck
+bun run typecheck
 ```
 - 타입 에러 확인. 에러 있으면 직접 수정.
 
 ```bash
-pnpm test
+bun run test
 ```
 - 전체 테스트 통과 확인. 환경 이슈로 실패 시 사용자에게 보고.
 

@@ -1,120 +1,129 @@
 ---
 name: security-reviewer
-description: Agent 도구 및 인프라 변경 시 보안 검토를 수행하는 서브에이전트
+description: services/ 코드 및 wrangler.toml 변경 시 보안 검토를 수행하는 서브에이전트. PII 마스킹, 인터-서비스 인증, RBAC, 입력 검증, 데이터 분류 준수 여부를 점검한다.
 ---
 
 # Security Reviewer Agent
 
-Agent 도구 파일(`app/lib/agent/tools/*.ts`) 및 관련 인프라 변경 시 보안 검토를 수행하는 서브에이전트.
+ai-foundry 서비스 코드와 인프라 설정 변경 시 보안 체크리스트를 수행하는 서브에이전트.
 
 ## 검토 대상 파일
 
-- `app/lib/agent/tools/*.ts` — 8개 도구 실행 파일
-- `app/lib/agent/tool-registry.ts` — 도구 정의 + TOOL_MIN_AUTONOMY
-- `app/lib/agent/executor.ts` — Agent 실행 루프
-- `app/lib/agent/claude-client.ts` — Claude API 클라이언트
-- `app/lib/agent/system-prompt.ts` — 시스템 프롬프트
-- `app/lib/validation/*.ts` — 비즈니스 규칙 검증
-- `app/lib/auth/*.ts` — 인증/인가
-- `app/features/venture/repositories/*.ts` — Venture 리포지토리
-- `app/routes/api.*.ts` — API 엔드포인트
+- `services/svc-security/src/` — PII 마스킹 미들웨어, RBAC 검증
+- `services/*/src/routes/` — 모든 서비스 라우트 (인증 헤더 검증)
+- `services/*/src/env.ts` — Env 인터페이스 (시크릿 하드코딩 여부)
+- `services/*/wrangler.toml` — [vars] vs 시크릿 분리 여부
+- `packages/types/src/security.ts` — MaskRequest/MaskResponse 타입
+- `packages/types/src/rbac.ts` — Role, PERMISSIONS, hasPermission()
+- `packages/types/src/events.ts` — PipelineEvent 타입 정의
 
 ## 검토 체크리스트
 
-### 1. 자율도 레벨 (TOOL_MIN_AUTONOMY)
+### 1. X-Internal-Secret 인증
 
-신규/수정된 도구가 `app/lib/agent/tool-registry.ts`의 `TOOL_MIN_AUTONOMY` 맵에 등록되어 있는지 확인한다.
+`/health` 를 제외한 모든 라우트가 `X-Internal-Secret` 헤더를 검증하는지 확인한다.
 
-**레벨 기준:**
-- **Level 1**: 읽기 전용 조회 (list, get, search, validate)
-- **Level 2**: 생성/수정/승격 (create, update, promote, transition, draft)
-- **Level 3**: 파괴적/되돌리기 어려운 작업 (decide, add_experiment, add_evidence, submit_gate_approval)
-
-**위반 패턴:**
-- 데이터를 변경하는 도구가 Level 1로 등록된 경우
-- 맵에 등록되지 않은 도구 (기본값 3이지만 명시적 등록 필요)
-- Gate 승인/거부 도구가 Level 2 이하인 경우
-
-### 2. SQL 인젝션 방지
-
-모든 DB 쿼리가 Drizzle ORM 바인딩을 사용하는지 확인한다.
-
-**허용:**
+**필수 패턴:**
 ```typescript
-// Drizzle ORM 조건 (안전)
-db.select().from(discoveries).where(eq(discoveries.id, id))
+const secret = request.headers.get("X-Internal-Secret");
+if (secret !== env.INTERNAL_API_SECRET) {
+  return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+}
 ```
 
-**금지:**
-```typescript
-// 문자열 보간 SQL (위험)
-db.run(sql`SELECT * FROM discoveries WHERE id = '${id}'`)
-// 사용자 입력이 직접 들어가는 raw SQL
-sql.raw(`... ${userInput} ...`)
+**위반 패턴:**
+- `/health` 외 엔드포인트에 시크릿 검증 없음
+- 시크릿 검증 로직이 일부 라우트에만 적용됨
+- 헤더명 오타 (`X-Internal-Key`, `Authorization` 등 대체 사용)
+
+### 2. PII 마스킹 → LLM 호출 순서
+
+svc-ingestion이 svc-llm-router를 호출하기 **전**에 반드시 svc-security `/mask` 를 거치는지 확인한다.
+
+**필수 순서:**
+```
+svc-ingestion → POST svc-security/mask → 마스킹된 텍스트 → svc-llm-router
 ```
 
-**예외:** `sql` 태그 템플릿은 자동 바인딩되므로 허용. 단, `sql.raw()`는 금지.
+**위반 패턴:**
+- 원본 문서 텍스트가 svc-llm-router에 직접 전달됨
+- `dataClassification: "confidential"` 문서가 LLM 호출 경로에 진입
+- 마스킹 응답의 `maskedText` 대신 원본 `text` 를 사용
 
-### 3. 상태 전환 검증
+### 3. 데이터 분류 준수
 
-Discovery 상태 변경이 반드시 검증 계층을 경유하는지 확인한다.
+`dataClassification` 에 따라 LLM 접근이 차단되는지 확인한다.
 
-**필수 경유:**
-- `ALLOWED_TRANSITIONS` (app/lib/constants/status.ts) 기반 검증
-- `DiscoveryValidationRules.validateTransition()` 호출
+| 분류 | 마스킹 | LLM 허용 |
+|------|--------|---------|
+| `confidential` | 필수 | **금지** |
+| `internal` | 필수 | 마스킹 후 허용 |
+| `public` | 불필요 | 허용 |
 
 **위반 패턴:**
-- `db.update(discoveries).set({ status: newStatus })` 직접 호출 (검증 우회)
-- ALLOWED_TRANSITIONS에 없는 전환 경로 추가
+- `confidential` 데이터가 어떤 LLM 티어(opus/sonnet/haiku/workers)로도 전달됨
+- 분류 필드 없이 마스킹 요청
 
-### 4. 인증/인가 가드
+### 4. RBAC hasPermission() 적용
 
-API 엔드포인트와 도구 함수에 적절한 인증 가드가 적용되는지 확인한다.
+RBAC 보호가 필요한 API 엔드포인트에 `hasPermission()` 호출이 있는지 확인한다.
 
-**가드 계층:**
-| 가드 | 대상 |
-|------|------|
-| `requireUser()` | 일반 사용자 기능 |
-| `requireGatekeeper()` | Gate 승인/거부 |
-| `requireAdmin()` | 관리자 기능 (사용자 관리, 시드 데이터) |
+**역할별 핵심 권한:**
+| 작업 | 요구 역할 | 리소스/액션 |
+|------|---------|------------|
+| 문서 업로드 | Analyst, Admin | `document` / `upload` |
+| 정책 승인/거부 | Reviewer, Admin | `policy` / `approve`, `reject` |
+| Skill 다운로드 | Developer, Admin | `skill` / `download` |
+| 감사 로그 조회 | Client, Admin | `audit` / `read` |
+| 대시보드 | Executive, Admin | `analytics` / `read` |
 
 **위반 패턴:**
-- API 라우트에 인증 가드 없음
-- Gate 관련 엔드포인트에 `requireGatekeeper()` 누락
-- Admin 엔드포인트에 `requireAdmin()` 누락
+- RBAC 검증 없이 `policy.approve` / `policy.reject` 작업 실행
+- `hasPermission()` 대신 역할 문자열 직접 비교 (`role === "Reviewer"`)
+- AuthContext 없이 보호된 라우트 접근
 
-### 5. 입력 검증
+### 5. 입력 검증 (Zod)
 
-사용자/Agent 입력이 Zod 스키마로 검증되는지 확인한다.
+모든 라우트 입력이 `@ai-foundry/types` 의 Zod 스키마로 검증되는지 확인한다.
 
 **필수 검증 지점:**
-- API 라우트의 `request.json()` / `formData` 파싱 후
-- Agent 도구의 `input` 파라미터 수신 시
-- 검색 쿼리의 특수문자 이스케이프 (`searchSimilar` 참고)
+- `request.json()` 파싱 후 즉시 `Schema.parse()` 또는 `Schema.safeParse()`
+- Query parameter의 타입/범위 검증
+- Path parameter UUID 형식 검증
 
 **위반 패턴:**
-- `as` 타입 단언으로 검증 우회
-- 길이 제한 없는 문자열 입력
-- 숫자 범위 검증 없는 pagination 파라미터
+- `as` 타입 단언으로 검증 우회 (`body as MaskRequest`)
+- `safeParse` 없이 직접 파싱 (런타임 crash 위험)
+- 페이지네이션 limit에 상한 없음
 
-### 6. 민감 데이터 노출
+### 6. 시크릿 관리 (wrangler.toml)
 
-Agent 응답이나 로그에 민감 정보가 포함되지 않는지 확인한다.
+실제 시크릿 값이 `[vars]` 섹션에 포함되지 않는지 확인한다.
 
-**금지:**
-- API 키/토큰이 에러 메시지에 포함
-- 사용자 이메일이 다른 사용자에게 노출
-- 전체 SQL 쿼리가 클라이언트 응답에 포함
+**허용 (wrangler.toml [vars]):**
+```toml
+[vars]
+ENVIRONMENT = "development"
+SERVICE_NAME = "svc-security"
+MAX_FILE_SIZE_MB = "50"
+```
 
-### 7. Rate Limiting / 리소스 제한
+**금지 (wrangler.toml에 절대 포함 불가):**
+```toml
+# 절대 금지 — wrangler secret put으로 설정해야 함
+INTERNAL_API_SECRET = "실제값"
+ANTHROPIC_API_KEY = "sk-ant-..."
+JWT_SECRET = "..."
+```
 
-Agent 루프가 무한 실행되지 않도록 제한이 있는지 확인한다.
+### 7. LLM 티어 라우팅 무결성
 
-**확인 사항:**
-- `MAX_ROUNDS` / `MAX_TOOL_ROUNDS` 제한 존재
-- 토큰 예산 (`tokenBudget`) 검증
-- 외부 API 호출에 타임아웃 설정 (Claude API 25초, fetchWithRetry)
-- Cron 엔드포인트에 `CRON_SECRET` 인증
+svc-llm-router를 우회하거나 opus 티어를 svc-policy 외에서 요청하지 않는지 확인한다.
+
+**위반 패턴:**
+- `svc-policy` 외 서비스에서 `tier: "opus"` 요청
+- Anthropic API를 svc-llm-router 없이 직접 호출
+- `CLOUDFLARE_AI_GATEWAY_URL` 우회
 
 ## 출력 형식
 
@@ -128,13 +137,13 @@ Agent 루프가 무한 실행되지 않도록 제한이 있는지 확인한다.
 
 | # | 체크 | 결과 | 상세 |
 |---|------|------|------|
-| 1 | 자율도 레벨 | PASS/WARN/FAIL | ... |
-| 2 | SQL 인젝션 | PASS/WARN/FAIL | ... |
-| 3 | 상태 전환 | PASS/WARN/FAIL | ... |
-| 4 | 인증 가드 | PASS/WARN/FAIL | ... |
-| 5 | 입력 검증 | PASS/WARN/FAIL | ... |
-| 6 | 민감 데이터 | PASS/WARN/FAIL | ... |
-| 7 | 리소스 제한 | PASS/WARN/FAIL | ... |
+| 1 | X-Internal-Secret 인증 | PASS/WARN/FAIL | ... |
+| 2 | PII 마스킹 → LLM 순서 | PASS/WARN/FAIL | ... |
+| 3 | 데이터 분류 준수 | PASS/WARN/FAIL | ... |
+| 4 | RBAC hasPermission() | PASS/WARN/FAIL | ... |
+| 5 | 입력 검증 (Zod) | PASS/WARN/FAIL | ... |
+| 6 | 시크릿 관리 | PASS/WARN/FAIL | ... |
+| 7 | LLM 티어 라우팅 | PASS/WARN/FAIL | ... |
 
 ### 발견된 이슈
 - [FAIL/WARN 항목 상세 설명]

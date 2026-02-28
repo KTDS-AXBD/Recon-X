@@ -1,43 +1,89 @@
 ---
 name: db-migrate
-description: Drizzle 마이그레이션 생성 → 로컬 적용 → test helper 동기화를 한 번에 수행. 스키마 변경 후 사용.
+description: Wrangler D1 마이그레이션 생성 → 로컬 적용 → 검증을 한 번에 수행. 스키마 변경 후 사용.
+argument-hint: "<서비스명> <마이그레이션명>"
+user-invocable: true
 ---
 
-# db-migrate — 마이그레이션 원스텝 실행
+# db-migrate — D1 마이그레이션 원스텝 실행
 
-Drizzle 스키마 변경 후, 마이그레이션 생성부터 테스트 헬퍼 동기화까지 한 번에 수행합니다.
+서비스의 D1 스키마 변경 후, 마이그레이션 생성부터 로컬 적용/검증까지 한 번에 수행합니다.
+
+## Arguments
+
+`$ARGUMENTS` 형식: `<서비스명> <마이그레이션명>`
+- 예: `/db-migrate svc-ingestion add-processing-status`
+- 서비스명이 없으면 사용자에게 질문
 
 ## Steps
 
-### 1. 마이그레이션 생성
+### 1. 대상 서비스 확인
 
 ```bash
-pnpm db:generate
+ls services/$SERVICE_NAME/wrangler.toml
 ```
 
-새로 생성된 SQL 파일 이름을 확인합니다.
+`wrangler.toml`에서 D1 바인딩 정보를 확인:
+```bash
+grep -A5 'd1_databases' services/$SERVICE_NAME/wrangler.toml
+```
 
-### 2. 로컬 D1에 적용
+### 2. 마이그레이션 파일 생성
 
 ```bash
-pnpm db:migrate
+cd services/$SERVICE_NAME
+wrangler d1 migrations create $DB_NAME $MIGRATION_NAME
 ```
 
-### 3. tests/helpers/db.ts 동기화 (CRITICAL)
-
-`drizzle/` 디렉토리의 SQL 파일 목록과 `tests/helpers/db.ts`의 `runMigrationSQL` 호출을 비교합니다.
-
-새로 추가된 SQL 파일에 대해 `runMigrationSQL` 호출을 `tests/helpers/db.ts`에 추가합니다.
-
-기존 패턴을 따릅니다:
-```typescript
-runMigrationSQL(sqlite, resolve(migrationsDir, "NNNN_migration_name.sql"));
+생성된 SQL 파일 경로를 확인하고, 기존 마이그레이션 시퀀스와 연속되는지 점검:
+```bash
+ls services/$SERVICE_NAME/migrations/
 ```
 
-### 4. 검증
+### 3. SQL 작성
+
+생성된 빈 SQL 파일에 DDL을 작성합니다.
+- `CREATE TABLE`, `ALTER TABLE` 등 스키마 변경 SQL
+- 기존 테이블 구조를 먼저 확인하여 충돌 방지
+- `IF NOT EXISTS` 활용 권장
+
+### 4. 로컬 D1에 적용
 
 ```bash
-pnpm test:unit
+cd services/$SERVICE_NAME
+wrangler d1 migrations apply $DB_NAME --local
 ```
 
-유닛 테스트가 통과하는지 확인합니다. "no such table" 에러가 나면 Step 3에서 누락된 SQL 파일이 있는지 재확인합니다.
+### 5. 검증
+
+```bash
+bun run typecheck
+```
+
+타입 에러 없는지 확인. 서비스 코드가 새 스키마에 맞게 업데이트되어야 할 수 있음.
+
+### 6. 결과 출력
+
+```
+## D1 마이그레이션 완료
+
+- 서비스: $SERVICE_NAME
+- DB: $DB_NAME
+- 파일: migrations/NNNN_$MIGRATION_NAME.sql
+- 로컬 적용: OK
+- typecheck: PASS
+
+### 프로덕션 적용 안내
+프로덕션 DB에 적용하려면:
+```bash
+cd services/$SERVICE_NAME
+CLOUDFLARE_API_TOKEN="..." wrangler d1 migrations apply $DB_NAME --remote
+```
+```
+
+## 주의사항
+
+- 각 서비스는 독립 D1 DB를 사용 (`db-ingestion`, `db-security` 등)
+- 마이그레이션 시퀀스 번호에 공백이 없어야 함 (0001, 0002, 0003...)
+- `--remote` 적용은 사용자 확인 후에만 수행
+- `migration-checker` 에이전트가 시퀀스 무결성을 자동 검증함

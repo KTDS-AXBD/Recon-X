@@ -24,7 +24,7 @@ git diff로 현재 변경된 `.ts`, `.tsx` 파일 목록을 수집한다:
 변경된 파일만 대상으로 ESLint를 실행한다:
 
 ```bash
-pnpm lint -- [변경된 파일 목록]
+bun run lint -- [변경된 파일 목록]
 ```
 
 - auto-fixable 에러는 `--fix` 플래그로 자동 수정
@@ -33,7 +33,7 @@ pnpm lint -- [변경된 파일 목록]
 ### 3. TypeScript 타입 체크
 
 ```bash
-pnpm typecheck
+bun run typecheck
 ```
 
 - 전체 프로젝트 타입 체크 (tsc는 파일 단위 실행 불가)
@@ -44,7 +44,7 @@ pnpm typecheck
 변경 파일 범위 내 에러만 수정:
 - ESLint auto-fix로 해결되지 않은 lint 에러 수동 수정
 - TypeScript 타입 에러 수정
-- 수정 후 `pnpm lint` + `pnpm typecheck` 재실행하여 검증
+- 수정 후 `bun run lint` + `bun run typecheck` 재실행하여 검증
 - 새 에러가 발생하면 롤백하고 사용자에게 보고
 - 변경 파일 외의 에러는 수정하지 않고 참고로 표시
 

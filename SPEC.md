@@ -174,7 +174,7 @@
   - Persona D (Client): results.tsx, audit.tsx
   - Persona E (Executive): dashboard.tsx, cost.tsx
   - API 클라이언트 5개: ingestion, extraction, skill, security, governance
-- **Test Coverage**: svc-policy 73.55%, svc-skill 80.41%, svc-notification 96.72% (148 tests, vitest)
+- **Test Coverage**: svc-policy 73.55%, svc-skill 80.41%, svc-notification 96.72%, svc-analytics 89.65% (164 tests, vitest)
 - **Frontend**: https://ai-foundry-web.pages.dev (Cloudflare Pages)
 
 ---
@@ -244,7 +244,7 @@
 - [x] app-web Cloudflare Pages 배포 — https://ai-foundry-web.pages.dev
 - [ ] Neo4j Aura 연결 (svc-ontology NEO4J_URI/PASSWORD)
 - [x] svc-notification 알림 로직 구현 + 배포 (16 tests, 96.72% coverage)
-- [ ] svc-analytics KPI 집계 구현
+- [x] svc-analytics KPI 집계 + 배포 (16 tests, 89.65% coverage) + queue-router fan-out
 - [ ] 프로덕션 환경 분리 (staging/prod)
 
 ---

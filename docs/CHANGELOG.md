@@ -2,6 +2,25 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 014 — 2026-02-28
+
+- ✅ **H-05: svc-analytics KPI 집계 구현 + 배포**
+  - `GET /kpi`: 파이프라인 KPI 집계 (documents_uploaded ~ skills_packaged, avg_pipeline_duration)
+  - `GET /cost`: LLM 비용 Tier별 분석 (haiku/sonnet/opus, inputTokens/outputTokens/requests)
+  - `GET /dashboards`: 종합 대시보드 (pipeline trend, cost trend, top 10 skills)
+  - `POST /internal/queue-event`: 7개 파이프라인 이벤트 전체 처리, daily metric upsert 패턴
+  - 16 tests, 89.65% Stmts coverage
+  - 배포 완료: https://svc-analytics.sinclair-account.workers.dev
+- ✅ **svc-queue-router fan-out 연동**
+  - SVC_ANALYTICS service binding 추가 (wrangler.toml)
+  - `getTargets()` 수정: 모든 이벤트 → primary + analytics 동시 발송
+  - 재배포 완료
+
+**검증**
+- typecheck: pass
+- test: 16/16 pass (89.65% coverage)
+- deployment: svc-analytics /health HTTP 200, svc-queue-router /health HTTP 200
+
 ## 세션 013 — 2026-02-28
 
 - ✅ **H-02: app-web Cloudflare Pages 배포** — https://ai-foundry-web.pages.dev

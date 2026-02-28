@@ -13,53 +13,157 @@
  * Queue consumer: listens on "ai-foundry-pipeline" for Stage 2 completion events.
  */
 
-import { createLogger, unauthorized } from "@ai-foundry/utils";
-import type { ExportedHandler } from "@cloudflare/workers-types";
+import { createLogger, unauthorized, extractRbacContext, checkPermission, logAudit } from "@ai-foundry/utils";
 import type { Env } from "./env.js";
+import { handleInferPolicies, handleListPolicies, handleGetPolicy } from "./routes/policies.js";
+import { handleApprovePolicy, handleModifyPolicy, handleRejectPolicy, handleGetSession } from "./routes/hitl.js";
+import { handleQueueBatch } from "./queue/handler.js";
+
 export { HitlSession } from "./hitl-session.js";
 
-const NOT_IMPLEMENTED = JSON.stringify({
-  success: false,
-  error: { code: "NOT_IMPLEMENTED", message: "Not implemented" },
-});
+export default {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const logger = createLogger("svc-policy");
+    const url = new URL(request.url);
+    const method = request.method;
+    const path = url.pathname;
 
-async function fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
-  const logger = createLogger("svc-policy");
-  const url = new URL(request.url);
-  const method = request.method;
-  const path = url.pathname;
+    // Health check — no auth required
+    if (method === "GET" && path === "/health") {
+      return new Response(
+        JSON.stringify({ status: "ok", service: env.SERVICE_NAME }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }
 
-  // Health check — no auth required
-  if (method === "GET" && path === "/health") {
-    return new Response(
-      JSON.stringify({ status: "ok", service: env.SERVICE_NAME }),
-      { status: 200, headers: { "Content-Type": "application/json" } },
-    );
-  }
+    // All other routes require inter-service secret
+    const secret = request.headers.get("X-Internal-Secret");
+    if (!secret || secret !== env.INTERNAL_API_SECRET) {
+      logger.warn("Unauthorized request", { path, method });
+      return unauthorized("Missing or invalid X-Internal-Secret");
+    }
 
-  // All other routes require inter-service secret
-  const secret = request.headers.get("X-Internal-Secret");
-  if (!secret || secret !== env.INTERNAL_API_SECRET) {
-    logger.warn("Unauthorized request", { path, method });
-    return unauthorized("Missing or invalid X-Internal-Secret");
-  }
+    try {
+      // POST /policies/infer — trigger policy inference for an extraction result
+      if (method === "POST" && path === "/policies/infer") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "policy", "create");
+          if (denied) return denied;
+          ctx.waitUntil(logAudit(env, {
+            userId: rbacCtx.userId,
+            organizationId: rbacCtx.organizationId,
+            action: "create",
+            resource: "policy",
+          }));
+        }
+        return await handleInferPolicies(request, env, ctx);
+      }
 
-  try {
-    // POST /policies/infer        — trigger policy inference for an extraction result
-    // GET  /policies              — list policy candidates (with HITL status)
-    // GET  /policies/:id          — retrieve a single policy candidate
-    // POST /policies/:id/approve  — Reviewer approves the policy candidate
-    // POST /policies/:id/modify   — Reviewer modifies and approves
-    // POST /policies/:id/reject   — Reviewer rejects the policy candidate
-    // GET  /sessions/:id          — proxy to HitlSession Durable Object
-    return new Response(NOT_IMPLEMENTED, {
-      status: 501,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (e) {
-    logger.error("Unhandled error", { error: String(e), path, method });
-    return new Response("Internal Server Error", { status: 500 });
-  }
-}
+      // GET /policies — list policy candidates
+      if (method === "GET" && path === "/policies") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "policy", "read");
+          if (denied) return denied;
+        }
+        return await handleListPolicies(request, env);
+      }
 
-export default { fetch } satisfies ExportedHandler<Env>;
+      // Match /policies/:id and /policies/:id/action
+      const policyMatch = path.match(/^\/policies\/([^/]+)(?:\/([^/]+))?$/);
+      if (policyMatch) {
+        const policyId = policyMatch[1];
+        if (!policyId) {
+          return new Response("Not Found", { status: 404 });
+        }
+        const action = policyMatch[2]; // approve | modify | reject | undefined
+
+        // GET /policies/:id — single policy detail
+        if (method === "GET" && !action) {
+          const rbacCtx = extractRbacContext(request);
+          if (rbacCtx) {
+            const denied = await checkPermission(env, rbacCtx.role, "policy", "read");
+            if (denied) return denied;
+          }
+          return await handleGetPolicy(request, env, policyId);
+        }
+
+        // POST /policies/:id/approve
+        if (method === "POST" && action === "approve") {
+          const rbacCtx = extractRbacContext(request);
+          if (rbacCtx) {
+            const denied = await checkPermission(env, rbacCtx.role, "policy", "approve");
+            if (denied) return denied;
+            ctx.waitUntil(logAudit(env, {
+              userId: rbacCtx.userId,
+              organizationId: rbacCtx.organizationId,
+              action: "approve",
+              resource: "policy",
+              resourceId: policyId,
+            }));
+          }
+          return await handleApprovePolicy(request, env, policyId, ctx);
+        }
+
+        // POST /policies/:id/modify
+        if (method === "POST" && action === "modify") {
+          const rbacCtx = extractRbacContext(request);
+          if (rbacCtx) {
+            const denied = await checkPermission(env, rbacCtx.role, "policy", "update");
+            if (denied) return denied;
+            ctx.waitUntil(logAudit(env, {
+              userId: rbacCtx.userId,
+              organizationId: rbacCtx.organizationId,
+              action: "update",
+              resource: "policy",
+              resourceId: policyId,
+            }));
+          }
+          return await handleModifyPolicy(request, env, policyId, ctx);
+        }
+
+        // POST /policies/:id/reject
+        if (method === "POST" && action === "reject") {
+          const rbacCtx = extractRbacContext(request);
+          if (rbacCtx) {
+            const denied = await checkPermission(env, rbacCtx.role, "policy", "reject");
+            if (denied) return denied;
+            ctx.waitUntil(logAudit(env, {
+              userId: rbacCtx.userId,
+              organizationId: rbacCtx.organizationId,
+              action: "reject",
+              resource: "policy",
+              resourceId: policyId,
+            }));
+          }
+          return await handleRejectPolicy(request, env, policyId, ctx);
+        }
+      }
+
+      // GET /sessions/:id — proxy to HitlSession Durable Object
+      const sessionMatch = path.match(/^\/sessions\/([^/]+)$/);
+      if (method === "GET" && sessionMatch) {
+        const sessionId = sessionMatch[1];
+        if (!sessionId) {
+          return new Response("Not Found", { status: 404 });
+        }
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "policy", "read");
+          if (denied) return denied;
+        }
+        return await handleGetSession(request, env, sessionId);
+      }
+
+      return new Response("Not Found", { status: 404 });
+    } catch (e) {
+      logger.error("Unhandled error", { error: String(e), path, method });
+      return new Response("Internal Server Error", { status: 500 });
+    }
+  },
+
+  async queue(batch: MessageBatch, env: Env, ctx: ExecutionContext): Promise<void> {
+    await handleQueueBatch(batch, env, ctx);
+  },
+} satisfies ExportedHandler<Env>;

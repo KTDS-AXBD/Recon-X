@@ -9,7 +9,7 @@
  * Results are written to DB_EXTRACTION and forwarded to svc-policy via the pipeline queue.
  */
 
-import { createLogger, unauthorized, notFound, ok } from "@ai-foundry/utils";
+import { createLogger, unauthorized, notFound, ok, extractRbacContext, checkPermission, logAudit } from "@ai-foundry/utils";
 import type { Env } from "./env.js";
 import { handleExtract } from "./routes/extract.js";
 import { handleQueueBatch } from "./queue/handler.js";
@@ -39,12 +39,28 @@ export default {
     try {
       // POST /extract — trigger structure extraction for a document
       if (method === "POST" && path === "/extract") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "extraction", "execute");
+          if (denied) return denied;
+          ctx.waitUntil(logAudit(env, {
+            userId: rbacCtx.userId,
+            organizationId: rbacCtx.organizationId,
+            action: "execute",
+            resource: "extraction",
+          }));
+        }
         return await handleExtract(request, env, ctx);
       }
 
       // GET /extractions/:id — retrieve extraction result
       const extractionMatch = path.match(/^\/extractions\/([^/]+)$/);
       if (method === "GET" && extractionMatch) {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "extraction", "read");
+          if (denied) return denied;
+        }
         const extractionId = extractionMatch[1];
         if (!extractionId) {
           return notFound("extraction");

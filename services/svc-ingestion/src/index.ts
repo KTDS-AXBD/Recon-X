@@ -1,4 +1,4 @@
-import { createLogger, unauthorized } from "@ai-foundry/utils";
+import { createLogger, unauthorized, extractRbacContext, checkPermission, logAudit } from "@ai-foundry/utils";
 import type { Env } from "./env.js";
 import { handleHealth } from "./routes/health.js";
 import { handleUpload, handleGetDocument } from "./routes/upload.js";
@@ -26,12 +26,28 @@ export default {
     try {
       // POST /documents — upload a new document
       if (method === "POST" && path === "/documents") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "document", "upload");
+          if (denied) return denied;
+          ctx.waitUntil(logAudit(env, {
+            userId: rbacCtx.userId,
+            organizationId: rbacCtx.organizationId,
+            action: "upload",
+            resource: "document",
+          }));
+        }
         return await handleUpload(request, env, ctx);
       }
 
       // GET /documents/:id
       const docMatch = path.match(/^\/documents\/([^/]+)$/);
       if (method === "GET" && docMatch) {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "document", "read");
+          if (denied) return denied;
+        }
         const documentId = docMatch[1];
         if (!documentId) {
           return new Response("Not Found", { status: 404 });

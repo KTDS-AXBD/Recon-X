@@ -3,17 +3,15 @@
  * Governance: Prompt Registry, cost monitoring, trust dashboard
  */
 
-import { createLogger, unauthorized } from "@ai-foundry/utils";
+import { createLogger, unauthorized, errFromUnknown, extractRbacContext, checkPermission, logAudit } from "@ai-foundry/utils";
 import type { ExportedHandler } from "@cloudflare/workers-types";
 import type { Env } from "./env.js";
-
-const NOT_IMPLEMENTED = JSON.stringify({
-  success: false,
-  error: { code: "NOT_IMPLEMENTED", message: "Not implemented" },
-});
+import { handleCreatePrompt, handleListPrompts, handleGetPrompt } from "./routes/prompts.js";
+import { handleGetCost } from "./routes/cost.js";
+import { handleGetTrust, handleCreateTrustEvaluation } from "./routes/trust.js";
 
 export default {
-  async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const logger = createLogger("svc-governance");
     const url = new URL(request.url);
     const method = request.method;
@@ -39,19 +37,74 @@ export default {
     }
 
     try {
-      // TODO: implement governance routes
-      // GET  /prompts          — list registered prompt versions
-      // POST /prompts          — register a new prompt version
-      // GET  /prompts/:id      — retrieve a specific prompt version
-      // GET  /cost             — cost monitoring summary
-      // GET  /trust            — trust dashboard metrics
-      return new Response(NOT_IMPLEMENTED, {
-        status: 501,
-        headers: { "Content-Type": "application/json" },
-      });
+      // Prompt Registry
+      if (method === "POST" && path === "/prompts") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "governance", "create");
+          if (denied) return denied;
+          ctx.waitUntil(logAudit(env, {
+            userId: rbacCtx.userId,
+            organizationId: rbacCtx.organizationId,
+            action: "create",
+            resource: "governance",
+          }));
+        }
+        return await handleCreatePrompt(request, env, ctx);
+      }
+      if (method === "GET" && path === "/prompts") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "governance", "read");
+          if (denied) return denied;
+        }
+        return await handleListPrompts(request, env);
+      }
+      const promptMatch = path.match(/^\/prompts\/([^/]+)$/);
+      if (method === "GET" && promptMatch) {
+        const id = promptMatch[1];
+        if (!id) return new Response("Not Found", { status: 404 });
+        return await handleGetPrompt(request, env, id);
+      }
+
+      // Cost monitoring
+      if (method === "GET" && path === "/cost") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "governance", "read");
+          if (denied) return denied;
+        }
+        return await handleGetCost(request, env);
+      }
+
+      // Trust dashboard
+      if (method === "GET" && path === "/trust") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "governance", "read");
+          if (denied) return denied;
+        }
+        return await handleGetTrust(request, env);
+      }
+      if (method === "POST" && path === "/trust") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "governance", "create");
+          if (denied) return denied;
+          ctx.waitUntil(logAudit(env, {
+            userId: rbacCtx.userId,
+            organizationId: rbacCtx.organizationId,
+            action: "create",
+            resource: "governance",
+          }));
+        }
+        return await handleCreateTrustEvaluation(request, env);
+      }
+
+      return new Response("Not Found", { status: 404 });
     } catch (e) {
       logger.error("Unhandled error", { error: String(e), path, method });
-      return new Response("Internal Server Error", { status: 500 });
+      return errFromUnknown(e);
     }
   },
 } satisfies ExportedHandler<Env>;

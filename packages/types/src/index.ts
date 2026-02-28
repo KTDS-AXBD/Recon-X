@@ -4,3 +4,4 @@ export * from "./llm.js";
 export * from "./events.js";
 export * from "./skill.js";
 export * from "./security.js";
+export * from "./governance.js";

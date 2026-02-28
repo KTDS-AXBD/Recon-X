@@ -83,12 +83,10 @@ export async function handleInferPolicies(
   for (const candidate of candidates) {
     const policyId = crypto.randomUUID();
     const sessionId = crypto.randomUUID();
-    policyIds.push(policyId);
-    sessionIds.push(sessionId);
 
-    // D1: insert policy
-    ctx.waitUntil(
-      env.DB_POLICY.prepare(
+    // D1: insert policy (synchronous — must exist before returning)
+    try {
+      await env.DB_POLICY.prepare(
         `INSERT INTO policies (
           policy_id, extraction_id, organization_id, policy_code, title,
           condition, criteria, outcome, source_document_id,
@@ -112,22 +110,26 @@ export async function handleInferPolicies(
           now,
           now,
         )
-        .run(),
-    );
+        .run();
+    } catch (e) {
+      logger.warn("Failed to insert policy", { policyId, policyCode: candidate.policyCode, error: String(e) });
+      continue;
+    }
 
-    // D1: insert HITL session
+    policyIds.push(policyId);
+    sessionIds.push(sessionId);
+
+    // D1: insert HITL session (synchronous)
     const doId = env.HITL_SESSION.idFromName(policyId);
-    ctx.waitUntil(
-      env.DB_POLICY.prepare(
-        `INSERT INTO hitl_sessions (
-          session_id, policy_id, reviewer_id, status, do_id, opened_at, completed_at
-        ) VALUES (?, ?, NULL, 'open', ?, ?, NULL)`,
-      )
-        .bind(sessionId, policyId, doId.toString(), now)
-        .run(),
-    );
+    await env.DB_POLICY.prepare(
+      `INSERT INTO hitl_sessions (
+        session_id, policy_id, reviewer_id, status, do_id, opened_at, completed_at
+      ) VALUES (?, ?, NULL, 'open', ?, ?, NULL)`,
+    )
+      .bind(sessionId, policyId, doId.toString(), now)
+      .run();
 
-    // Activate Durable Object (creates stub for later use)
+    // Activate Durable Object (non-blocking — OK for init)
     const stub = env.HITL_SESSION.get(doId);
     ctx.waitUntil(
       stub.fetch("https://hitl-session.internal/init", {

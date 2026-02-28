@@ -191,6 +191,12 @@ step 5 "POST /policies/:id/approve — HITL policy approval"
 if [ -z "$POLICY_ID" ]; then
   err "No policyId — skipping approval"
 else
+  # Wait for D1 async write to complete (policy inference uses ctx.waitUntil)
+  echo "  Waiting for policy D1 write..."
+  poll_until "$POLICY_BASE/policies/$POLICY_ID" \
+    '.data.policyId // .policyId' \
+    "policy D1 write" > /dev/null 2>&1 || true
+
   APPROVE_RESP=$(api -X POST "$POLICY_BASE/policies/$POLICY_ID/approve" \
     -H "X-Internal-Secret: $SECRET" \
     -H "Content-Type: application/json" \
@@ -254,6 +260,16 @@ else
   P_CRIT=$(echo "$POLICY_DETAIL" | jqr '.data.criteria // .criteria // "가입기간 5년 이상"')
   P_OUT=$(echo "$POLICY_DETAIL" | jqr '.data.outcome // .outcome // "적립금 50% 인출 가능"')
 
+  # PolicyCodeSchema requires POL-{DOMAIN}-{TYPE}-{SEQ} format
+  # If D1 code doesn't match the regex, use a fallback
+  if echo "$P_CODE" | grep -qE '^POL-[A-Z]+-[A-Z-]+-[0-9]{3}$'; then
+    SKILL_CODE="$P_CODE"
+  else
+    SKILL_CODE="POL-PENSION-WDTEST-001"
+  fi
+
+  NOW_ISO=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
   SKILL_RESP=$(api -X POST "$SKILL_BASE/skills" \
     -H "X-Internal-Secret: $SECRET" \
     -H "Content-Type: application/json" \
@@ -261,26 +277,34 @@ else
       \"domain\": \"retirement-pension\",
       \"subdomain\": \"withdrawal\",
       \"policies\": [{
-        \"policyId\": \"$POLICY_ID\",
-        \"policyCode\": \"$P_CODE\",
+        \"code\": \"$SKILL_CODE\",
         \"title\": \"$P_TITLE\",
         \"condition\": \"$P_COND\",
         \"criteria\": \"$P_CRIT\",
         \"outcome\": \"$P_OUT\",
-        \"trustLevel\": \"reviewed\",
-        \"trustScore\": 0.75,
+        \"source\": {
+          \"documentId\": \"$DOC_ID\"
+        },
+        \"trust\": {
+          \"level\": \"reviewed\",
+          \"score\": 0.75
+        },
         \"tags\": [\"e2e-test\"]
       }],
       \"ontologyId\": \"$ONTOLOGY_ID\",
       \"ontologyRef\": {
-        \"skosConceptScheme\": \"urn:aif:scheme:$ONTOLOGY_ID\",
-        \"termCount\": 3
+        \"graphId\": \"$ONTOLOGY_ID\",
+        \"termUris\": [\"urn:aif:term:중도인출\", \"urn:aif:term:무주택세대주\", \"urn:aif:term:가입기간\"],
+        \"skosConceptScheme\": \"urn:aif:scheme:$ONTOLOGY_ID\"
       },
       \"provenance\": {
-        \"sourceDocumentId\": \"$DOC_ID\",
-        \"extractionId\": \"$EXTRACTION_ID\",
-        \"policyIds\": [\"$POLICY_ID\"],
-        \"ontologyIds\": [\"$ONTOLOGY_ID\"]
+        \"sourceDocumentIds\": [\"$DOC_ID\"],
+        \"organizationId\": \"$ORG_ID\",
+        \"extractedAt\": \"$NOW_ISO\",
+        \"pipeline\": {
+          \"stages\": [\"ingestion\", \"extraction\", \"policy\", \"ontology\", \"skill\"],
+          \"models\": {\"extraction\": \"claude-haiku\", \"policy\": \"claude-opus\"}
+        }
       },
       \"author\": \"e2e-test-user\",
       \"tags\": [\"e2e-test\", \"pension\"]

@@ -52,7 +52,7 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-02-28 (세션 011)
+- **Last Updated**: 2026-02-28 (세션 015)
 - **Repo Bootstrap**: ✅
 - **PRD Seed Document**: ✅ (`docs/AI_Foundry_PRD_TDS_v0.6.docx`)
 - **.claude Skills/Agents Migration**: ✅
@@ -65,7 +65,7 @@
 - **app-web**: ✅ React + Vite SPA scaffold, 13 페이지 stub, React Router warnings 수정
 - **D1 Migrations**: ✅ 10개 DB 스키마 작성 + remote 적용 완료 (2026-02-26)
 - **Cloudflare 인프라**: ✅ D1(×10) / R2(×2) / Queue(×2) / KV(×2) 프로비저닝 완료, wrangler.toml ID 반영
-- **CI/CD Workflows**: ✅ GitHub Actions (CI + 4개 deploy workflow)
+- **CI/CD Workflows**: ✅ GitHub Actions (CI + 통합 deploy-services.yml + deploy-pages.yml)
 - **typecheck**: ✅ 16개 패키지 전체 통과 (svc-queue-router 추가)
 - **서비스 배포**: ✅ 전 서비스 배포 완료 (2026-02-28)
   - https://svc-llm-router.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅
@@ -82,7 +82,7 @@
   - svc-llm-router: `INTERNAL_API_SECRET` / `ANTHROPIC_API_KEY` / `CLOUDFLARE_AI_GATEWAY_URL` ✅
   - svc-security: `INTERNAL_API_SECRET` / `JWT_SECRET`(auto-gen) ✅
   - svc-ingestion / svc-extraction / svc-policy / svc-ontology / svc-skill / svc-governance / svc-notification / svc-queue-router: `INTERNAL_API_SECRET` ✅
-  - svc-ontology: `NEO4J_URI`, `NEO4J_PASSWORD` — Neo4j Aura 연동 시점에 설정 예정
+  - svc-ontology: `INTERNAL_API_SECRET` / `NEO4J_URI` / `NEO4J_USERNAME` / `NEO4J_PASSWORD` / `NEO4J_DATABASE` ✅
 - **AI Gateway**: ✅ `ai-foundry` 게이트웨이 생성 완료, Authentication Off, Anthropic 라우팅 확인
 - **E2E LLM 파이프라인**: ✅ `/complete` HTTP 200, `/stream` SSE 정상 수신 확인 (2026-02-26)
   - `INTERNAL_API_SECRET` printf 방식으로 재설정 (echo newline 이슈 해결)
@@ -174,7 +174,17 @@
   - Persona D (Client): results.tsx, audit.tsx
   - Persona E (Executive): dashboard.tsx, cost.tsx
   - API 클라이언트 5개: ingestion, extraction, skill, security, governance
-- **Test Coverage**: svc-policy 73.55%, svc-skill 80.41%, svc-notification 96.72%, svc-analytics 89.65% (164 tests, vitest)
+- **H-06 Neo4j Aura 연결**: ✅ Query API v2 클라이언트 리팩토링 + 4 secrets 설정 + 배포 + 그래프 검증 (2026-02-28)
+  - Aura 5.x: HTTP Transaction API → 403 차단 → Query API v2 (`/db/{database}/query/v2`) 사용
+  - neo4j/client.ts 전면 리팩토링, env.ts에 NEO4J_USERNAME/NEO4J_DATABASE 추가
+  - `/graph RETURN 1` → HTTP 200, `/normalize` → Neo4j 노드+관계 upsert 검증 완료
+- **H-07 Unit Test 확대**: ✅ svc-ingestion 53 tests (96.66%), svc-extraction 52 tests (100%) — 총 269 tests
+- **H-08 환경 분리**: ✅ staging/production wrangler.toml + CI/CD (2026-02-28)
+  - 12개 wrangler.toml에 [env.staging]/[env.production] 추가
+  - deploy-services.yml: 통합 matrix 배포 (push→staging, release→production)
+  - deploy-pages.yml: 환경별 Pages 배포
+  - scripts/deploy.sh: 수동 배포 스크립트
+- **Test Coverage**: svc-ingestion 96.66%, svc-extraction 100%, svc-policy 73.55%, svc-skill 80.41%, svc-notification 96.72%, svc-analytics 89.65% (269 tests, vitest)
 - **Frontend**: https://ai-foundry-web.pages.dev (Cloudflare Pages)
 
 ---
@@ -239,13 +249,20 @@
 - [x] **G-03** — MCP 어댑터 생성 (GET /skills/:id/mcp)
 - [x] **G-04** — app-web 나머지 Persona 화면 (A, C, D, E — 9페이지)
 
-### 🔜 Phase H — Hardening + Production Readiness
+### ✅ Phase H — Hardening + Production Readiness (완료)
 - [x] Unit test 작성 — svc-policy 73.55%, svc-skill 80.41% (132 tests)
 - [x] app-web Cloudflare Pages 배포 — https://ai-foundry-web.pages.dev
-- [ ] Neo4j Aura 연결 (svc-ontology NEO4J_URI/PASSWORD)
+- [x] **H-06** Neo4j Aura 연결 — Query API v2 클라이언트, 4 secrets 설정, 그래프 검증
 - [x] svc-notification 알림 로직 구현 + 배포 (16 tests, 96.72% coverage)
 - [x] svc-analytics KPI 집계 + 배포 (16 tests, 89.65% coverage) + queue-router fan-out
-- [ ] 프로덕션 환경 분리 (staging/prod)
+- [x] **H-07** Unit test 확대 — svc-ingestion 53 tests (96.66%), svc-extraction 52 tests (100%). 총 269 tests
+- [x] **H-08** 프로덕션 환경 분리 — staging/prod wrangler.toml + 통합 CI/CD + deploy.sh
+
+### 🔜 Phase I — Staging Provisioning + Polish
+- [ ] Staging 리소스 프로비저닝 (D1×10, R2×2, Queue×1, KV×2) → placeholder ID 교체
+- [ ] GitHub Environments 설정 (staging/production protection rules)
+- [ ] 추가 서비스 unit test (svc-governance, svc-security, svc-ontology, svc-llm-router 등)
+- [ ] 프로덕션 모니터링/알림 설정
 
 ---
 
@@ -284,3 +301,7 @@
 - 2026-02-28: G-03 MCP 어댑터 — .skill.json → MCP Server tool definitions 온-더-플라이 변환. 저장하지 않고 요청 시 계산 (projection 패턴)
 - 2026-02-28: G-04 app-web Persona 화면 — 9개 페이지 구현 (upload, pipeline, comparison, skill-catalog, skill-detail, results, audit, dashboard, cost). API 클라이언트 5개 추가
 - 2026-02-28: Phase G 완료 → Phase H (Hardening) 진입 결정. 잔여: unit test, Pages 배포, Neo4j 연결, notification/analytics 구현
+- 2026-02-28: H-06 Neo4j Aura 연결 — Aura 5.x HTTP Transaction API 차단(403) 발견 → Query API v2 (`/db/{database}/query/v2`) 로 전면 리팩토링. multi-statement batch를 순차 실행 래퍼로 변환. NEO4J_USERNAME/NEO4J_DATABASE env 추가
+- 2026-02-28: H-07 Unit test 확대 — svc-ingestion 53 tests (96.66%), svc-extraction 52 tests (100%). CfProperties→IncomingRequestCfProperties 타입 불일치는 테스트 내 `as any` 캐스트로 해결
+- 2026-02-28: H-08 환경 분리 — 개별 deploy workflow 3개 → deploy-services.yml 통합 (matrix strategy). push→staging 자동, release→production 자동, workflow_dispatch→수동 선택. deploy.sh 스크립트 추가
+- 2026-02-28: Phase H 완료 → Phase I (Staging Provisioning + Polish) 진입 결정

@@ -2,6 +2,34 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 015 — 2026-02-28
+
+- ✅ **H-06** Neo4j Aura 연결 — Query API v2 리팩토링 + 4 secrets 설정 + 배포 + 그래프 검증
+  - Aura 5.x는 HTTP Transaction API 차단(403) → `/db/{database}/query/v2` 사용
+  - neo4j/client.ts 전면 재작성, env.ts에 NEO4J_USERNAME/NEO4J_DATABASE 추가
+  - /graph RETURN 1 → 200, /normalize → Term/Ontology/Policy 노드 + HAS_TERM/EXTRACTED_FROM 관계 확인
+- ✅ **H-07** Unit test 확대 — svc-ingestion 53 tests (96.66%), svc-extraction 52 tests (100%)
+  - routes, queue handler, parsing utils, LLM caller 커버
+  - CfProperties 타입 이슈 해결 (worker.fetch! 호출 시 `as any` 캐스트)
+  - 총 프로젝트 테스트: 269
+- ✅ **H-08** 프로덕션 환경 분리 — staging/production
+  - 12개 wrangler.toml: [env.staging] + [env.production] 추가
+  - deploy-services.yml: 통합 matrix 배포 (push→staging, release→production, workflow_dispatch→수동)
+  - deploy-pages.yml: 환경별 Pages 배포 (branch-based)
+  - scripts/deploy.sh: 수동 배포 스크립트 (순서 보장: platform → pipeline → queue-router)
+  - 개별 deploy workflow 3개 제거 (통합)
+
+**검증**
+- typecheck: 16/16 pass
+- tests: 269/269 pass (8/8 tasks)
+
+**커밋**
+- `3dcf7e9` feat(svc-ontology): H-06 connect Neo4j Aura via Query API v2
+- `b29c957` test(svc-ingestion,svc-extraction): H-07 add unit tests (105 tests, 96-100% coverage)
+- `2a75a30` feat(infra): H-08 staging/production environment separation
+
+---
+
 ## 세션 014 — 2026-02-28
 
 - ✅ **H-05: svc-analytics KPI 집계 구현 + 배포**

@@ -6,6 +6,7 @@ export interface Env {
   SECURITY: Fetcher;
   LLM_ROUTER: Fetcher;
   NOTIFICATION: Fetcher;
+  SVC_EXTRACTION: Fetcher;
 
   // Queue producer for pipeline events
   QUEUE_PIPELINE: Queue;

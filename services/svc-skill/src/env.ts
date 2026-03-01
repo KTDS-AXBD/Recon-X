@@ -11,6 +11,8 @@ export interface Env {
   // Service bindings
   SECURITY: Fetcher;
   LLM_ROUTER: Fetcher;
+  SVC_POLICY: Fetcher;
+  SVC_ONTOLOGY: Fetcher;
 
   // Vars
   ENVIRONMENT: string;

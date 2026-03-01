@@ -22,6 +22,15 @@ service = "svc-security"
 binding = "LLM_ROUTER"
 service = "svc-llm-router"
 
+# Service bindings for cross-service data fetching (queue handler)
+[[services]]
+binding = "SVC_POLICY"
+service = "svc-policy"
+
+[[services]]
+binding = "SVC_ONTOLOGY"
+service = "svc-ontology"
+
 # Queue consumer removed — svc-queue-router is the sole consumer
 
 [[queues.producers]]
@@ -57,6 +66,14 @@ service = "svc-security-staging"
 binding = "LLM_ROUTER"
 service = "svc-llm-router-staging"
 
+[[env.staging.services]]
+binding = "SVC_POLICY"
+service = "svc-policy-staging"
+
+[[env.staging.services]]
+binding = "SVC_ONTOLOGY"
+service = "svc-ontology-staging"
+
 [[env.staging.queues.producers]]
 binding = "QUEUE_PIPELINE"
 queue = "ai-foundry-pipeline-staging"
@@ -83,6 +100,14 @@ service = "svc-security"
 [[env.production.services]]
 binding = "LLM_ROUTER"
 service = "svc-llm-router"
+
+[[env.production.services]]
+binding = "SVC_POLICY"
+service = "svc-policy"
+
+[[env.production.services]]
+binding = "SVC_ONTOLOGY"
+service = "svc-ontology"
 
 [[env.production.queues.producers]]
 binding = "QUEUE_PIPELINE"

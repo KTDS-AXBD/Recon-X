@@ -23,6 +23,11 @@ service = "svc-llm-router"
 binding = "NOTIFICATION"
 service = "svc-notification"
 
+# Service binding to svc-extraction for fetching extraction results (queue handler)
+[[services]]
+binding = "SVC_EXTRACTION"
+service = "svc-extraction"
+
 # Durable Object for HITL session state
 [[durable_objects.bindings]]
 name = "HITL_SESSION"
@@ -69,6 +74,10 @@ service = "svc-llm-router-staging"
 binding = "NOTIFICATION"
 service = "svc-notification-staging"
 
+[[env.staging.services]]
+binding = "SVC_EXTRACTION"
+service = "svc-extraction-staging"
+
 [[env.staging.durable_objects.bindings]]
 name = "HITL_SESSION"
 class_name = "HitlSession"
@@ -104,6 +113,10 @@ service = "svc-llm-router"
 [[env.production.services]]
 binding = "NOTIFICATION"
 service = "svc-notification"
+
+[[env.production.services]]
+binding = "SVC_EXTRACTION"
+service = "svc-extraction"
 
 [[env.production.durable_objects.bindings]]
 name = "HITL_SESSION"

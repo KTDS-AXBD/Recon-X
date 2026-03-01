@@ -2,6 +2,25 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 019 — 2026-03-01
+
+- ✅ **Staging Service Binding 수정** — 9개 wrangler.toml의 `[env.staging]` service binding에 `-staging` 접미사 추가 (19 binding + 1 DO script_name)
+  - Cross-env 오염 방지: staging worker → staging worker 간 격리 보장
+- ✅ **Staging 전체 배포** — 11/11 Workers staging 배포 완료
+  - 9개: GitHub Actions CI 자동 배포 (push → staging)
+  - 2개(svc-security, svc-llm-router): wrangler CLI 수동 배포
+  - URL: `https://svc-xxx-staging.sinclair-account.workers.dev`
+- ✅ **Staging Secrets 설정** — INTERNAL_API_SECRET ×11 + ANTHROPIC_API_KEY(placeholder) + AI_GATEWAY_URL + JWT_SECRET
+- ✅ **Staging E2E 검증** — 11/11 health check 통과, API 기능 테스트 통과 (policies, skills, terms, kpi, notifications, governance prompt CRUD)
+- ✅ **health-check.sh 수정** — `--env staging` 시 `-staging` worker URL 사용
+
+**검증**
+- typecheck: 16/16 pass
+- staging health: 11/11 healthy
+- production health: 12/12 healthy
+
+---
+
 ## 세션 018 — 2026-03-01
 
 - ✅ **I-04** Staging 리소스 프로비저닝

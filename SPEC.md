@@ -52,7 +52,7 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-03-01 (세션 018)
+- **Last Updated**: 2026-03-01 (세션 019)
 - **Repo Bootstrap**: ✅
 - **PRD Seed Document**: ✅ (`docs/AI_Foundry_PRD_TDS_v0.6.docx`)
 - **.claude Skills/Agents Migration**: ✅
@@ -196,6 +196,11 @@
   - svc-queue-router: 43 tests (100% stmts)
 - **Test Coverage**: svc-ingestion 96.66%, svc-extraction 100%, svc-policy 73.55%, svc-skill 80.41%, svc-notification 96.72%, svc-analytics 89.65%, svc-governance 100%, svc-llm-router 98.85%, svc-ontology 100%, svc-security 97.14%, svc-queue-router 100% (709 tests, vitest)
 - **Frontend**: https://ai-foundry-web.pages.dev (Cloudflare Pages)
+- **Staging 배포**: ✅ 11/11 Workers staging 배포 완료 (2026-03-01)
+  - URL 패턴: `https://svc-xxx-staging.sinclair-account.workers.dev`
+  - Service binding: staging worker 간 격리 (`-staging` 접미사)
+  - Secrets: INTERNAL_API_SECRET ×11 + ANTHROPIC_API_KEY(placeholder) + AI_GATEWAY_URL + JWT_SECRET
+  - Health check: 11/11 healthy, API 기능 검증 통과
 
 ---
 
@@ -323,3 +328,6 @@
 - 2026-03-01: I-05 GitHub Environments — repo secrets (CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID) + production deployment_branch_policy (main only). required_reviewers는 유료 플랜 필요
 - 2026-03-01: I-06 모니터링 — scripts/health-check.sh (12서비스+Pages, JSON/text 출력, svc-notification 알림) + .github/workflows/health-check.yml (30분 cron). 검증: 12/12 healthy
 - 2026-03-01: Phase I 완료
+- 2026-03-01: Staging service binding 수정 — `[env.staging]` service/DO binding에 `-staging` 접미사 추가. Cross-env 오염 방지 (9 파일, 20 변경)
+- 2026-03-01: Staging 전체 배포 — 11 Workers staging 배포 + secrets 설정 + health 11/11 + API 기능 검증
+- 2026-03-01: health-check.sh 수정 — `--env staging` 시 `-staging` worker URL 사용

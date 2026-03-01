@@ -2,6 +2,20 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 025 — 2026-03-01
+
+**Phase 2 파일럿 PDCA 완료 — 테스트 수정 + Gap 분석 + 리포트**:
+- ✅ `extraction.completed` 이벤트 mock 4개 서비스 일괄 수정 (organizationId 추가)
+- ✅ svc-policy DB mock에 `.first()` 체인 추가 (SEQ dedup 쿼리 대응)
+- ✅ svc-extraction 제한값 테스트 수정 (MAX_CHUNKS 20, MAX_CHUNK_CHARS 4000)
+- ✅ Gap 분석 97% → 2건 수정(startingSeq 테스트 2개 추가, 주석 "max 50"→"max 200") → 100%
+- ✅ PDCA 문서 4종 완성 (Plan, Design, Analysis, Report)
+- ✅ 전체 테스트 711 PASS (709 + 2 신규)
+
+**검증 결과**:
+- ✅ typecheck 16/16 PASS
+- ✅ 711 tests PASS (13 packages)
+
 ## 세션 024 — 2026-03-01
 
 **커스텀 도메인 설정 + 파이프라인 개선**:

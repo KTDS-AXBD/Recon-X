@@ -336,3 +336,7 @@
 - 2026-03-01: Staging service binding 수정 — `[env.staging]` service/DO binding에 `-staging` 접미사 추가. Cross-env 오염 방지 (9 파일, 20 변경)
 - 2026-03-01: Staging 전체 배포 — 11 Workers staging 배포 + secrets 설정 + health 11/11 + API 기능 검증
 - 2026-03-01: health-check.sh 수정 — `--env staging` 시 `-staging` worker URL 사용
+- 2026-03-01: Frontend API 연동 — ontology/api-console/trust 3페이지 mock→실제 API 전환
+- 2026-03-01: E2E 스크립트 확장 — --staging/--real-doc/--json/--wait-queue 옵션 추가
+- 2026-03-01: UNSTRUCTURED_API_KEY staging secret 설정 + set-secret workflow 추가
+- 2026-03-01: **Staging E2E 7/7 PASS** — 실제 pension-withdrawal.pdf 5-Stage 파이프라인 검증 성공

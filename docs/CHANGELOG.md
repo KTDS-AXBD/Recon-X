@@ -2,6 +2,20 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 027 — 2026-03-01
+
+**UNSTRUCTURED_API_KEY staging secret 설정 + Staging E2E 7/7 PASS (실 문서)**:
+- ✅ Pages Functions API 프록시 + GET /documents 엔드포인트 커밋
+- ✅ set-secret.yml workflow 추가 (choice-type 입력으로 injection 방지)
+- ✅ UNSTRUCTURED_API_KEY staging secret 설정 (GitHub Actions workflow dispatch)
+- ✅ svc-extraction: LLM 응답의 markdown code fence 제거 (JSON 파싱 안정화)
+- ✅ Staging E2E 7/7 PASS — 실제 pension-withdrawal.pdf로 5-Stage 전체 파이프라인 검증
+- ✅ 생성된 .skill.json: POL-PENSION-WD-001 (무주택 세대주 중도인출 허용 정책)
+
+**검증 결과**:
+- ✅ typecheck 16/16 PASS
+- ✅ Staging E2E: 7 passed, 0 failed (real document mode)
+
 ## 세션 026 — 2026-03-01
 
 **Phase 2 프론트엔드 API 연동 + E2E 스크립트 확장**:

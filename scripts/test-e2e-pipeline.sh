@@ -4,7 +4,8 @@
 # 5-Stage: Ingestion → Extraction → Policy → Ontology → Skill
 #
 # Stages 1→2: Queue-event driven (automatic via svc-queue-router)
-# Stages 3→4→5: Manual API calls (queue handlers are stubs)
+# Stages 3→5: Queue handlers implemented (auto-pipeline via approve)
+# This script uses manual API calls for deterministic E2E testing.
 #
 # Prerequisites:
 #   - All 11 Workers deployed

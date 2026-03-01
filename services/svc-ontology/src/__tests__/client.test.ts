@@ -10,6 +10,7 @@ function mockEnv(overrides?: Partial<Env>): Env {
     DB_ONTOLOGY: {} as D1Database,
     SECURITY: {} as Fetcher,
     LLM_ROUTER: {} as Fetcher,
+    SVC_POLICY: {} as Fetcher,
     QUEUE_PIPELINE: {} as Queue,
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-ontology",

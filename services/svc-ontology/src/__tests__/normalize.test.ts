@@ -32,6 +32,7 @@ function mockEnv(dbOverrides?: Parameters<typeof mockDb>[0]): Env {
       ),
     } as unknown as Fetcher,
     LLM_ROUTER: { fetch: vi.fn() } as unknown as Fetcher,
+    SVC_POLICY: { fetch: vi.fn().mockResolvedValue(new Response("{}")) } as unknown as Fetcher,
     QUEUE_PIPELINE: { send: vi.fn().mockResolvedValue(undefined) } as unknown as Queue,
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-ontology",

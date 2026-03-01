@@ -228,14 +228,17 @@ bun run typecheck && bun run lint
 ### Skills & Agents
 이 저장소의 `.claude` 운영 체계:
 
-주요 스킬:
-- `/s-start`
-- `/s-end`
-- `/deploy`
-- `/lint`
-- `/team`
-- `/sync` / `/git-sync`
-- `/db-migrate`
+Plugin 스킬 (session-toolkit, 범용):
+- `/s-start` — 세션 시작, 컨텍스트 복원
+- `/s-end` — 세션 종료, 커밋+문서 갱신+push
+- `/lint` — ESLint + TypeScript 점검
+- `/git-sync` — 멀티 환경 Git 동기화
+- `/team` — tmux Agent Teams 병렬 실행
+
+프로젝트 스킬 (res-ai-foundry 전용):
+- `/deploy` — Cloudflare Workers 배포 (CI/CD + DB migration 체크 + health check)
+- `/sync` — SPEC.md ↔ GitHub 이슈 상태 동기화
+- `/db-migrate` — D1 마이그레이션 생성→적용→검증
 
 에이전트:
 - `security-reviewer`

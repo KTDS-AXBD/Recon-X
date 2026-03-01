@@ -2,6 +2,20 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 029 — 2026-03-01
+
+**Production E2E 8/8 PASS — 5-Stage 파이프라인 실증 완료**:
+- ✅ Production 환경 전체 health check 12/12 정상
+- ✅ Production E2E 8/8 PASS — pension-withdrawal.pdf 실 문서로 5-Stage 전체 파이프라인 검증
+- ✅ 생성된 .skill.json: POL-PENSION-WD-001 (무주택 세대주 중도인출 허용 정책), trust=0.75
+- ✅ svc-extraction: ctx.waitUntil → await 전환 (D1 write + Queue send 완료 보장)
+- ✅ svc-queue-router: dispatch 실패 시 message.retry() 처리 (기존 silent ack 제거)
+
+**검증 결과**:
+- ✅ typecheck 16/16 PASS
+- ✅ Production E2E: 8 passed, 0 failed (real document mode)
+- ✅ Production Health: 12/12 healthy
+
 ## 세션 028 — 2026-03-01
 
 **Production 배포 11/11 + UNSTRUCTURED_API_KEY production secret**:

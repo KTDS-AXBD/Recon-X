@@ -340,3 +340,4 @@
 - 2026-03-01: E2E 스크립트 확장 — --staging/--real-doc/--json/--wait-queue 옵션 추가
 - 2026-03-01: UNSTRUCTURED_API_KEY staging secret 설정 + set-secret workflow 추가
 - 2026-03-01: **Staging E2E 7/7 PASS** — 실제 pension-withdrawal.pdf 5-Stage 파이프라인 검증 성공
+- 2026-03-01: **Production 배포 11/11** — 전체 Workers production 재배포 + UNSTRUCTURED_API_KEY production secret 설정

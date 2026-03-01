@@ -2,6 +2,17 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 028 — 2026-03-01
+
+**Production 배포 11/11 + UNSTRUCTURED_API_KEY production secret**:
+- ✅ svc-extraction staging 배포 (markdown code fence fix 반영)
+- ✅ Production 전체 배포 11/11 Workers (workflow dispatch)
+- ✅ UNSTRUCTURED_API_KEY production secret 설정 (set-secret workflow)
+- ✅ Health check: Production 12/12, Staging 12/12 정상
+
+**비고**:
+- svc-queue-router production 배포 시 Queue consumer 중복 경고 발생 (실 동작 정상, Cloudflare Queues 단일 consumer 제약)
+
 ## 세션 027 — 2026-03-01
 
 **UNSTRUCTURED_API_KEY staging secret 설정 + Staging E2E 7/7 PASS (실 문서)**:

@@ -1,0 +1,74 @@
+import type { ApiResponse } from "@ai-foundry/types";
+
+const API_BASE =
+  (import.meta.env["VITE_API_BASE"] as string | undefined) ?? "/api";
+
+const HEADERS = {
+  "Content-Type": "application/json",
+  "X-Internal-Secret":
+    (import.meta.env["VITE_INTERNAL_SECRET"] as string | undefined) ??
+    "dev-secret",
+  "X-User-Id": "analyst-001",
+  "X-User-Role": "Analyst",
+  "X-Organization-Id": "org-001",
+};
+
+export interface TermRow {
+  termId: string;
+  ontologyId: string;
+  label: string;
+  definition: string | null;
+  skosUri: string;
+  broaderTermId: string | null;
+  embeddingModel: string | null;
+  createdAt: string;
+}
+
+export async function fetchTerms(params?: {
+  ontologyId?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<ApiResponse<{ terms: TermRow[]; limit: number; offset: number }>> {
+  const qs = new URLSearchParams();
+  if (params !== undefined) {
+    if (params.ontologyId !== undefined) qs.set("ontologyId", params.ontologyId);
+    if (params.limit !== undefined) qs.set("limit", String(params.limit));
+    if (params.offset !== undefined) qs.set("offset", String(params.offset));
+  }
+  const query = qs.toString();
+  const res = await fetch(
+    `${API_BASE}/terms${query ? `?${query}` : ""}`,
+    { headers: HEADERS },
+  );
+  return res.json() as Promise<
+    ApiResponse<{ terms: TermRow[]; limit: number; offset: number }>
+  >;
+}
+
+export async function fetchTerm(
+  id: string,
+): Promise<ApiResponse<TermRow>> {
+  const res = await fetch(`${API_BASE}/terms/${id}`, {
+    headers: HEADERS,
+  });
+  return res.json() as Promise<ApiResponse<TermRow>>;
+}
+
+export interface GraphResult {
+  columns: string[];
+  rows: unknown[][];
+  query: string;
+}
+
+export async function fetchGraph(
+  query?: string,
+): Promise<ApiResponse<GraphResult>> {
+  const qs = new URLSearchParams();
+  if (query !== undefined) qs.set("query", query);
+  const q = qs.toString();
+  const res = await fetch(
+    `${API_BASE}/graph${q ? `?${q}` : ""}`,
+    { headers: HEADERS },
+  );
+  return res.json() as Promise<ApiResponse<GraphResult>>;
+}

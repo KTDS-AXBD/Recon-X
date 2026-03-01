@@ -26,3 +26,13 @@ export async function fetchCostSummary(): Promise<ApiResponse<CostSummary>> {
   const res = await fetch(`${API_BASE}/cost`, { headers: HEADERS });
   return res.json() as Promise<ApiResponse<CostSummary>>;
 }
+
+export interface TrustData {
+  byTargetType: Record<string, Record<string, { count: number; avgScore: number }>>;
+  totalEvaluations: number;
+}
+
+export async function fetchTrust(): Promise<ApiResponse<TrustData>> {
+  const res = await fetch(`${API_BASE}/trust`, { headers: HEADERS });
+  return res.json() as Promise<ApiResponse<TrustData>>;
+}

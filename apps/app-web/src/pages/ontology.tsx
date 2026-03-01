@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, Network, Box, Link as LinkIcon, Plus, Edit } from 'lucide-react';
+import { Search, Network, Box, Link as LinkIcon, Plus, Edit, Loader2 } from 'lucide-react';
+import { fetchTerms, type TermRow } from '@/api/ontology';
 
 interface OntologyNode {
   id: string;
@@ -11,64 +12,49 @@ interface OntologyNode {
   nameEn: string;
   type: 'domain' | 'concept' | 'attribute' | 'relation';
   description: string;
-  parent?: string;
-  children?: string[];
-  relatedConcepts?: string[];
+  parent?: string | undefined;
+  children?: string[] | undefined;
+  relatedConcepts?: string[] | undefined;
 }
 
-const mockNodes: OntologyNode[] = [
-  {
-    id: 'node-1',
-    name: '퇴직연금',
-    nameEn: 'Retirement Pension',
-    type: 'domain',
-    description: '퇴직연금 제도 전반에 대한 도메인',
-    children: ['node-2', 'node-3', 'node-4'],
-  },
-  {
-    id: 'node-2',
-    name: '중도인출',
-    nameEn: 'Mid-term Withdrawal',
-    type: 'concept',
-    description: '퇴직 전 연금 적립금 인출',
-    parent: 'node-1',
-    children: ['node-5', 'node-6'],
-    relatedConcepts: ['node-3'],
-  },
-  {
-    id: 'node-3',
-    name: '가입 자격',
-    nameEn: 'Eligibility',
-    type: 'concept',
-    description: '연금 가입 및 혜택 수령 자격 요건',
-    parent: 'node-1',
-    relatedConcepts: ['node-2'],
-  },
-  {
-    id: 'node-4',
-    name: '적립금 운용',
-    nameEn: 'Fund Management',
-    type: 'concept',
-    description: '연금 적립금의 운용 및 관리',
-    parent: 'node-1',
-  },
-  {
-    id: 'node-5',
-    name: '인출 사유',
-    nameEn: 'Withdrawal Reason',
-    type: 'attribute',
-    description: '중도인출이 가능한 사유 (무주택자, 요양, 천재지변 등)',
-    parent: 'node-2',
-  },
-  {
-    id: 'node-6',
-    name: '인출 한도',
-    nameEn: 'Withdrawal Limit',
-    type: 'attribute',
-    description: '중도인출 가능 금액의 상한',
-    parent: 'node-2',
-  },
-];
+function termsToNodes(terms: TermRow[]): OntologyNode[] {
+  const broaderMap = new Map<string, string[]>();
+  for (const term of terms) {
+    if (term.broaderTermId) {
+      const existing = broaderMap.get(term.broaderTermId);
+      if (existing) {
+        existing.push(term.termId);
+      } else {
+        broaderMap.set(term.broaderTermId, [term.termId]);
+      }
+    }
+  }
+
+  return terms.map((term): OntologyNode => {
+    const children = broaderMap.get(term.termId);
+    const hasBroader = term.broaderTermId !== null;
+    const type: OntologyNode['type'] = !hasBroader
+      ? 'domain'
+      : children !== undefined && children.length > 0
+        ? 'concept'
+        : 'attribute';
+
+    const node: OntologyNode = {
+      id: term.termId,
+      name: term.label,
+      nameEn: term.skosUri.split('/').pop() ?? term.label,
+      type,
+      description: term.definition ?? '',
+    };
+    if (term.broaderTermId) {
+      node.parent = term.broaderTermId;
+    }
+    if (children !== undefined && children.length > 0) {
+      node.children = children;
+    }
+    return node;
+  });
+}
 
 const getNodeIcon = (type: OntologyNode['type']) => {
   switch (type) {
@@ -99,9 +85,44 @@ const getTypeBadge = (type: OntologyNode['type']) => {
 };
 
 export default function OntologyPage() {
-  const [selectedNode, setSelectedNode] = useState<OntologyNode | null>(mockNodes[0] ?? null);
+  const [nodes, setNodes] = useState<OntologyNode[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedNode, setSelectedNode] = useState<OntologyNode | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['node-1']));
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    fetchTerms({ limit: 100 })
+      .then((res) => {
+        if (cancelled) return;
+        if (res.success) {
+          const converted = termsToNodes(res.data.terms);
+          setNodes(converted);
+          const firstNode = converted[0];
+          if (firstNode) {
+            setSelectedNode(firstNode);
+            setExpandedNodes(new Set([firstNode.id]));
+          }
+        } else {
+          setError(res.error.message);
+        }
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        console.error('Failed to fetch terms', e);
+        setError('용어 목록을 불러올 수 없습니다');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, []);
 
   const toggleNode = (nodeId: string) => {
     setExpandedNodes((prev) => {
@@ -113,7 +134,7 @@ export default function OntologyPage() {
   };
 
   const renderNodeTree = (nodeId: string, depth: number = 0): React.ReactNode => {
-    const node = mockNodes.find((n) => n.id === nodeId);
+    const node = nodes.find((n) => n.id === nodeId);
     if (!node) return null;
 
     const isExpanded = expandedNodes.has(nodeId);
@@ -156,9 +177,9 @@ export default function OntologyPage() {
     );
   };
 
-  const domainNodes = mockNodes.filter((n) => n.type === 'domain');
-  const totalConcepts = mockNodes.filter((n) => n.type === 'concept').length;
-  const totalAttributes = mockNodes.filter((n) => n.type === 'attribute').length;
+  const domainNodes = nodes.filter((n) => n.type === 'domain');
+  const totalConcepts = nodes.filter((n) => n.type === 'concept').length;
+  const totalAttributes = nodes.filter((n) => n.type === 'attribute').length;
 
   return (
     <div className="space-y-0 h-[calc(100vh-4rem)] flex flex-col">
@@ -195,7 +216,7 @@ export default function OntologyPage() {
       </div>
 
       <div className="flex-1 grid grid-cols-[40%_60%] overflow-hidden border-t" style={{ borderColor: 'var(--border)' }}>
-        {/* Left Panel — Node Tree */}
+        {/* Left Panel -- Node Tree */}
         <div className="border-r overflow-hidden flex flex-col" style={{ borderColor: 'var(--border)' }}>
           <div className="p-4 border-b" style={{ borderColor: 'var(--border)' }}>
             <div className="relative">
@@ -204,11 +225,26 @@ export default function OntologyPage() {
             </div>
           </div>
           <div className="flex-1 overflow-auto p-4 space-y-2">
-            {domainNodes.map((node) => renderNodeTree(node.id))}
+            {loading && (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin" style={{ color: 'var(--text-secondary)' }} />
+              </div>
+            )}
+            {error && (
+              <div className="text-sm text-center py-8" style={{ color: 'var(--danger)' }}>
+                {error}
+              </div>
+            )}
+            {!loading && !error && nodes.length === 0 && (
+              <div className="text-sm text-center py-8" style={{ color: 'var(--text-secondary)' }}>
+                등록된 용어가 없습니다
+              </div>
+            )}
+            {!loading && !error && domainNodes.map((node) => renderNodeTree(node.id))}
           </div>
         </div>
 
-        {/* Right Panel — Node Detail */}
+        {/* Right Panel -- Node Detail */}
         <div className="flex flex-col overflow-hidden">
           {selectedNode ? (
             <>
@@ -235,12 +271,12 @@ export default function OntologyPage() {
                 <Card className="shadow-sm">
                   <CardHeader><CardTitle>설명 Description</CardTitle></CardHeader>
                   <CardContent>
-                    <p style={{ color: 'var(--text-primary)' }}>{selectedNode.description}</p>
+                    <p style={{ color: 'var(--text-primary)' }}>{selectedNode.description || '(설명 없음)'}</p>
                   </CardContent>
                 </Card>
 
                 {selectedNode.parent && (() => {
-                  const parentNode = mockNodes.find((n) => n.id === selectedNode.parent);
+                  const parentNode = nodes.find((n) => n.id === selectedNode.parent);
                   return parentNode ? (
                     <Card className="shadow-sm">
                       <CardHeader><CardTitle>상위 노드 Parent Node</CardTitle></CardHeader>
@@ -270,7 +306,7 @@ export default function OntologyPage() {
                     <CardContent>
                       <div className="space-y-2">
                         {selectedNode.children.map((childId) => {
-                          const childNode = mockNodes.find((n) => n.id === childId);
+                          const childNode = nodes.find((n) => n.id === childId);
                           return childNode ? (
                             <div
                               key={childId}
@@ -300,7 +336,7 @@ export default function OntologyPage() {
                     <CardContent>
                       <div className="space-y-2">
                         {selectedNode.relatedConcepts.map((relatedId) => {
-                          const relatedNode = mockNodes.find((n) => n.id === relatedId);
+                          const relatedNode = nodes.find((n) => n.id === relatedId);
                           return relatedNode ? (
                             <div
                               key={relatedId}

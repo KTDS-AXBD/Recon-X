@@ -78,3 +78,36 @@ export async function downloadSkill(id: string): Promise<Blob> {
   });
   return res.blob();
 }
+
+export interface McpTool {
+  name: string;
+  description: string;
+  inputSchema: {
+    type: string;
+    properties: Record<string, { type: string; description: string }>;
+    required: string[];
+  };
+}
+
+export interface McpAdapter {
+  name: string;
+  version: string;
+  description: string;
+  tools: McpTool[];
+  metadata: {
+    skillId: string;
+    domain: string;
+    trustLevel: string;
+    trustScore: number;
+    generatedAt: string;
+  };
+}
+
+export async function fetchSkillMcp(
+  id: string,
+): Promise<McpAdapter> {
+  const res = await fetch(`${API_BASE}/skills/${id}/mcp`, {
+    headers: HEADERS,
+  });
+  return res.json() as Promise<McpAdapter>;
+}

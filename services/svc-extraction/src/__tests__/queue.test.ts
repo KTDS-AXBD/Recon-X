@@ -151,21 +151,24 @@ describe("processQueueEvent", () => {
 
   it("inserts pending extraction record before processing", async () => {
     await processQueueEvent(validIngestionCompletedEvent, env, ctx);
-    const prepareCalls = vi.mocked(env.DB_EXTRACTION.prepare).mock.calls;
-    const insertCalls = prepareCalls.filter(
-      (call) => typeof call[0] === "string" && call[0].includes("INSERT INTO extractions"),
+    const prepareMock = env.DB_EXTRACTION.prepare as ReturnType<typeof vi.fn>;
+    const insertCalls = prepareMock.mock.calls.filter(
+      (call: unknown[]) => typeof call[0] === "string" && (call[0] as string).includes("INSERT INTO extractions"),
     );
     expect(insertCalls.length).toBeGreaterThan(0);
   });
 
-  it("emits extraction.completed event via waitUntil", async () => {
+  it("emits extraction.completed event via queue send", async () => {
     await processQueueEvent(validIngestionCompletedEvent, env, ctx);
-    expect(ctx.waitUntil).toHaveBeenCalled();
+    const sendMock = env.QUEUE_PIPELINE.send as ReturnType<typeof vi.fn>;
+    expect(sendMock).toHaveBeenCalledOnce();
+    const sentEvent = sendMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(sentEvent["type"]).toBe("extraction.completed");
   });
 
   it("returns 500 when svc-ingestion returns non-ok response", async () => {
     const failEnv = mockEnv();
-    vi.mocked(failEnv.SVC_INGESTION.fetch).mockResolvedValueOnce(
+    (failEnv.SVC_INGESTION.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
       new Response("Not Found", { status: 404 }),
     );
     const res = await processQueueEvent(validIngestionCompletedEvent, failEnv, ctx);
@@ -177,7 +180,7 @@ describe("processQueueEvent", () => {
 
   it("returns 500 when no chunks are returned", async () => {
     const emptyEnv = mockEnv();
-    vi.mocked(emptyEnv.SVC_INGESTION.fetch).mockResolvedValueOnce(
+    (emptyEnv.SVC_INGESTION.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
       new Response(JSON.stringify({ chunks: [] }), { status: 200 }),
     );
     const res = await processQueueEvent(validIngestionCompletedEvent, emptyEnv, ctx);
@@ -189,7 +192,7 @@ describe("processQueueEvent", () => {
 
   it("returns 500 when LLM call fails", async () => {
     const { callLlm } = await import("../llm/caller.js");
-    vi.mocked(callLlm).mockRejectedValueOnce(new Error("LLM timeout"));
+    (callLlm as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("LLM timeout"));
 
     const res = await processQueueEvent(validIngestionCompletedEvent, env, ctx);
     expect(res.status).toBe(500);
@@ -200,7 +203,7 @@ describe("processQueueEvent", () => {
 
   it("handles non-JSON LLM response gracefully", async () => {
     const { callLlm } = await import("../llm/caller.js");
-    vi.mocked(callLlm).mockResolvedValueOnce("not json");
+    (callLlm as ReturnType<typeof vi.fn>).mockResolvedValueOnce("not json");
 
     const res = await processQueueEvent(validIngestionCompletedEvent, env, ctx);
     expect(res.status).toBe(200);
@@ -285,7 +288,7 @@ describe("handleQueueBatch", () => {
 
   it("retries on extraction failure", async () => {
     const { callLlm } = await import("../llm/caller.js");
-    vi.mocked(callLlm).mockRejectedValueOnce(new Error("LLM error"));
+    (callLlm as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("LLM error"));
 
     const msg = createMessage(validIngestionCompletedEvent);
     const batch = createBatch([msg]);

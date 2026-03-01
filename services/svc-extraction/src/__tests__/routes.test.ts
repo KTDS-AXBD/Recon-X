@@ -175,21 +175,23 @@ describe("handleExtract", () => {
       env,
       ctx,
     );
-    const prepareCalls = vi.mocked(env.DB_EXTRACTION.prepare).mock.calls;
-    const insertCalls = prepareCalls.filter(
-      (call) => typeof call[0] === "string" && call[0].includes("INSERT INTO extractions"),
+    const prepareMock = env.DB_EXTRACTION.prepare as ReturnType<typeof vi.fn>;
+    const insertCalls = prepareMock.mock.calls.filter(
+      (call: unknown[]) => typeof call[0] === "string" && (call[0] as string).includes("INSERT INTO extractions"),
     );
     expect(insertCalls.length).toBeGreaterThan(0);
   });
 
-  it("emits extraction.completed event via queue", async () => {
+  it("emits extraction.completed event via queue send", async () => {
     await handleExtract(
       jsonReq({ documentId: "doc-1", chunks: ["text"] }),
       env,
       ctx,
     );
-    // waitUntil is called twice: once for DB update, once for queue send
-    expect(ctx.waitUntil).toHaveBeenCalledTimes(2);
+    const sendMock = env.QUEUE_PIPELINE.send as ReturnType<typeof vi.fn>;
+    expect(sendMock).toHaveBeenCalledOnce();
+    const sentEvent = sendMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(sentEvent["type"]).toBe("extraction.completed");
   });
 
   it("uses default tier of sonnet", async () => {
@@ -228,13 +230,13 @@ describe("handleExtract", () => {
       env,
       ctx,
     );
-    const prepareCalls = vi.mocked(env.DB_EXTRACTION.prepare).mock.calls;
-    expect(prepareCalls.length).toBeGreaterThan(0);
+    const prepareMock = env.DB_EXTRACTION.prepare as ReturnType<typeof vi.fn>;
+    expect(prepareMock.mock.calls.length).toBeGreaterThan(0);
   });
 
   it("handles non-JSON LLM response gracefully", async () => {
     const { callLlm } = await import("../llm/caller.js");
-    vi.mocked(callLlm).mockResolvedValueOnce("not valid json at all");
+    (callLlm as ReturnType<typeof vi.fn>).mockResolvedValueOnce("not valid json at all");
 
     const res = await handleExtract(
       jsonReq({ documentId: "doc-1", chunks: ["text"] }),
@@ -254,7 +256,7 @@ describe("handleExtract", () => {
 
   it("marks extraction as failed when LLM throws", async () => {
     const { callLlm } = await import("../llm/caller.js");
-    vi.mocked(callLlm).mockRejectedValueOnce(new Error("LLM timeout"));
+    (callLlm as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("LLM timeout"));
 
     const res = await handleExtract(
       jsonReq({ documentId: "doc-1", chunks: ["text"] }),
@@ -262,7 +264,7 @@ describe("handleExtract", () => {
       ctx,
     );
     expect(res.status).toBe(500);
-    // waitUntil should be called for the failed status update
+    // Failed status update is done via ctx.waitUntil (error path only)
     expect(ctx.waitUntil).toHaveBeenCalled();
   });
 });

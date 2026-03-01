@@ -96,17 +96,27 @@ export default {
 
         if (!resp.ok) {
           const body = await resp.text();
-          logger.error("Dispatch failed", {
-            type: event.type,
-            status: resp.status,
-            body: body.slice(0, 200),
-          });
+          throw new Error(
+            `Dispatch to target failed: ${resp.status} — ${body.slice(0, 200)}`,
+          );
         }
       });
 
       try {
-        ctx.waitUntil(Promise.allSettled(dispatches));
-        message.ack();
+        const results = await Promise.allSettled(dispatches);
+        const failures = results.filter((r) => r.status === "rejected");
+        if (failures.length > 0) {
+          for (const f of failures) {
+            logger.error("Dispatch failed", {
+              type: event.type,
+              eventId: event.eventId,
+              reason: (f as PromiseRejectedResult).reason,
+            });
+          }
+          message.retry();
+        } else {
+          message.ack();
+        }
       } catch (e) {
         logger.error("Dispatch error", { type: event.type, error: String(e) });
         message.retry();

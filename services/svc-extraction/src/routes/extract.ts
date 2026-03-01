@@ -76,32 +76,28 @@ export async function handleExtract(
     const entityCount = parsed.entities?.length ?? 0;
     const updatedAt = new Date().toISOString();
 
-    ctx.waitUntil(
-      env.DB_EXTRACTION.prepare(
-        `UPDATE extractions
-         SET status = 'completed', result_json = ?, process_node_count = ?,
-             entity_count = ?, updated_at = ?
-         WHERE id = ?`,
-      )
-        .bind(JSON.stringify(parsed), processNodeCount, entityCount, updatedAt, extractionId)
-        .run(),
-    );
+    await env.DB_EXTRACTION.prepare(
+      `UPDATE extractions
+       SET status = 'completed', result_json = ?, process_node_count = ?,
+           entity_count = ?, updated_at = ?
+       WHERE id = ?`,
+    )
+      .bind(JSON.stringify(parsed), processNodeCount, entityCount, updatedAt, extractionId)
+      .run();
 
     // Emit extraction.completed → triggers svc-policy via queue router
-    ctx.waitUntil(
-      env.QUEUE_PIPELINE.send({
-        eventId: crypto.randomUUID(),
-        occurredAt: new Date().toISOString(),
-        type: "extraction.completed",
-        payload: {
-          documentId,
-          extractionId,
-          organizationId,
-          processNodeCount,
-          entityCount,
-        },
-      }),
-    );
+    await env.QUEUE_PIPELINE.send({
+      eventId: crypto.randomUUID(),
+      occurredAt: new Date().toISOString(),
+      type: "extraction.completed",
+      payload: {
+        documentId,
+        extractionId,
+        organizationId,
+        processNodeCount,
+        entityCount,
+      },
+    });
 
     return ok({ extractionId, status: "completed", processNodeCount, entityCount });
   } catch (e) {

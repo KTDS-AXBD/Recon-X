@@ -541,7 +541,7 @@ describe("svc-queue-router queue handler — error handling", () => {
     ctx = mockCtx();
   });
 
-  it("still acks message when target service returns error status", async () => {
+  it("retries message when target service returns error status", async () => {
     // Target returns 500
     (env.SVC_INGESTION as unknown as { fetch: ReturnType<typeof vi.fn> }).fetch =
       vi.fn().mockResolvedValue(new Response("Internal Server Error", { status: 500 }));
@@ -551,9 +551,9 @@ describe("svc-queue-router queue handler — error handling", () => {
 
     await worker.queue(batch, env, ctx);
 
-    // Message is still acked because dispatch is async (waitUntil)
-    expect(msg.ack).toHaveBeenCalledOnce();
-    expect(msg.retry).not.toHaveBeenCalled();
+    // Message is retried because dispatch failed (await-then-ack pattern)
+    expect(msg.retry).toHaveBeenCalledOnce();
+    expect(msg.ack).not.toHaveBeenCalled();
   });
 
   it("logs error when target service returns non-ok status", async () => {
@@ -567,13 +567,6 @@ describe("svc-queue-router queue handler — error handling", () => {
 
     await worker.queue(batch, env, ctx);
 
-    // Wait for the dispatched promises to settle
-    const waitUntilMock = ctx.waitUntil as ReturnType<typeof vi.fn>;
-    if (waitUntilMock.mock.calls.length > 0) {
-      const promise = waitUntilMock.mock.calls[0]?.[0] as Promise<unknown>;
-      if (promise) await promise;
-    }
-
     // The logger outputs JSON to console.error for "error" level
     expect(consoleSpy).toHaveBeenCalled();
     const errorCalls = consoleSpy.mock.calls;
@@ -586,13 +579,16 @@ describe("svc-queue-router queue handler — error handling", () => {
     consoleSpy.mockRestore();
   });
 
-  it("uses ctx.waitUntil for async dispatch", async () => {
+  it("awaits dispatch completion before acking message", async () => {
     const msg = makeMessage(makeEvent("document.uploaded"));
     const batch = makeBatch([msg]);
 
     await worker.queue(batch, env, ctx);
 
-    expect(ctx.waitUntil).toHaveBeenCalled();
+    // Message should be acked (dispatch succeeded)
+    expect(msg.ack).toHaveBeenCalledOnce();
+    // ctx.waitUntil should NOT be used for dispatches (await pattern instead)
+    expect(ctx.waitUntil).not.toHaveBeenCalled();
   });
 });
 

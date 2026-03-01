@@ -12,6 +12,8 @@ import { buildExtractionPrompt } from "../prompts/structure.js";
 import { callLlm } from "../llm/caller.js";
 import type { Env } from "../env.js";
 
+const logger = createLogger("svc-extraction:queue");
+
 interface ExtractionResult {
   processes: Array<{ name: string; description: string; steps: string[] }>;
   entities: Array<{ name: string; type: string; attributes: string[] }>;
@@ -95,32 +97,31 @@ async function runExtraction(
   const entityCount = parsed.entities?.length ?? 0;
   const updatedAt = new Date().toISOString();
 
-  ctx.waitUntil(
-    env.DB_EXTRACTION.prepare(
-      `UPDATE extractions
-       SET status = 'completed', result_json = ?, process_node_count = ?,
-           entity_count = ?, updated_at = ?
-       WHERE id = ?`,
-    )
-      .bind(JSON.stringify(parsed), processNodeCount, entityCount, updatedAt, extractionId)
-      .run(),
-  );
+  await env.DB_EXTRACTION.prepare(
+    `UPDATE extractions
+     SET status = 'completed', result_json = ?, process_node_count = ?,
+         entity_count = ?, updated_at = ?
+     WHERE id = ?`,
+  )
+    .bind(JSON.stringify(parsed), processNodeCount, entityCount, updatedAt, extractionId)
+    .run();
 
   // Emit extraction.completed → triggers svc-policy via queue router
-  ctx.waitUntil(
-    env.QUEUE_PIPELINE.send({
-      eventId: crypto.randomUUID(),
-      occurredAt: new Date().toISOString(),
-      type: "extraction.completed",
-      payload: {
-        documentId,
-        extractionId,
-        organizationId,
-        processNodeCount,
-        entityCount,
-      },
-    }),
-  );
+  // Must be awaited — ctx.waitUntil() can silently drop if Worker terminates early
+  await env.QUEUE_PIPELINE.send({
+    eventId: crypto.randomUUID(),
+    occurredAt: new Date().toISOString(),
+    type: "extraction.completed",
+    payload: {
+      documentId,
+      extractionId,
+      organizationId,
+      processNodeCount,
+      entityCount,
+    },
+  });
+
+  logger.info("Emitted extraction.completed event", { extractionId, documentId, organizationId });
 
   return { extractionId, processNodeCount, entityCount };
 }
@@ -134,8 +135,6 @@ export async function processQueueEvent(
   env: Env,
   ctx: ExecutionContext,
 ): Promise<Response> {
-  const logger = createLogger("svc-extraction:queue");
-
   const parseResult = PipelineEventSchema.safeParse(body);
   if (!parseResult.success) {
     logger.warn("Invalid pipeline event", { error: parseResult.error.message });
@@ -172,8 +171,6 @@ export async function handleQueueBatch(
   env: Env,
   ctx: ExecutionContext,
 ): Promise<void> {
-  const logger = createLogger("svc-extraction:queue");
-
   for (const message of batch.messages) {
     const parseResult = PipelineEventSchema.safeParse(message.body);
     if (!parseResult.success) {

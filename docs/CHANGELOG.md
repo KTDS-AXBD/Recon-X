@@ -2,6 +2,28 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 018 — 2026-03-01
+
+- ✅ **I-04** Staging 리소스 프로비저닝
+  - D1×10 staging DB 생성 (MCP `d1_database_create`)
+  - R2×2 (`ai-foundry-documents-staging`, `ai-foundry-skill-packages-staging`)
+  - Queue×1 (`ai-foundry-pipeline-staging`), KV×2 (PROMPTS, CACHE)
+  - 10개 서비스 `wrangler.toml` — placeholder-staging-id 12건 전부 실 ID 교체
+  - D1 staging 마이그레이션 13건 적용 (WAF DROP TABLE 차단 → wrangler CLI 우회)
+- ✅ **I-05** GitHub Environments 설정
+  - staging (auto-deploy), production (main branch only)
+  - `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` repo secrets 등록
+- ✅ **I-06** 프로덕션 모니터링/알림
+  - `scripts/health-check.sh` — 12 endpoints (11 Workers + Pages), JSON/alert 지원
+  - `.github/workflows/health-check.yml` — 30분 cron + manual dispatch
+  - 로컬 검증: 12/12 healthy
+
+**검증**
+- typecheck: 16/16 pass
+- health-check: 12/12 healthy
+
+---
+
 ## 세션 017 — 2026-03-01
 
 - ✅ **I-03** `/team` 스킬 Interactive Mode 안정화

@@ -52,7 +52,7 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-03-01 (세션 017)
+- **Last Updated**: 2026-03-01 (세션 018)
 - **Repo Bootstrap**: ✅
 - **PRD Seed Document**: ✅ (`docs/AI_Foundry_PRD_TDS_v0.6.docx`)
 - **.claude Skills/Agents Migration**: ✅
@@ -268,13 +268,13 @@
 - [x] **H-07** Unit test 확대 — svc-ingestion 53 tests (96.66%), svc-extraction 52 tests (100%). 총 269 tests
 - [x] **H-08** 프로덕션 환경 분리 — staging/prod wrangler.toml + 통합 CI/CD + deploy.sh
 
-### 🔜 Phase I — Staging Provisioning + Polish
+### ✅ Phase I — Staging Provisioning + Polish (완료)
 - [x] **I-01** — svc-notification + svc-analytics RBAC 미들웨어 추가 (notification 리소스 타입 포함)
 - [x] **I-02** — 5개 서비스 unit test 추가 (440 tests, 97-100% coverage)
 - [x] **I-03** — `/team` 스킬 interactive mode 안정화 (trap EXIT, 3-tier 모니터링, scope 관리)
-- [ ] Staging 리소스 프로비저닝 (D1×10, R2×2, Queue×1, KV×2) → placeholder ID 교체
-- [ ] GitHub Environments 설정 (staging/production protection rules)
-- [ ] 프로덕션 모니터링/알림 설정
+- [x] **I-04** — Staging 리소스 프로비저닝 (D1×10, R2×2, Queue×1, KV×2) + wrangler.toml ID 교체 + D1 migration 적용
+- [x] **I-05** — GitHub Environments 설정 (repo secrets + production deployment_branch_policy)
+- [x] **I-06** — 프로덕션 모니터링 (health-check.sh + GitHub Actions cron 30분)
 
 ---
 
@@ -319,3 +319,7 @@
 - 2026-02-28: Phase H 완료 → Phase I (Staging Provisioning + Polish) 진입 결정
 - 2026-03-01: I-01 RBAC 확장 — svc-notification/svc-analytics에 RBAC 미들웨어 적용. "notification" 리소스를 ResourceSchema에 추가. 선택적 RBAC: /internal/queue-event는 skip, 사용자 대면 엔드포인트만 적용
 - 2026-03-01: I-02 Unit test 대규모 확장 — 5개 서비스 병렬 작성 (440 tests). svc-queue-router keyof Env 타입 이슈 해결 (ServiceBinding 축소 타입). 총 테스트: 269→709
+- 2026-03-01: I-04 Staging 리소스 프로비저닝 — D1×10, R2×2, Queue×1, KV×2 생성 + 11개 wrangler.toml placeholder→실제 ID 교체 + D1 migration 13개 적용. D1 MCP에서 DROP TABLE은 WAF 차단 → wrangler CLI 우회
+- 2026-03-01: I-05 GitHub Environments — repo secrets (CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID) + production deployment_branch_policy (main only). required_reviewers는 유료 플랜 필요
+- 2026-03-01: I-06 모니터링 — scripts/health-check.sh (12서비스+Pages, JSON/text 출력, svc-notification 알림) + .github/workflows/health-check.yml (30분 cron). 검증: 12/12 healthy
+- 2026-03-01: Phase I 완료

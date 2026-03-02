@@ -4,7 +4,9 @@
 
 ## 세션 036 — 2026-03-02
 
-**Stage 2 추출 품질 개선 — 동적 LLM 티어 + 청크 전략 최적화** (`/team` 2-worker 병렬):
+**Phase 2-C Staging 배치 E2E 10/10 PASS + 품질 메트릭 수집 확인**:
+
+*Part 1: Stage 2 추출 품질 개선* (`/team` 2-worker 병렬):
 - ✅ svc-extraction: 동적 LLM 티어 선택 (haiku/sonnet) — 10K 문자 이상이면 sonnet 사용
 - ✅ svc-extraction: 프롬프트 청크 예산 확대 (MAX_CHUNK_CHARS 4K→10K, MAX_TOTAL_CHARS 60K)
 - ✅ svc-extraction: 비례 축소 전략으로 긴 문서도 골고루 포함 (최소 500자 보장)
@@ -12,14 +14,25 @@
 - ✅ packages/types: fileType에 "txt" 추가 (Phase 2-C 배치 문서 지원)
 - ✅ scripts/test-e2e-batch.sh: 합성 문서 text/plain 업로드 수정
 - ✅ .gitignore: test-docs/, wireframe-*.png, .bkit/ 정리
-- ✅ Production + Staging 배포: svc-extraction, svc-ingestion
+
+*Part 2: Staging 배포 + 배치 E2E*:
+- ✅ Staging 배포: svc-skill (OpenAPI+MCP), svc-queue-router (Error fix), svc-ingestion (txt 지원)
+- ✅ svc-ingestion: text/plain 파일 업로드 지원 (ALLOWED_TYPES + MIME_MAP)
+- ✅ svc-ingestion: 문서 분류기 스코어링 개선 (multi-keyword + fileType hints)
+- ✅ svc-ingestion: queue 에러 시 error_message DB 저장 (디버깅 용이)
+- ✅ app-web: 분석 페이지 에러 핸들링 + "parsed" 상태 + 로딩 상태
+- ✅ scripts/test-e2e-batch.sh: curl timeout + approve 에러 복구
+- ✅ **배치 E2E 10/10 PASS** — 10개 퇴직연금 합성 문서 전체 통과
+- ✅ 품질 메트릭 수집: parsing 8 docs, extraction 6, validity 100%, avg 1.1초/10.0초
 
 **검증 결과**:
 - ✅ typecheck 16/16 PASS
-- ✅ svc-extraction tests 56/56 PASS
-- ✅ Production health: svc-extraction 200, svc-ingestion 200
+- ✅ Staging health 12/12
+- ✅ Batch E2E: 10/10 PASS (100%), batch ID `batch-phase-2c-20260302-173819`
 
-**배경**: Production DB 분석 결과 84.6% 추출이 빈 결과 (13건 중 11건). 원인: haiku 티어 고정 + 95.7% 청크 잘림 + 무음 JSON 실패
+**발견사항**:
+- svc-policy의 organizationId가 "default"로 고정 — 배치의 org-batch-* org와 불일치 → 품질 대시보드에서 policy 메트릭 0으로 표시
+- 파이프라인 비동기 처리 시간: ingestion ~1초, extraction ~10초, 전체 15초+ 필요
 
 ## 세션 035 — 2026-03-02
 

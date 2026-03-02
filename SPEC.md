@@ -52,11 +52,12 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-03-02 (세션 035)
-- **Current Phase**: Phase 2-B 완료 → Phase 2-C 진행중
-- **Production E2E**: ✅ 8/8 PASS (synthetic) + 7/7 PASS (real-doc) — Phase 2-B 배포 후 검증
-- **Phase 3 Prep**: ✅ MCP 2024-11-05 protocol + OpenAPI 3.0 adapter
-- **Phase 2-C Test Docs**: ✅ 10개 퇴직연금 합성 문서 세트 준비
+- **Last Updated**: 2026-03-02 (세션 036)
+- **Current Phase**: Phase 2-C 진행중 (Staging 배치 E2E 완료, Production 배포 대기)
+- **Production E2E**: ✅ 8/8 PASS (synthetic) + 7/7 PASS (real-doc) — Phase 2-B 기준
+- **Staging Batch E2E**: ✅ 10/10 PASS — Phase 2-C 퇴직연금 합성 문서 배치 테스트
+- **Phase 3 Prep**: ✅ MCP 2024-11-05 protocol + OpenAPI 3.0 adapter (Staging 배포 완료)
+- **Phase 2-C Test Docs**: ✅ 10개 퇴직연금 합성 문서 세트 준비 + 배치 실행 완료
 - **Frontend API**: ✅ 10/10 페이지 API 연동 완료 (Settings Health 모니터링 + 알림 연동 포함)
 - **Repo Bootstrap**: ✅
 - **PRD Seed Document**: ✅ (`docs/AI_Foundry_PRD_TDS_v0.6.docx`)

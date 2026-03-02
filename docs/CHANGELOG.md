@@ -11,6 +11,10 @@
   2. 스마트 청크 선택: head 3 + word_count 상위 17개 (naive slice 대체)
   3. maxTokens 2048→4096 (JSON 잘림 방지)
 - ✅ 확장된 entity 유형: system, interface, table 추가
+- ✅ CI/CD 버그 수정 2건:
+  1. multi-commit push 시 변경 감지 누락 (`HEAD~1` → `github.event.before` 비교)
+  2. production 배포 시 default env 미배포 (service binding이 default env 참조)
+- ✅ Production + default env 배포 검증 완료 (MCP 코드 확인)
 - ✅ 60/60 tests PASS, typecheck 16/16 PASS
 
 ## 세션 043 — 2026-03-02

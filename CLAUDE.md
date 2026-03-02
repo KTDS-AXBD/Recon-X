@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Full product requirements and technical design are in `docs/AI_Foundry_PRD_TDS_v0.6.docx`. This is the authoritative reference for all design decisions.
 
-> **Status**: Phase 1 완료. 11 Workers 전체 구현+배포, 709 tests, staging/production 환경 분리 완료. 다음 단계: Phase 2 — 실제 퇴직연금 문서 투입 파일럿.
+> **Status**: Phase 1 완료. 11 Workers 전체 구현+배포, 769 tests, staging/production 환경 분리 완료. 다음 단계: Phase 2 — 실제 퇴직연금 문서 투입 파일럿.
 
 ---
 

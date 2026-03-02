@@ -2,6 +2,24 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 038 — 2026-03-02
+**Production E2E 파이프라인 테스트 검증**:
+- ✅ E2E 전체 테스트 769/769 PASS (45 파일, 11 서비스)
+- ✅ 세션 037 누락 CHANGELOG 보완 포함
+
+**검증 결과**:
+- ✅ tests 769/769 PASS (Turborepo 전량 캐시)
+
+## 세션 037 — 2026-03-02
+**문서 파싱 프로세스 점검 — classifier 스코어링 + Pages proxy + types 보강**:
+- ✅ svc-ingestion: classifier 단어 경계 매칭(word-boundary) 도입 — 짧은 키워드 오탐 방지
+- ✅ svc-ingestion: 테스트 업데이트 (스코어링 변경 + txt 지원 반영)
+- ✅ app-web: Pages proxy URL 수정 — default 환경이 아닌 `-production` Worker URL로 연결
+- ✅ packages/types: Stage 3-5 파이프라인 이벤트 스키마에 organizationId 추가
+
+**검증 결과**:
+- ✅ typecheck / lint / tests PASS
+
 ## 세션 036 — 2026-03-02
 
 **Phase 2-C Staging 배치 E2E 10/10 PASS + 품질 메트릭 수집 확인**:

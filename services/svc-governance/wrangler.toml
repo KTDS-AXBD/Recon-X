@@ -3,6 +3,10 @@ main = "src/index.ts"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+[dev]
+port = 8708
+inspector_port = 9208
+
 [[d1_databases]]
 binding = "DB_GOVERNANCE"
 database_name = "db-governance"

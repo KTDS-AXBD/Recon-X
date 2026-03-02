@@ -3,6 +3,10 @@ main = "src/index.ts"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+[dev]
+port = 8701
+inspector_port = 9201
+
 [[d1_databases]]
 binding = "DB_INGESTION"
 database_name = "db-ingestion"

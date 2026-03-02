@@ -13,6 +13,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "dev": "turbo run dev --parallel",
+    "dev:local": "bash scripts/dev-local.sh",
     "lint": "turbo run lint",
     "clean": "turbo run clean && rm -rf node_modules"
   },

@@ -3,6 +3,10 @@ main = "src/index.ts"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+[dev]
+port = 8707
+inspector_port = 9207
+
 [[d1_databases]]
 binding = "DB_SECURITY"
 database_name = "db-security"

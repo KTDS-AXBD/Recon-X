@@ -3,6 +3,10 @@ main = "src/index.ts"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+[dev]
+port = 8711
+inspector_port = 9211
+
 # Sole consumer of the pipeline event bus
 [[queues.consumers]]
 queue = "ai-foundry-pipeline"

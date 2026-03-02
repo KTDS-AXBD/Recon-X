@@ -3,6 +3,10 @@ main = "src/index.ts"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+[dev]
+port = 8706
+inspector_port = 9206
+
 # D1 — cost/usage logging
 [[d1_databases]]
 binding = "DB_LLM"

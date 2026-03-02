@@ -158,7 +158,7 @@ export async function handleCreateSkill(
       trustScore: trust.score,
     },
   };
-  ctx.waitUntil(env.QUEUE_PIPELINE.send(event));
+  await env.QUEUE_PIPELINE.send(event);
 
   logger.info("Skill package created", { skillId, domain, policyCount: policies.length });
 

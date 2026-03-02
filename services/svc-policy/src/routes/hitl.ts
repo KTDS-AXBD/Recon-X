@@ -87,36 +87,32 @@ export async function handleApprovePolicy(
   const now = new Date().toISOString();
   const actionId = crypto.randomUUID();
 
-  // Update D1 projections (non-blocking)
-  ctx.waitUntil(
-    Promise.all([
-      env.DB_POLICY.prepare(
-        "UPDATE policies SET status = 'approved', trust_level = 'reviewed', updated_at = ? WHERE policy_id = ?",
-      ).bind(now, policyId).run(),
-      env.DB_POLICY.prepare(
-        "UPDATE hitl_sessions SET status = 'completed', completed_at = ? WHERE session_id = ?",
-      ).bind(now, sessionId).run(),
-      env.DB_POLICY.prepare(
-        "INSERT INTO hitl_actions (action_id, session_id, reviewer_id, action, comment, modified_fields, acted_at) VALUES (?, ?, ?, 'approve', ?, NULL, ?)",
-      ).bind(actionId, sessionId, reviewerId, comment ?? null, now).run(),
-    ]),
-  );
+  // Update D1 projections — must complete before response
+  await Promise.all([
+    env.DB_POLICY.prepare(
+      "UPDATE policies SET status = 'approved', trust_level = 'reviewed', updated_at = ? WHERE policy_id = ?",
+    ).bind(now, policyId).run(),
+    env.DB_POLICY.prepare(
+      "UPDATE hitl_sessions SET status = 'completed', completed_at = ? WHERE session_id = ?",
+    ).bind(now, sessionId).run(),
+    env.DB_POLICY.prepare(
+      "INSERT INTO hitl_actions (action_id, session_id, reviewer_id, action, comment, modified_fields, acted_at) VALUES (?, ?, ?, 'approve', ?, NULL, ?)",
+    ).bind(actionId, sessionId, reviewerId, comment ?? null, now).run(),
+  ]);
 
-  // Emit PolicyApprovedEvent
-  ctx.waitUntil(
-    env.QUEUE_PIPELINE.send({
-      eventId: crypto.randomUUID(),
-      occurredAt: now,
-      type: "policy.approved" as const,
-      payload: {
-        policyId,
-        hitlSessionId: sessionId,
-        approvedBy: reviewerId,
-        approvedAt: now,
-        policyCount: 1,
-      },
-    }),
-  );
+  // Emit PolicyApprovedEvent — must be awaited for reliable pipeline delivery
+  await env.QUEUE_PIPELINE.send({
+    eventId: crypto.randomUUID(),
+    occurredAt: now,
+    type: "policy.approved" as const,
+    payload: {
+      policyId,
+      hitlSessionId: sessionId,
+      approvedBy: reviewerId,
+      approvedAt: now,
+      policyCount: 1,
+    },
+  });
 
   logger.info("Policy approved", { policyId, sessionId, reviewerId });
   return ok({ policyId, status: "approved" });
@@ -209,35 +205,31 @@ export async function handleModifyPolicy(
   }
   bindings.push(policyId);
 
-  ctx.waitUntil(
-    Promise.all([
-      env.DB_POLICY.prepare(
-        `UPDATE policies SET ${setClauses.join(", ")} WHERE policy_id = ?`,
-      ).bind(...bindings).run(),
-      env.DB_POLICY.prepare(
-        "UPDATE hitl_sessions SET status = 'completed', completed_at = ? WHERE session_id = ?",
-      ).bind(now, sessionId).run(),
-      env.DB_POLICY.prepare(
-        "INSERT INTO hitl_actions (action_id, session_id, reviewer_id, action, comment, modified_fields, acted_at) VALUES (?, ?, ?, 'modify', ?, ?, ?)",
-      ).bind(actionId, sessionId, reviewerId, comment ?? null, JSON.stringify(modifiedFields), now).run(),
-    ]),
-  );
+  await Promise.all([
+    env.DB_POLICY.prepare(
+      `UPDATE policies SET ${setClauses.join(", ")} WHERE policy_id = ?`,
+    ).bind(...bindings).run(),
+    env.DB_POLICY.prepare(
+      "UPDATE hitl_sessions SET status = 'completed', completed_at = ? WHERE session_id = ?",
+    ).bind(now, sessionId).run(),
+    env.DB_POLICY.prepare(
+      "INSERT INTO hitl_actions (action_id, session_id, reviewer_id, action, comment, modified_fields, acted_at) VALUES (?, ?, ?, 'modify', ?, ?, ?)",
+    ).bind(actionId, sessionId, reviewerId, comment ?? null, JSON.stringify(modifiedFields), now).run(),
+  ]);
 
   // Emit PolicyApprovedEvent (modify = approve with changes)
-  ctx.waitUntil(
-    env.QUEUE_PIPELINE.send({
-      eventId: crypto.randomUUID(),
-      occurredAt: now,
-      type: "policy.approved" as const,
-      payload: {
-        policyId,
-        hitlSessionId: sessionId,
-        approvedBy: reviewerId,
-        approvedAt: now,
-        policyCount: 1,
-      },
-    }),
-  );
+  await env.QUEUE_PIPELINE.send({
+    eventId: crypto.randomUUID(),
+    occurredAt: now,
+    type: "policy.approved" as const,
+    payload: {
+      policyId,
+      hitlSessionId: sessionId,
+      approvedBy: reviewerId,
+      approvedAt: now,
+      policyCount: 1,
+    },
+  });
 
   logger.info("Policy modified and approved", { policyId, sessionId, reviewerId, modifiedFields });
   return ok({ policyId, status: "approved", modifiedFields });
@@ -306,19 +298,17 @@ export async function handleRejectPolicy(
   const actionId = crypto.randomUUID();
 
   // Update D1 projections — no pipeline event for rejections
-  ctx.waitUntil(
-    Promise.all([
-      env.DB_POLICY.prepare(
-        "UPDATE policies SET status = 'rejected', updated_at = ? WHERE policy_id = ?",
-      ).bind(now, policyId).run(),
-      env.DB_POLICY.prepare(
-        "UPDATE hitl_sessions SET status = 'completed', completed_at = ? WHERE session_id = ?",
-      ).bind(now, sessionId).run(),
-      env.DB_POLICY.prepare(
-        "INSERT INTO hitl_actions (action_id, session_id, reviewer_id, action, comment, modified_fields, acted_at) VALUES (?, ?, ?, 'reject', ?, NULL, ?)",
-      ).bind(actionId, sessionId, reviewerId, comment ?? null, now).run(),
-    ]),
-  );
+  await Promise.all([
+    env.DB_POLICY.prepare(
+      "UPDATE policies SET status = 'rejected', updated_at = ? WHERE policy_id = ?",
+    ).bind(now, policyId).run(),
+    env.DB_POLICY.prepare(
+      "UPDATE hitl_sessions SET status = 'completed', completed_at = ? WHERE session_id = ?",
+    ).bind(now, sessionId).run(),
+    env.DB_POLICY.prepare(
+      "INSERT INTO hitl_actions (action_id, session_id, reviewer_id, action, comment, modified_fields, acted_at) VALUES (?, ?, ?, 'reject', ?, NULL, ?)",
+    ).bind(actionId, sessionId, reviewerId, comment ?? null, now).run(),
+  ]);
 
   logger.info("Policy rejected", { policyId, sessionId, reviewerId });
   return ok({ policyId, status: "rejected" });

@@ -281,7 +281,7 @@ export async function processQueueEvent(
       trustScore: trust.score,
     },
   };
-  ctx.waitUntil(env.QUEUE_PIPELINE.send(outEvent));
+  await env.QUEUE_PIPELINE.send(outEvent);
 
   logger.info("Queue-triggered skill packaging completed", {
     policyId,

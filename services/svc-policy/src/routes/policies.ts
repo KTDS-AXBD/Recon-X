@@ -157,7 +157,7 @@ export async function handleInferPolicies(
         candidateCount: candidates.length,
       },
     };
-    ctx.waitUntil(env.QUEUE_PIPELINE.send(event));
+    await env.QUEUE_PIPELINE.send(event);
   }
 
   logger.info("Policy inference completed", {

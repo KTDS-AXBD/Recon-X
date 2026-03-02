@@ -214,7 +214,7 @@ export async function handleNormalize(
       ...(neo4jGraphId !== null ? { skosGraphId: neo4jGraphId } : {}),
     },
   };
-  ctx.waitUntil(env.QUEUE_PIPELINE.send(event));
+  await env.QUEUE_PIPELINE.send(event);
 
   logger.info("Ontology normalization completed", { ontologyId, policyId, termCount });
 

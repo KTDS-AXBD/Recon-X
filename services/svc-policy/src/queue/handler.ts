@@ -273,7 +273,7 @@ export async function processQueueEvent(
         candidateCount: candidates.length,
       },
     };
-    ctx.waitUntil(env.QUEUE_PIPELINE.send(outEvent));
+    await env.QUEUE_PIPELINE.send(outEvent);
   }
 
   logger.info("Queue-triggered policy inference completed", {

@@ -258,7 +258,7 @@ export async function processQueueEvent(
       ...(neo4jGraphId !== null ? { skosGraphId: neo4jGraphId } : {}),
     },
   };
-  ctx.waitUntil(env.QUEUE_PIPELINE.send(outEvent));
+  await env.QUEUE_PIPELINE.send(outEvent);
 
   logger.info("Queue-triggered ontology normalization completed", {
     policyId,

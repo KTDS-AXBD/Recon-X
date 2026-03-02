@@ -2,6 +2,19 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 030 — 2026-03-02
+
+**Trust 페이지 4개 컴포넌트 API 연동 완료**:
+- ✅ svc-policy: GET /policies/hitl/stats (HITL 통계 — 완료율/수정율/반려율/리뷰어 리더보드)
+- ✅ svc-policy: GET /policies/quality-trend (일별 AI vs HITL 정확도 추이)
+- ✅ svc-policy: GET /policies/reasoning-analysis (정책 충돌/갭/유사도 분석)
+- ✅ svc-governance: GET /golden-tests (골든테스트 이력)
+- ✅ 프론트엔드 4개 컴포넌트 mock→props 리팩토링 + trust.tsx 5-API 병렬 호출
+- ✅ Pages Functions 프록시 golden-tests 라우트 추가
+
+**검증 결과**:
+- ✅ typecheck 16/16 PASS
+
 ## 세션 029 — 2026-03-01
 
 **Production E2E 8/8 PASS — 5-Stage 파이프라인 실증 완료**:

@@ -107,10 +107,11 @@ export default {
         const failures = results.filter((r) => r.status === "rejected");
         if (failures.length > 0) {
           for (const f of failures) {
+            const reason = (f as PromiseRejectedResult).reason;
             logger.error("Dispatch failed", {
               type: event.type,
               eventId: event.eventId,
-              reason: (f as PromiseRejectedResult).reason,
+              reason: reason instanceof Error ? reason.message : String(reason),
             });
           }
           message.retry();

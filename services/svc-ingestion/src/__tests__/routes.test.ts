@@ -140,7 +140,7 @@ describe("handleUpload", () => {
   });
 
   it("returns 400 for unsupported file type", async () => {
-    const file = new File(["test"], "bad.txt", { type: "text/plain" });
+    const file = new File(["test"], "bad.zip", { type: "application/zip" });
     const req = createMultipartRequest(file);
     const res = await handleUpload(req, env, ctx);
     expect(res.status).toBe(400);
@@ -339,9 +339,10 @@ describe("svc-ingestion router (index.ts)", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const res = await worker.fetch!(req as any, env, ctx);
     expect(res.status).toBe(200);
-    const body = await res.json() as { documentId: string; chunks: Array<{ chunk_id: string }> };
-    expect(body.documentId).toBe("doc-1");
-    expect(body.chunks).toHaveLength(1);
-    expect(body.chunks[0]?.chunk_id).toBe("c-1");
+    const body = await res.json() as { success: boolean; data: { documentId: string; chunks: Array<{ chunk_id: string }> } };
+    expect(body.success).toBe(true);
+    expect(body.data.documentId).toBe("doc-1");
+    expect(body.data.chunks).toHaveLength(1);
+    expect(body.data.chunks[0]?.chunk_id).toBe("c-1");
   });
 });

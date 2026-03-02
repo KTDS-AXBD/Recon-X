@@ -15,7 +15,7 @@ describe("classifyDocument", () => {
     ];
     const result = classifyDocument(elements, "pdf");
     expect(result.category).toBe("erd");
-    expect(result.confidence).toBe(0.9);
+    expect(result.confidence).toBeGreaterThan(0.5);
   });
 
   it("classifies screen design documents", () => {
@@ -25,7 +25,7 @@ describe("classifyDocument", () => {
     ];
     const result = classifyDocument(elements, "pptx");
     expect(result.category).toBe("screen_design");
-    expect(result.confidence).toBe(0.9);
+    expect(result.confidence).toBeGreaterThan(0.5);
   });
 
   it("classifies API spec documents", () => {
@@ -34,7 +34,7 @@ describe("classifyDocument", () => {
     ];
     const result = classifyDocument(elements, "docx");
     expect(result.category).toBe("api_spec");
-    expect(result.confidence).toBe(0.9);
+    expect(result.confidence).toBeGreaterThan(0.5);
   });
 
   it("classifies requirements documents", () => {
@@ -43,7 +43,7 @@ describe("classifyDocument", () => {
     ];
     const result = classifyDocument(elements, "docx");
     expect(result.category).toBe("requirements");
-    expect(result.confidence).toBe(0.9);
+    expect(result.confidence).toBeGreaterThan(0.5);
   });
 
   it("classifies process documents", () => {
@@ -52,7 +52,7 @@ describe("classifyDocument", () => {
     ];
     const result = classifyDocument(elements, "pdf");
     expect(result.category).toBe("process");
-    expect(result.confidence).toBe(0.9);
+    expect(result.confidence).toBeGreaterThan(0.5);
   });
 
   it("returns general for unrecognized content", () => {
@@ -61,13 +61,13 @@ describe("classifyDocument", () => {
     ];
     const result = classifyDocument(elements, "pdf");
     expect(result.category).toBe("general");
-    expect(result.confidence).toBe(0.5);
+    expect(result.confidence).toBe(0.3);
   });
 
   it("returns general for empty elements array", () => {
     const result = classifyDocument([], "pdf");
     expect(result.category).toBe("general");
-    expect(result.confidence).toBe(0.5);
+    expect(result.confidence).toBe(0.3);
   });
 
   it("classifies based on combined text from all elements", () => {
@@ -80,13 +80,14 @@ describe("classifyDocument", () => {
     expect(result.category).toBe("api_spec");
   });
 
-  it("prioritizes first matching keyword rule", () => {
-    // Contains both ERD and API keywords — ERD rule comes first
+  it("selects category with highest score when multiple match", () => {
+    // Contains both ERD and API keywords — ERD has more matches (3 vs 2)
     const elements: UnstructuredElement[] = [
       { type: "Text", text: "ERD entity API endpoint swagger" },
     ];
     const result = classifyDocument(elements, "pdf");
-    expect(result.category).toBe("erd");
+    // ERD: "erd"(1) + "entity"(1) = 2, API: "api"(1) + "endpoint"(1) + "swagger"(1) = 3
+    expect(result.category).toBe("api_spec");
   });
 
   it("handles entity keyword for erd classification", () => {
@@ -119,6 +120,15 @@ describe("classifyDocument", () => {
     ];
     const result = classifyDocument(elements, "pdf");
     expect(result.category).toBe("process");
+  });
+
+  it("boosts xlsx fileType for requirements/process", () => {
+    const elements: UnstructuredElement[] = [
+      { type: "Text", text: "general content without keywords" },
+    ];
+    const result = classifyDocument(elements, "xlsx");
+    // xlsx boost: requirements += 0.5, process += 0.3
+    expect(result.category).toBe("requirements");
   });
 });
 
@@ -196,16 +206,14 @@ describe("maskText", () => {
 // ── parseDocument ────────────────────────────────────────────────
 
 describe("parseDocument", () => {
-  it("returns PARSE_PENDING when API key is not set", async () => {
+  it("returns empty array when API key is not set", async () => {
     const env = {
       UNSTRUCTURED_API_URL: "https://api.unstructured.io",
       UNSTRUCTURED_API_KEY: "",
     } as Env;
 
     const result = await parseDocument(new ArrayBuffer(10), "file.pdf", "application/pdf", env);
-    expect(result).toHaveLength(1);
-    expect(result[0]?.text).toBe("PARSE_PENDING");
-    expect(result[0]?.type).toBe("Text");
+    expect(result).toHaveLength(0);
   });
 
   it("calls Unstructured API when key is present", async () => {

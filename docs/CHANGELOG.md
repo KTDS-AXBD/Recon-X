@@ -2,6 +2,21 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 035 — 2026-03-02
+
+**로컬 개발 환경 + 프로덕션 문서 파싱 파이프라인 수정**:
+- ✅ svc-queue-router: Error 객체 JSON 직렬화 버그 수정 (`reason: {}` → 실제 에러 메시지)
+- ✅ svc-queue-router production: `INTERNAL_API_SECRET` 값 불일치 수정 (`e2e-test-secret-2026`으로 통일)
+- ✅ db-ingestion production: `0002_chunks.sql` 마이그레이션 적용 (`document_chunks` 테이블 생성)
+- ✅ svc-skill: OpenAPI 3.0 어댑터 엔드포인트 추가 (`GET /skills/:id/openapi`)
+- ✅ svc-skill: MCP 어댑터 2024-11-05 프로토콜 준수 (protocolVersion, capabilities, serverInfo, instructions, annotations)
+- ✅ batch E2E 스크립트: `--phase`, `--dry-run`, `--help` 옵션 + JSON 결과 파일 생성
+- ✅ 프로덕션 문서 파싱 성공: 요구사항정의서(264KB xlsx) → 13개 청크 추출, status: `parsed`
+
+**검증 결과**:
+- ✅ typecheck + lint 통과
+- ✅ Queue 파이프라인 E2E: Upload → Queue → svc-queue-router → svc-ingestion → Unstructured.io → chunks → parsed
+
 ## 세션 034 — 2026-03-02
 
 **Phase 2-B 배포 + Settings API 연동 + 실문서 E2E 검증**:

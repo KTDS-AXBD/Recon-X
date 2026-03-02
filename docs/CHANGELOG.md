@@ -2,6 +2,19 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 043 — 2026-03-02
+**svc-extraction pending 고착 진단 + Production 재배포**:
+- 진단: D1 쿼리로 5-Stage 전체 상태 확인 — org-001 extraction 16/18 pending 확인
+- 원인: 배포된 Worker가 로컬 코드 미반영 (`data.chunks` → `data.data.chunks` 파싱 불일치)
+- ✅ svc-extraction Production 재배포 (default env = service binding 대상)
+- ✅ 실제 퇴직연금 4건 extraction 완료: 아키텍처정의서(8p/4e), 화면설계서(14p/6e), 개발표준가이드(0/0), 인터페이스목록(0/0)
+- ✅ Stage 3 policy candidate 8건 자동 생성 (org ID 정상 — org-test-redeploy)
+- ✅ E2E 스크립트: manual extraction에 organizationId 추가
+
+**검증 결과**:
+- ✅ extraction 4/4 completed, policy 8건 생성
+- ✅ typecheck PASS
+
 ## 세션 040 — 2026-03-02
 **org ID "default" 고정 이슈 심층 조사 — /team 병렬 분석**:
 - 조사: D1 Production DB 실데이터 조회 (db-policy, db-analytics, quality_metrics)

@@ -2,6 +2,22 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 033 — 2026-03-02
+
+**Phase 2-B 품질 메트릭 인프라 구현 완료 — DB 마이그레이션, 이벤트 enrichment, API 엔드포인트, 파일럿 대시보드**:
+- ✅ D1 마이그레이션 2개: db-analytics 0002 (quality_metrics, stage_latency), db-governance 0002 (quality_evaluations)
+- ✅ 이벤트 페이로드 확장: 4개 파이프라인 이벤트에 품질 메타데이터 추가 (하위 호환)
+- ✅ 프로듀서 enrichment: svc-ingestion(parseDurationMs), svc-extraction(ruleCount), svc-policy(wasModified), svc-skill(termCount)
+- ✅ svc-analytics: GET /quality 엔드포인트 + queue consumer quality_metrics upsert 로직
+- ✅ svc-governance: POST/GET /quality-evaluations + GET /quality-evaluations/summary 3개 엔드포인트
+- ✅ Trust 페이지 Tabs 래핑 (신뢰도 / 파일럿 품질) + 3개 신규 컴포넌트
+- ✅ 배치 E2E 스크립트 (scripts/test-e2e-batch.sh) + 테스트 문서 manifest
+- ✅ 유닛 테스트 22개 추가 (analytics 6, governance 16)
+
+**검증 결과**:
+- ✅ typecheck 16/16, lint clean, tests 13/13 전체 PASS
+- ✅ 신규 파일 12개, 수정 파일 11개 (총 ~1,400줄)
+
 ## 세션 032 — 2026-03-02
 
 **로컬 개발 환경 설정 — 11 서비스 동시 기동 가능하도록 포트 할당 + 배치 스타트업 스크립트**:

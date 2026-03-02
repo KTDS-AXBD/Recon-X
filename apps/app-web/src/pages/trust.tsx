@@ -4,6 +4,10 @@ import { PolicyQualityChart } from '@/components/PolicyQualityChart';
 import { HitlOperationsCard } from '@/components/HitlOperationsCard';
 import { ReasoningEngineCard } from '@/components/ReasoningEngineCard';
 import { GoldenTestCard } from '@/components/GoldenTestCard';
+import { PipelineOverviewCard } from '@/components/PipelineOverviewCard';
+import { StageLatencyChart } from '@/components/StageLatencyChart';
+import { DomainCoverageCard } from '@/components/DomainCoverageCard';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Loader2 } from 'lucide-react';
 import {
   fetchTrust,
@@ -17,6 +21,7 @@ import {
   type GoldenTestData,
   type ReasoningAnalysis,
 } from '@/api/governance';
+import { fetchQualityMetrics, type QualityMetrics } from '@/api/analytics';
 
 function extractScore(
   data: TrustData,
@@ -46,12 +51,17 @@ export default function TrustDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Pilot quality tab state
+  const [activeTab, setActiveTab] = useState('trust');
+  const [qualityData, setQualityData] = useState<QualityMetrics | null>(null);
+  const [qualityLoading, setQualityLoading] = useState(false);
+
+  // Trust tab data fetch
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
 
-    // Fetch all 5 APIs in parallel
     Promise.allSettled([
       fetchTrust(),
       fetchHitlStats(),
@@ -62,14 +72,12 @@ export default function TrustDashboardPage() {
       .then(([trustRes, hitlRes, qualityRes, goldenRes, reasoningRes]) => {
         if (cancelled) return;
 
-        // Trust gauge (critical — show error if this fails)
         if (trustRes.status === 'fulfilled' && trustRes.value.success) {
           setTrustData(trustRes.value.data);
         } else {
           setError('신뢰도 데이터를 불러올 수 없습니다');
         }
 
-        // Non-critical: gracefully degrade to empty state
         if (hitlRes.status === 'fulfilled' && hitlRes.value.success) {
           setHitlStats(hitlRes.value.data);
         }
@@ -95,6 +103,22 @@ export default function TrustDashboardPage() {
     return () => { cancelled = true; };
   }, []);
 
+  // Pilot tab lazy fetch
+  useEffect(() => {
+    if (activeTab !== 'pilot') return;
+    if (qualityData) return;
+    let cancelled = false;
+    setQualityLoading(true);
+    fetchQualityMetrics()
+      .then((res) => {
+        if (cancelled) return;
+        if (res.success) setQualityData(res.data);
+      })
+      .catch((e: unknown) => console.error('Quality fetch failed', e))
+      .finally(() => { if (!cancelled) setQualityLoading(false); });
+    return () => { cancelled = true; };
+  }, [activeTab, qualityData]);
+
   const l1Score = trustData ? extractScore(trustData, 'output') : null;
   const l2Score = trustData ? extractScore(trustData, 'skill') : null;
   const l3Score = trustData ? extractScore(trustData, 'system') : null;
@@ -110,37 +134,68 @@ export default function TrustDashboardPage() {
         </p>
       </div>
 
-      {loading && (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin" style={{ color: 'var(--text-secondary)' }} />
-        </div>
-      )}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="trust">신뢰도</TabsTrigger>
+          <TabsTrigger value="pilot">파일럿 품질</TabsTrigger>
+        </TabsList>
 
-      {error && (
-        <div className="text-sm text-center py-8" style={{ color: 'var(--danger)' }}>
-          {error}
-        </div>
-      )}
+        <TabsContent value="trust" className="space-y-6 mt-4">
+          {loading && (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin" style={{ color: 'var(--text-secondary)' }} />
+            </div>
+          )}
 
-      {!loading && (
-        <>
-          <div className="grid grid-cols-3 gap-6">
-            <TrustGaugeCard level="L1" title="출력 신뢰도" description="개별 AI 추론 결과 품질" score={l1Score ?? 0} />
-            <TrustGaugeCard level="L2" title="Skill 신뢰도" description="패키지 수준 검증 결과" score={l2Score ?? 0} />
-            <TrustGaugeCard level="L3" title="시스템 신뢰도" description="전체 파이프라인 안정성" score={l3Score ?? 0} />
-          </div>
+          {error && (
+            <div className="text-sm text-center py-8" style={{ color: 'var(--danger)' }}>
+              {error}
+            </div>
+          )}
 
-          <div className="grid grid-cols-[60%_40%] gap-6">
-            <PolicyQualityChart data={qualityTrend ?? undefined} />
-            <HitlOperationsCard data={hitlStats ?? undefined} />
-          </div>
+          {!loading && (
+            <>
+              <div className="grid grid-cols-3 gap-6">
+                <TrustGaugeCard level="L1" title="출력 신뢰도" description="개별 AI 추론 결과 품질" score={l1Score ?? 0} />
+                <TrustGaugeCard level="L2" title="Skill 신뢰도" description="패키지 수준 검증 결과" score={l2Score ?? 0} />
+                <TrustGaugeCard level="L3" title="시스템 신뢰도" description="전체 파이프라인 안정성" score={l3Score ?? 0} />
+              </div>
 
-          <div className="grid grid-cols-2 gap-6">
-            <ReasoningEngineCard data={reasoning ?? undefined} />
-            <GoldenTestCard data={goldenTests ?? undefined} />
-          </div>
-        </>
-      )}
+              <div className="grid grid-cols-[60%_40%] gap-6">
+                <PolicyQualityChart data={qualityTrend ?? undefined} />
+                <HitlOperationsCard data={hitlStats ?? undefined} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <ReasoningEngineCard data={reasoning ?? undefined} />
+                <GoldenTestCard data={goldenTests ?? undefined} />
+              </div>
+            </>
+          )}
+        </TabsContent>
+
+        <TabsContent value="pilot" className="space-y-6 mt-4">
+          {qualityLoading && (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin" style={{ color: 'var(--text-secondary)' }} />
+            </div>
+          )}
+          {!qualityLoading && qualityData && (
+            <>
+              <PipelineOverviewCard data={qualityData} />
+              <div className="grid grid-cols-2 gap-6">
+                <StageLatencyChart data={qualityData.stageLatencies} />
+                <DomainCoverageCard data={qualityData} />
+              </div>
+            </>
+          )}
+          {!qualityLoading && !qualityData && activeTab === 'pilot' && (
+            <div className="text-sm text-center py-8" style={{ color: 'var(--text-secondary)' }}>
+              파일럿 품질 데이터가 없습니다. 배치 E2E를 실행하여 데이터를 수집하세요.
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

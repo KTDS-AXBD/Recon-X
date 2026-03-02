@@ -1,0 +1,33 @@
+{
+  "description": "Phase 2-B pilot batch - synthetic pension documents for quality metrics collection",
+  "version": "1.0.0",
+  "documents": [
+    {
+      "name": "퇴직연금_인출규정_v1.pdf",
+      "fileType": "pdf",
+      "domain": "pension",
+      "topics": ["withdrawal", "eligibility"],
+      "content": "퇴직연금 중간인출 규정 안내. 근로자가 퇴직연금 DB형 또는 DC형에 가입한 경우 주택구입, 의료비, 천재지변 등 법정 사유 발생 시 중간인출이 가능합니다. 인출 한도는 적립금의 50%이며, 사유별 증빙서류가 필요합니다.",
+      "expectedPolicies": 2,
+      "expectedTerms": ["중간인출", "적립금", "DB형", "DC형"]
+    },
+    {
+      "name": "주택구입_특례_안내.docx",
+      "fileType": "docx",
+      "domain": "pension",
+      "topics": ["housing", "withdrawal"],
+      "content": "주택구입 목적 퇴직연금 중간인출 특례. 무주택 세대주가 본인 명의로 주택을 구입하는 경우 퇴직연금 적립금의 중간인출이 가능합니다. 필요서류: 무주택 확인서, 매매계약서, 등기부등본. 처리기한: 신청일로부터 14영업일 이내.",
+      "expectedPolicies": 1,
+      "expectedTerms": ["무주택", "중간인출", "매매계약서"]
+    },
+    {
+      "name": "퇴직금_산정_기준.xlsx",
+      "fileType": "xlsx",
+      "domain": "pension",
+      "topics": ["calculation", "tax"],
+      "content": "퇴직금 산정 기준표. 퇴직금 = 1일 평균임금 × 30일 × (재직일수/365). 평균임금 산정 시 퇴직일 이전 3개월간의 임금총액을 기준으로 합니다. 퇴직소득세는 근속연수공제, 환산급여공제 등을 적용하여 산출합니다.",
+      "expectedPolicies": 2,
+      "expectedTerms": ["평균임금", "퇴직소득세", "근속연수공제"]
+    }
+  ]
+}

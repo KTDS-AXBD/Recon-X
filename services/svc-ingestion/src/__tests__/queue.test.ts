@@ -164,9 +164,16 @@ describe("processQueueEvent", () => {
     expect(updateCalls.length).toBeGreaterThan(0);
   });
 
-  it("publishes ingestion.completed event via waitUntil", async () => {
+  it("publishes ingestion.completed event with quality metadata", async () => {
     await processQueueEvent(validDocumentUploadedEvent, env, ctx);
-    expect(ctx.waitUntil).toHaveBeenCalled();
+    const sendMock = env.QUEUE_PIPELINE.send as ReturnType<typeof vi.fn>;
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    const event = sendMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(event["type"]).toBe("ingestion.completed");
+    const payload = event["payload"] as Record<string, unknown>;
+    expect(payload["documentId"]).toBe("doc-1");
+    expect(typeof payload["parseDurationMs"]).toBe("number");
+    expect(typeof payload["chunksValid"]).toBe("number");
   });
 
   it("inserts chunks into document_chunks table", async () => {

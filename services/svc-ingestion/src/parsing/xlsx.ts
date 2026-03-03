@@ -83,13 +83,16 @@ export function parseXlsx(fileBytes: ArrayBuffer, fileName: string): Unstructure
   }
 
   // 3. Sheet content chunks
+  let isFirstActiveSheet = true;
   for (const sheetName of workbook.SheetNames) {
     if (shouldSkipSheet(sheetName)) continue;
     const sheet = workbook.Sheets[sheetName];
     if (!sheet) continue;
 
-    // 프로그램설계서: data starts at row 5 (row index 5), skip rows 0-4 (meta area)
-    const dataStartRow = siSubtype === "프로그램설계" ? 5 : 0;
+    // 프로그램설계서: only the first active sheet has R0-R4 meta header.
+    // Subsequent sheets use dataStartRow=0 (no meta to skip).
+    const dataStartRow = (siSubtype === "프로그램설계" && isFirstActiveSheet) ? 5 : 0;
+    isFirstActiveSheet = false;
     const chunks = sheetToMarkdownChunks(sheet, sheetName, siSubtype, MAX_ROWS_PER_CHUNK, dataStartRow);
     elements.push(...chunks);
   }
@@ -248,13 +251,13 @@ export function sheetToMarkdownChunks(
 // ── Program Design Metadata ─────────────────────────────────────
 
 /**
- * Extract metadata from 프로그램설계서 header area (rows 2-3).
- * Layout:
- *   R1(row 0): A="퇴직연금 시스템 재구축 프로젝트" | last col="프로그램설계서"
- *   R3(row 2): A="프로그램 ID(BeanID)" | B=[value] | D="프로그램 명" | E=[value]
- *   R4(row 3): A="고객담당자" | B=[value] | D="설계담당자" | E=[value]
- *   R6(row 5): column headers
- *   R7+(row 6+): data rows
+ * Extract metadata from 프로그램설계서 header area (Excel rows 1–4).
+ * Layout (Excel 1-based addresses):
+ *   Row 1: A1="퇴직연금 시스템 재구축 프로젝트", last col="프로그램설계서"
+ *   Row 3: A3="프로그램 ID(BeanID)", B3=[value], D3="프로그램 명", E3=[value]
+ *   Row 4: A4="고객담당자", B4=[value], D4="설계담당자", E4=[value]
+ *   Row 6: column headers
+ *   Row 7+: data rows
  */
 export function extractProgramMeta(
   sheet: XLSX.WorkSheet,

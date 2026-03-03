@@ -142,14 +142,14 @@ function parseScreenSheet(
 // ── Meta Extraction ─────────────────────────────────────────────
 
 /**
- * Extract screen metadata from rows 1-6 (0-based: 0-5).
+ * Extract screen metadata from Excel rows 1–6.
  *
- * Expected structure (0-based row/col):
- * - R0 (row 0): A0 = system name (e.g. "퇴직연금시스템")
- * - R2 (row 2): B2 = "화면명", H2 = value, P2 = "화면ID" or the ID value
- * - R3 (row 3): B3 = "대분류", H3 = value, P3 = "중분류", V3 = value
- * - R4 (row 4): B4 = "화면설명", H4 = value
- * - R5 (row 5): B5 = "서비스클래스ID", H5 = value
+ * Expected structure (Excel 1-based addresses):
+ * - Row 1: A1 = system name (e.g. "퇴직연금시스템")
+ * - Row 3: H3 = 화면명, P3 = "화면ID" label or actual ID value
+ * - Row 4: H4 = 대분류, V4 = 중분류
+ * - Row 5: H5 = 화면설명
+ * - Row 6: H6 = 서비스클래스ID
  */
 export function extractScreenMeta(
   sheet: XLSX.WorkSheet,

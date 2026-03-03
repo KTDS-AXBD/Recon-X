@@ -330,6 +330,7 @@ export default function DocumentUploadPage() {
                 <option value="parsed">파싱 완료</option>
                 <option value="completed">완료</option>
                 <option value="processing">처리 중</option>
+                <option value="pending">대기</option>
                 <option value="failed">오류</option>
                 <option value="encrypted">암호화</option>
               </select>

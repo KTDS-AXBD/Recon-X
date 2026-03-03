@@ -7,6 +7,7 @@ import type { Env } from "../env.js";
 function mockDb(overrides?: {
   allResults?: Record<string, unknown>[];
 }) {
+  const rowCount = overrides?.allResults?.length ?? 0;
   return {
     prepare: vi.fn().mockReturnValue({
       bind: vi.fn().mockReturnValue({
@@ -14,7 +15,7 @@ function mockDb(overrides?: {
         all: vi.fn().mockResolvedValue({
           results: overrides?.allResults ?? [],
         }),
-        first: vi.fn().mockResolvedValue(null),
+        first: vi.fn().mockResolvedValue({ cnt: rowCount }),
       }),
     }),
   } as unknown as D1Database;
@@ -306,7 +307,8 @@ describe("handleQueryAudit", () => {
     const req = createQueryRequest({ limit: "50" });
     await handleQueryAudit(req, env);
 
-    const prepareCall = (env.DB_SECURITY.prepare as ReturnType<typeof vi.fn>).mock.calls[0];
+    // calls[0] = COUNT query, calls[1] = SELECT with LIMIT/OFFSET
+    const prepareCall = (env.DB_SECURITY.prepare as ReturnType<typeof vi.fn>).mock.calls[1];
     const sql = prepareCall?.[0] as string;
     expect(sql).toContain("LIMIT ? OFFSET ?");
   });
@@ -350,7 +352,8 @@ describe("handleQueryAudit", () => {
     const req = createQueryRequest();
     await handleQueryAudit(req, env);
 
-    const prepareCall = (env.DB_SECURITY.prepare as ReturnType<typeof vi.fn>).mock.calls[0];
+    // calls[0] = COUNT query, calls[1] = SELECT with ORDER BY
+    const prepareCall = (env.DB_SECURITY.prepare as ReturnType<typeof vi.fn>).mock.calls[1];
     const sql = prepareCall?.[0] as string;
     expect(sql).toContain("ORDER BY occurred_at DESC");
   });

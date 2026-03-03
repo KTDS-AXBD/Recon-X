@@ -17,6 +17,7 @@ const baseRow: SkillRow = {
   tags: '["퇴직연금","인출"]',
   author: "analyst-001",
   status: "draft",
+  content_depth: 245,
   created_at: "2026-02-28T00:00:00.000Z",
   updated_at: "2026-02-28T00:00:00.000Z",
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,24 +11,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Package, Star, Download, ArrowUpDown, X } from 'lucide-react';
+import { Search, Package, Star, Download, ArrowUpDown, X, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchSkills, downloadSkill } from '@/api/skill';
 import type { SkillRow } from '@/api/skill';
 import { useOrganization } from '@/contexts/OrganizationContext';
 
 const TRUST_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  unreviewed: { label: '\uBBF8\uAC80\uD1A0', color: '#9CA3AF', bg: 'rgba(156, 163, 175, 0.1)' },
-  reviewed: { label: '\uAC80\uD1A0\uB428', color: 'var(--accent)', bg: 'rgba(246, 173, 85, 0.15)' },
-  validated: { label: '\uAC80\uC99D\uB428', color: 'var(--success)', bg: 'rgba(56, 161, 105, 0.1)' },
+  unreviewed: { label: '미검토', color: '#9CA3AF', bg: 'rgba(156, 163, 175, 0.1)' },
+  reviewed: { label: '검토됨', color: 'var(--accent)', bg: 'rgba(246, 173, 85, 0.15)' },
+  validated: { label: '검증됨', color: 'var(--success)', bg: 'rgba(56, 161, 105, 0.1)' },
 };
 
-type SortKey = 'newest' | 'trust' | 'policies';
+const DEPTH_CONFIG: Record<string, { label: string; color: string; bg: string; minDepth: number }> = {
+  rich: { label: '상세', color: '#16A34A', bg: 'rgba(22, 163, 74, 0.1)', minDepth: 150 },
+  medium: { label: '보통', color: '#CA8A04', bg: 'rgba(202, 138, 4, 0.1)', minDepth: 50 },
+  thin: { label: '간략', color: '#DC2626', bg: 'rgba(220, 38, 38, 0.1)', minDepth: 0 },
+};
+
+function getDepthLevel(depth: number): 'rich' | 'medium' | 'thin' {
+  if (depth >= 150) return 'rich';
+  if (depth >= 50) return 'medium';
+  return 'thin';
+}
+
+type SortKey = 'newest' | 'depth' | 'trust' | 'policies';
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
-  { value: 'newest', label: '\uCD5C\uC2E0\uC21C' },
-  { value: 'trust', label: '\uC2E0\uB8B0\uB3C4\uC21C' },
-  { value: 'policies', label: '\uC815\uCC45\uC218\uC21C' },
+  { value: 'depth', label: '품질순' },
+  { value: 'newest', label: '최신순' },
+  { value: 'trust', label: '신뢰도순' },
+  { value: 'policies', label: '정책수순' },
 ];
 
 function sortSkills(skills: SkillRow[], key: SortKey): SkillRow[] {
@@ -36,6 +49,8 @@ function sortSkills(skills: SkillRow[], key: SortKey): SkillRow[] {
     switch (key) {
       case 'newest':
         return new Date(b.metadata.createdAt).getTime() - new Date(a.metadata.createdAt).getTime();
+      case 'depth':
+        return (b.contentDepth ?? 0) - (a.contentDepth ?? 0);
       case 'trust':
         return b.trust.score - a.trust.score;
       case 'policies':
@@ -44,23 +59,42 @@ function sortSkills(skills: SkillRow[], key: SortKey): SkillRow[] {
   });
 }
 
+type DepthFilter = '' | 'rich' | 'medium+';
+
 export default function SkillCatalogPage() {
   const { organizationId } = useOrganization();
   const [skills, setSkills] = useState<SkillRow[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [trustFilter, setTrustFilter] = useState('');
+  const [depthFilter, setDepthFilter] = useState<DepthFilter>('medium+');
   const [domainFilter, setDomainFilter] = useState('');
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
-  const [sortKey, setSortKey] = useState<SortKey>('newest');
+  const [sortKey, setSortKey] = useState<SortKey>('depth');
 
-  useEffect(() => {
+  const loadSkills = useCallback(() => {
     setLoading(true);
-    void fetchSkills(organizationId, trustFilter ? { limit: 100, trustLevel: trustFilter } : { limit: 100 })
-      .then((res) => { if (res.success) setSkills(res.data.skills); })
-      .catch(() => toast.error('Skill \uBAA9\uB85D\uC744 \uBD88\uB7EC\uC62C \uC218 \uC5C6\uC2B5\uB2C8\uB2E4'))
+    const params: Parameters<typeof fetchSkills>[1] = {
+      limit: 100,
+      sort: sortKey === 'depth' ? 'depth_desc' : sortKey === 'newest' ? 'newest' : 'newest',
+    };
+    if (trustFilter) params.trustLevel = trustFilter;
+    if (depthFilter === 'rich') params.minDepth = 150;
+    else if (depthFilter === 'medium+') params.minDepth = 50;
+
+    void fetchSkills(organizationId, params)
+      .then((res) => {
+        if (res.success) {
+          setSkills(res.data.skills);
+          setTotal(res.data.total);
+        }
+      })
+      .catch(() => toast.error('Skill 목록을 불러올 수 없습니다'))
       .finally(() => setLoading(false));
-  }, [trustFilter]);
+  }, [organizationId, trustFilter, depthFilter, sortKey]);
+
+  useEffect(() => { loadSkills(); }, [loadSkills]);
 
   // Extract unique domains from loaded skills
   const domains = useMemo(() => {
@@ -83,7 +117,7 @@ export default function SkillCatalogPage() {
   }, [skills]);
 
   const handleDownload = async (e: React.MouseEvent, skillId: string) => {
-    e.preventDefault(); // prevent Link navigation
+    e.preventDefault();
     e.stopPropagation();
     try {
       const blob = await downloadSkill(organizationId, skillId);
@@ -93,9 +127,9 @@ export default function SkillCatalogPage() {
       a.download = `${skillId}.skill.json`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success('\uB2E4\uC6B4\uB85C\uB4DC \uC644\uB8CC');
+      toast.success('다운로드 완료');
     } catch {
-      toast.error('\uB2E4\uC6B4\uB85C\uB4DC \uC2E4\uD328');
+      toast.error('다운로드 실패');
     }
   };
 
@@ -111,23 +145,20 @@ export default function SkillCatalogPage() {
     });
   };
 
-  // Filter pipeline: search -> domain -> tags
+  // Client-side filter pipeline: search -> domain -> tags
   const filteredSkills = useMemo(() => {
     let result = skills;
 
-    // Domain filter
     if (domainFilter) {
       result = result.filter((s) => s.metadata.domain === domainFilter);
     }
 
-    // Tag filter (AND logic: skill must have ALL selected tags)
     if (selectedTags.size > 0) {
       result = result.filter((s) =>
         Array.from(selectedTags).every((tag) => s.metadata.tags.includes(tag))
       );
     }
 
-    // Search query filter
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter((s) =>
@@ -138,9 +169,22 @@ export default function SkillCatalogPage() {
       );
     }
 
-    // Sort
     return sortSkills(result, sortKey);
   }, [skills, domainFilter, selectedTags, searchQuery, sortKey]);
+
+  // Depth distribution from loaded skills
+  const depthStats = useMemo(() => {
+    let rich = 0;
+    let medium = 0;
+    let thin = 0;
+    for (const s of skills) {
+      const d = s.contentDepth ?? 0;
+      if (d >= 150) rich++;
+      else if (d >= 50) medium++;
+      else thin++;
+    }
+    return { rich, medium, thin };
+  }, [skills]);
 
   return (
     <div className="space-y-6">
@@ -149,7 +193,7 @@ export default function SkillCatalogPage() {
           Skill Marketplace
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-          AI Foundry Skill \uD328\uD0A4\uC9C0 \uD0D0\uC0C9, \uD544\uD130\uB9C1, \uB2E4\uC6B4\uB85C\uB4DC
+          AI Foundry Skill 패키지 탐색, 필터링, 다운로드
         </p>
       </div>
 
@@ -158,19 +202,32 @@ export default function SkillCatalogPage() {
         {/* Search */}
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
-          <Input placeholder="Skill \uAC80\uC0C9..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
+          <Input placeholder="Skill 검색..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
         </div>
 
         {/* Domain filter */}
         <Select value={domainFilter} onValueChange={(v) => setDomainFilter(v === '__all__' ? '' : v)}>
           <SelectTrigger className="w-[180px]" size="sm">
-            <SelectValue placeholder="\uB3C4\uBA54\uC778 \uC804\uCCB4" />
+            <SelectValue placeholder="도메인 전체" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__all__">\uB3C4\uBA54\uC778 \uC804\uCCB4</SelectItem>
+            <SelectItem value="__all__">도메인 전체</SelectItem>
             {domains.map((d) => (
               <SelectItem key={d} value={d}>{d}</SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+
+        {/* Quality filter */}
+        <Select value={depthFilter || '__all_depth__'} onValueChange={(v) => setDepthFilter(v === '__all_depth__' ? '' : v as DepthFilter)}>
+          <SelectTrigger className="w-[160px]" size="sm">
+            <BarChart3 className="w-3 h-3 mr-1" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all_depth__">품질 전체</SelectItem>
+            <SelectItem value="medium+">보통 이상</SelectItem>
+            <SelectItem value="rich">상세만</SelectItem>
           </SelectContent>
         </Select>
 
@@ -196,7 +253,7 @@ export default function SkillCatalogPage() {
               size="sm"
               onClick={() => setTrustFilter(filter)}
             >
-              {filter === '' ? '\uC804\uCCB4' : TRUST_CONFIG[filter]?.label ?? filter}
+              {filter === '' ? '전체' : TRUST_CONFIG[filter]?.label ?? filter}
             </Button>
           ))}
         </div>
@@ -205,7 +262,7 @@ export default function SkillCatalogPage() {
       {/* Tag Chips */}
       {allTags.length > 0 && (
         <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>\uD0DC\uADF8:</span>
+          <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>태그:</span>
           {allTags.map((tag) => {
             const isActive = selectedTags.has(tag);
             return (
@@ -233,32 +290,40 @@ export default function SkillCatalogPage() {
               className="text-xs underline cursor-pointer"
               style={{ color: 'var(--text-secondary)' }}
             >
-              \uCD08\uAE30\uD654
+              초기화
             </button>
           )}
         </div>
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card className="shadow-sm"><CardContent className="p-4">
-          <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>\uCD1D Skill</div>
-          <div className="text-2xl font-bold mt-1" style={{ color: 'var(--text-primary)' }}>{skills.length}</div>
-        </CardContent></Card>
-        <Card className="shadow-sm"><CardContent className="p-4">
-          <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>\uAC80\uC99D\uB428</div>
-          <div className="text-2xl font-bold mt-1" style={{ color: 'var(--success)' }}>
-            {skills.filter((s) => s.trust.level === 'validated').length}
+          <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>총 Skill</div>
+          <div className="text-2xl font-bold mt-1" style={{ color: 'var(--text-primary)' }}>
+            {total > 0 ? total.toLocaleString() : skills.length}
           </div>
         </CardContent></Card>
         <Card className="shadow-sm"><CardContent className="p-4">
-          <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>\uAC80\uD1A0 \uC911</div>
-          <div className="text-2xl font-bold mt-1" style={{ color: 'var(--accent)' }}>
-            {skills.filter((s) => s.trust.level === 'reviewed').length}
+          <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>상세 (150+)</div>
+          <div className="text-2xl font-bold mt-1" style={{ color: '#16A34A' }}>
+            {depthStats.rich}
           </div>
         </CardContent></Card>
         <Card className="shadow-sm"><CardContent className="p-4">
-          <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>\uCD1D \uC815\uCC45</div>
+          <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>보통 (50~150)</div>
+          <div className="text-2xl font-bold mt-1" style={{ color: '#CA8A04' }}>
+            {depthStats.medium}
+          </div>
+        </CardContent></Card>
+        <Card className="shadow-sm"><CardContent className="p-4">
+          <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>간략 (&lt;50)</div>
+          <div className="text-2xl font-bold mt-1" style={{ color: '#DC2626' }}>
+            {depthStats.thin}
+          </div>
+        </CardContent></Card>
+        <Card className="shadow-sm"><CardContent className="p-4">
+          <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>총 정책</div>
           <div className="text-2xl font-bold mt-1" style={{ color: '#9333EA' }}>
             {skills.reduce((sum, s) => sum + s.policyCount, 0)}
           </div>
@@ -269,27 +334,29 @@ export default function SkillCatalogPage() {
       {!loading && (
         <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
           {filteredSkills.length === skills.length
-            ? `${skills.length}\uAC1C Skill`
-            : `${filteredSkills.length} / ${skills.length}\uAC1C Skill (\uD544\uD130 \uC801\uC6A9 \uC911)`}
+            ? `${skills.length}개 Skill (전체 ${total.toLocaleString()}개 중 상위 ${skills.length}개 표시)`
+            : `${filteredSkills.length} / ${skills.length}개 Skill (필터 적용 중)`}
         </div>
       )}
 
-      {/* Skill Grid — responsive: 1/2/3 cols */}
+      {/* Skill Grid */}
       {loading ? (
-        <div className="text-center py-16" style={{ color: 'var(--text-secondary)' }}>\uBD88\uB7EC\uC624\uB294 \uC911...</div>
+        <div className="text-center py-16" style={{ color: 'var(--text-secondary)' }}>불러오는 중...</div>
       ) : filteredSkills.length === 0 ? (
         <Card><CardContent className="p-16 text-center">
           <Package className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-secondary)', opacity: 0.3 }} />
           <p style={{ color: 'var(--text-secondary)' }}>
             {selectedTags.size > 0 || domainFilter || searchQuery
-              ? '\uD544\uD130 \uC870\uAC74\uC5D0 \uB9DE\uB294 Skill\uC774 \uC5C6\uC2B5\uB2C8\uB2E4'
-              : 'Skill \uD328\uD0A4\uC9C0\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4'}
+              ? '필터 조건에 맞는 Skill이 없습니다'
+              : 'Skill 패키지가 없습니다'}
           </p>
         </CardContent></Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredSkills.map((skill) => {
             const trust = TRUST_CONFIG[skill.trust.level] ?? TRUST_CONFIG['unreviewed']!;
+            const depthLevel = getDepthLevel(skill.contentDepth ?? 0);
+            const depth = DEPTH_CONFIG[depthLevel]!;
             return (
               <Link
                 key={skill.skillId}
@@ -302,9 +369,14 @@ export default function SkillCatalogPage() {
                       <code className="text-xs px-2 py-1 rounded font-mono" style={{ backgroundColor: 'var(--surface)', color: 'var(--primary)' }}>
                         {skill.skillId.slice(0, 12)}
                       </code>
-                      <Badge style={{ backgroundColor: trust.bg, color: trust.color, border: 'none' }} className="text-xs">
-                        {trust.label}
-                      </Badge>
+                      <div className="flex gap-1.5">
+                        <Badge style={{ backgroundColor: depth.bg, color: depth.color, border: 'none' }} className="text-xs">
+                          {depth.label}
+                        </Badge>
+                        <Badge style={{ backgroundColor: trust.bg, color: trust.color, border: 'none' }} className="text-xs">
+                          {trust.label}
+                        </Badge>
+                      </div>
                     </div>
                     <h3 className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
                       {skill.metadata.domain}
@@ -313,10 +385,10 @@ export default function SkillCatalogPage() {
                     <div className="flex items-center gap-3 text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>
                       <span>v{skill.metadata.version}</span>
                       <span>|</span>
-                      <span>\uC815\uCC45 {skill.policyCount}\uAC74</span>
+                      <span>정책 {skill.policyCount}건</span>
                       <span>|</span>
                       <span className="flex items-center gap-1">
-                        <Star className="w-3 h-3" /> {(skill.trust.score * 100).toFixed(0)}%
+                        <Star className="w-3 h-3" /> {skill.contentDepth ?? 0}자
                       </span>
                     </div>
                     {skill.metadata.tags.length > 0 && (
@@ -336,7 +408,7 @@ export default function SkillCatalogPage() {
                         size="sm"
                         onClick={(e) => void handleDownload(e, skill.skillId)}
                       >
-                        <Download className="w-3 h-3 mr-1" /> \uB2E4\uC6B4\uB85C\uB4DC
+                        <Download className="w-3 h-3 mr-1" /> 다운로드
                       </Button>
                     </div>
                   </CardContent>

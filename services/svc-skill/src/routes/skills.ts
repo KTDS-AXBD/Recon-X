@@ -55,6 +55,7 @@ export interface SkillRow {
   tags: string;
   author: string;
   status: string;
+  content_depth: number;
   created_at: string;
   updated_at: string;
 }
@@ -104,6 +105,12 @@ export async function handleCreateSkill(
   const r2Key = `skill-packages/${skillId}.skill.json`;
   const now = new Date().toISOString();
 
+  // Calculate content depth from policies
+  let contentDepth = 0;
+  for (const p of policies) {
+    contentDepth += p.condition.length + p.criteria.length + p.outcome.length;
+  }
+
   // Store .skill.json in R2
   try {
     await env.R2_SKILL_PACKAGES.put(r2Key, JSON.stringify(skillPackage, null, 2), {
@@ -120,8 +127,8 @@ export async function handleCreateSkill(
       `INSERT INTO skills (
         skill_id, ontology_id, domain, subdomain, language, version,
         r2_key, policy_count, trust_level, trust_score, tags, author,
-        status, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?)`,
+        status, content_depth, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?, ?)`,
     )
       .bind(
         skillId,
@@ -136,6 +143,7 @@ export async function handleCreateSkill(
         trust.score,
         JSON.stringify(metadata.tags),
         author,
+        contentDepth,
         now,
         now,
       )
@@ -183,6 +191,8 @@ const SORT_OPTIONS: Record<string, string> = {
   trust_desc: "trust_score DESC",
   trust_asc: "trust_score ASC",
   policy_count: "policy_count DESC",
+  depth_desc: "content_depth DESC",
+  depth_asc: "content_depth ASC",
 };
 
 // ── GET /skills ───────────────────────────────────────────────────────
@@ -198,6 +208,7 @@ export async function handleListSkills(
   const trustLevel = url.searchParams.get("trustLevel");
   const q = url.searchParams.get("q");
   const tag = url.searchParams.get("tag");
+  const minDepthParam = url.searchParams.get("minDepth");
   const sort = url.searchParams.get("sort") ?? "newest";
   const limit = Math.min(Number(url.searchParams.get("limit") ?? "50"), 100);
   const offset = Number(url.searchParams.get("offset") ?? "0");
@@ -220,6 +231,13 @@ export async function handleListSkills(
   if (trustLevel) {
     whereClause += " AND trust_level = ?";
     binds.push(trustLevel);
+  }
+  if (minDepthParam) {
+    const minDepth = Number(minDepthParam);
+    if (!Number.isNaN(minDepth) && minDepth > 0) {
+      whereClause += " AND content_depth >= ?";
+      binds.push(minDepth);
+    }
   }
   if (q) {
     whereClause += " AND (domain LIKE ? OR subdomain LIKE ? OR author LIKE ? OR tags LIKE ?)";
@@ -329,11 +347,28 @@ export async function handleGetSkillStats(
     .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag))
     .slice(0, 20);
 
+  // Content depth distribution
+  const depthRows = await env.DB_SKILL.prepare(
+    `SELECT
+       SUM(CASE WHEN content_depth >= 150 THEN 1 ELSE 0 END) as rich,
+       SUM(CASE WHEN content_depth >= 50 AND content_depth < 150 THEN 1 ELSE 0 END) as medium,
+       SUM(CASE WHEN content_depth < 50 THEN 1 ELSE 0 END) as thin
+     FROM skills`,
+  )
+    .first<{ rich: number; medium: number; thin: number }>();
+
+  const byContentDepth = {
+    rich: depthRows?.rich ?? 0,
+    medium: depthRows?.medium ?? 0,
+    thin: depthRows?.thin ?? 0,
+  };
+
   return ok({
     totalSkills,
     totalPolicies,
     byTrustLevel,
     byDomain,
+    byContentDepth,
     topTags,
   });
 }
@@ -421,7 +456,7 @@ export function parseTags(raw: string): string[] {
   return [];
 }
 
-export function rowToSummary(row: SkillRow): SkillSummary & { status: string } {
+export function rowToSummary(row: SkillRow): SkillSummary & { status: string; contentDepth: number } {
   return {
     skillId: row.skill_id,
     metadata: {
@@ -441,6 +476,7 @@ export function rowToSummary(row: SkillRow): SkillSummary & { status: string } {
     policyCount: row.policy_count,
     r2Key: row.r2_key,
     status: row.status,
+    contentDepth: row.content_depth,
   };
 }
 

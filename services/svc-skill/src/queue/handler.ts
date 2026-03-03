@@ -235,13 +235,16 @@ export async function processQueueEvent(
   }
 
   // 6. Insert catalog record into D1
+  const contentDepth =
+    policy.condition.length + policy.criteria.length + policy.outcome.length;
+
   try {
     await env.DB_SKILL.prepare(
       `INSERT INTO skills (
         skill_id, ontology_id, domain, subdomain, language, version,
         r2_key, policy_count, trust_level, trust_score, tags, author,
-        status, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?)`,
+        status, content_depth, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?, ?)`,
     )
       .bind(
         skillId,
@@ -256,6 +259,7 @@ export async function processQueueEvent(
         trust.score,
         JSON.stringify(metadata.tags),
         metadata.author,
+        contentDepth,
         now,
         now,
       )

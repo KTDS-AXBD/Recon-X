@@ -27,6 +27,7 @@ export interface SkillRow {
   policyCount: number;
   r2Key: string;
   status: "draft" | "published" | "archived";
+  contentDepth: number;
 }
 
 export interface SkillDetail extends SkillRow {
@@ -39,6 +40,8 @@ export async function fetchSkills(
     domain?: string;
     status?: string;
     trustLevel?: string;
+    minDepth?: number;
+    sort?: string;
     limit?: number;
     offset?: number;
   },
@@ -48,6 +51,8 @@ export async function fetchSkills(
     if (params.domain !== undefined) qs.set("domain", params.domain);
     if (params.status !== undefined) qs.set("status", params.status);
     if (params.trustLevel !== undefined) qs.set("trustLevel", params.trustLevel);
+    if (params.minDepth !== undefined) qs.set("minDepth", String(params.minDepth));
+    if (params.sort !== undefined) qs.set("sort", params.sort);
     if (params.limit !== undefined) qs.set("limit", String(params.limit));
     if (params.offset !== undefined) qs.set("offset", String(params.offset));
   }

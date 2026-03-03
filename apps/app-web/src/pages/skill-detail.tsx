@@ -26,15 +26,15 @@ import type { SkillDetail, McpAdapter } from '@/api/skill';
 import { useOrganization } from '@/contexts/OrganizationContext';
 
 const TRUST_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  unreviewed: { label: '\uBBF8\uAC80\uD1A0', color: '#9CA3AF', bg: 'rgba(156, 163, 175, 0.1)' },
-  reviewed: { label: '\uAC80\uD1A0\uB428', color: 'var(--accent)', bg: 'rgba(246, 173, 85, 0.15)' },
-  validated: { label: '\uAC80\uC99D\uB428', color: 'var(--success)', bg: 'rgba(56, 161, 105, 0.1)' },
+  unreviewed: { label: '미검토', color: '#9CA3AF', bg: 'rgba(156, 163, 175, 0.1)' },
+  reviewed: { label: '검토됨', color: 'var(--accent)', bg: 'rgba(246, 173, 85, 0.15)' },
+  validated: { label: '검증됨', color: 'var(--success)', bg: 'rgba(56, 161, 105, 0.1)' },
 };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  draft: { label: '\uCD08\uC548', color: '#9CA3AF', bg: 'rgba(156, 163, 175, 0.1)' },
-  published: { label: '\uBC1C\uD589\uB428', color: 'var(--success)', bg: 'rgba(56, 161, 105, 0.1)' },
-  archived: { label: '\uBCF4\uAD00\uB428', color: 'var(--accent)', bg: 'rgba(246, 173, 85, 0.15)' },
+  draft: { label: '초안', color: '#9CA3AF', bg: 'rgba(156, 163, 175, 0.1)' },
+  published: { label: '발행됨', color: 'var(--success)', bg: 'rgba(56, 161, 105, 0.1)' },
+  archived: { label: '보관됨', color: 'var(--accent)', bg: 'rgba(246, 173, 85, 0.15)' },
 };
 
 export default function SkillDetailPage() {
@@ -56,10 +56,10 @@ export default function SkillDetailPage() {
         if (res.success) {
           setSkill(res.data);
         } else {
-          toast.error('Skill\uC744 \uBD88\uB7EC\uC62C \uC218 \uC5C6\uC2B5\uB2C8\uB2E4');
+          toast.error('Skill을 불러올 수 없습니다');
         }
       })
-      .catch(() => toast.error('Skill \uC870\uD68C \uC2E4\uD328'))
+      .catch(() => toast.error('Skill 조회 실패'))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -73,9 +73,9 @@ export default function SkillDetailPage() {
       a.download = `${id}.skill.json`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success('\uB2E4\uC6B4\uB85C\uB4DC \uC644\uB8CC');
+      toast.success('다운로드 완료');
     } catch {
-      toast.error('\uB2E4\uC6B4\uB85C\uB4DC \uC2E4\uD328');
+      toast.error('다운로드 실패');
     }
   };
 
@@ -90,7 +90,7 @@ export default function SkillDetailPage() {
       setMcpAdapter(adapter);
       setShowMcp(true);
     } catch {
-      toast.error('MCP \uC5B4\uB311\uD130 \uC870\uD68C \uC2E4\uD328');
+      toast.error('MCP 어댑터 조회 실패');
     }
   };
 
@@ -105,7 +105,7 @@ export default function SkillDetailPage() {
       setOpenApiSpec(spec);
       setShowOpenApi(true);
     } catch {
-      toast.error('OpenAPI \uC2A4\uD399 \uC870\uD68C \uC2E4\uD328');
+      toast.error('OpenAPI 스펙 조회 실패');
     }
   };
 
@@ -124,7 +124,7 @@ export default function SkillDetailPage() {
       <div className="flex items-center justify-center py-24">
         <div className="text-center space-y-3">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Skill \uC815\uBCF4 \uBD88\uB7EC\uC624\uB294 \uC911...</p>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Skill 정보 불러오는 중...</p>
         </div>
       </div>
     );
@@ -134,11 +134,11 @@ export default function SkillDetailPage() {
     return (
       <div className="space-y-6">
         <Button variant="ghost" onClick={() => navigate('/skills')}>
-          <ArrowLeft className="w-4 h-4 mr-2" /> Skill \uCE74\uD0C8\uB85C\uADF8\uB85C \uB3CC\uC544\uAC00\uAE30
+          <ArrowLeft className="w-4 h-4 mr-2" /> Skill 카탈로그로 돌아가기
         </Button>
         <Card>
           <CardContent className="p-16 text-center">
-            <p style={{ color: 'var(--text-secondary)' }}>Skill\uC744 \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4</p>
+            <p style={{ color: 'var(--text-secondary)' }}>Skill을 찾을 수 없습니다</p>
           </CardContent>
         </Card>
       </div>
@@ -151,7 +151,7 @@ export default function SkillDetailPage() {
     <div className="space-y-6">
       {/* Back navigation */}
       <Button variant="ghost" onClick={() => navigate('/skills')}>
-        <ArrowLeft className="w-4 h-4 mr-2" /> Skill \uCE74\uD0C8\uB85C\uADF8
+        <ArrowLeft className="w-4 h-4 mr-2" /> Skill 카탈로그
       </Button>
 
       {/* Header Card */}
@@ -207,7 +207,7 @@ export default function SkillDetailPage() {
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-3">
               <Star className="w-4 h-4" style={{ color: 'var(--accent)' }} />
-              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>\uC2E0\uB8B0\uB3C4 Trust Score</span>
+              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>신뢰도 Trust Score</span>
             </div>
             <div className="flex items-center gap-3 mb-2">
               <span className="text-3xl font-bold" style={{ color: 'var(--primary)' }}>{trustPercent}%</span>
@@ -224,7 +224,7 @@ export default function SkillDetailPage() {
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-3">
               <BookOpen className="w-4 h-4" style={{ color: '#9333EA' }} />
-              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>\uC815\uCC45 \uC218 Policies</span>
+              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>정책 수 Policies</span>
             </div>
             <span className="text-3xl font-bold" style={{ color: '#9333EA' }}>{skill.policyCount}</span>
             <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>condition-criteria-outcome triples</p>
@@ -236,7 +236,7 @@ export default function SkillDetailPage() {
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-3">
               <Hash className="w-4 h-4" style={{ color: 'var(--success)' }} />
-              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>\uC628\uD1A8\uB85C\uC9C0 Ontology</span>
+              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>온톨로지 Ontology</span>
             </div>
             <code
               className="text-sm px-2 py-1 rounded font-mono break-all"
@@ -254,7 +254,7 @@ export default function SkillDetailPage() {
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-3">
               <Tag className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>\uD0DC\uADF8 Tags</span>
+              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>태그 Tags</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {skill.metadata.tags.map((tag) => (
@@ -270,28 +270,28 @@ export default function SkillDetailPage() {
       {/* Metadata Detail */}
       <Card>
         <CardContent className="p-6">
-          <h3 className="text-sm font-medium mb-4" style={{ color: 'var(--text-primary)' }}>\uC0C1\uC138 \uC815\uBCF4</h3>
+          <h3 className="text-sm font-medium mb-4" style={{ color: 'var(--text-primary)' }}>상세 정보</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <span style={{ color: 'var(--text-secondary)' }}>\uC0DD\uC131\uC77C</span>
+              <span style={{ color: 'var(--text-secondary)' }}>생성일</span>
               <p style={{ color: 'var(--text-primary)' }}>
                 {new Date(skill.metadata.createdAt).toLocaleString('ko-KR')}
               </p>
             </div>
             <div>
-              <span style={{ color: 'var(--text-secondary)' }}>\uC218\uC815\uC77C</span>
+              <span style={{ color: 'var(--text-secondary)' }}>수정일</span>
               <p style={{ color: 'var(--text-primary)' }}>
                 {new Date(skill.metadata.updatedAt).toLocaleString('ko-KR')}
               </p>
             </div>
             <div>
-              <span style={{ color: 'var(--text-secondary)' }}>R2 \uC800\uC7A5 \uACBD\uB85C</span>
+              <span style={{ color: 'var(--text-secondary)' }}>R2 저장 경로</span>
               <code className="text-xs block mt-0.5 font-mono" style={{ color: 'var(--text-primary)' }}>
                 {skill.r2Key}
               </code>
             </div>
             <div>
-              <span style={{ color: 'var(--text-secondary)' }}>\uC0C1\uD0DC</span>
+              <span style={{ color: 'var(--text-secondary)' }}>상태</span>
               <p style={{ color: 'var(--text-primary)' }}>{statusConfig.label} ({skill.status})</p>
             </div>
           </div>
@@ -303,16 +303,16 @@ export default function SkillDetailPage() {
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
         <Button onClick={() => void handleDownload()}>
-          <Download className="w-4 h-4 mr-2" /> .skill.json \uB2E4\uC6B4\uB85C\uB4DC
+          <Download className="w-4 h-4 mr-2" /> .skill.json 다운로드
         </Button>
         <Button variant="outline" onClick={() => void handleViewMcp()}>
-          <Code2 className="w-4 h-4 mr-2" /> {showMcp ? 'MCP \uC5B4\uB311\uD130 \uC228\uAE30\uAE30' : 'MCP \uC5B4\uB311\uD130 \uBCF4\uAE30'}
+          <Code2 className="w-4 h-4 mr-2" /> {showMcp ? 'MCP 어댑터 숨기기' : 'MCP 어댑터 보기'}
         </Button>
         <Button variant="outline" onClick={() => void handleViewOpenApi()}>
-          <FileJson className="w-4 h-4 mr-2" /> {showOpenApi ? 'OpenAPI \uC2A4\uD399 \uC228\uAE30\uAE30' : 'OpenAPI \uC2A4\uD399 \uBCF4\uAE30'}
+          <FileJson className="w-4 h-4 mr-2" /> {showOpenApi ? 'OpenAPI 스펙 숨기기' : 'OpenAPI 스펙 보기'}
         </Button>
         <Button variant="secondary" disabled>
-          <ClipboardCheck className="w-4 h-4 mr-2" /> \uD3C9\uAC00\uD558\uAE30 (\uC900\uBE44 \uC911)
+          <ClipboardCheck className="w-4 h-4 mr-2" /> 평가하기 (준비 중)
         </Button>
       </div>
 
@@ -320,7 +320,7 @@ export default function SkillDetailPage() {
       {showMcp && mcpAdapter && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">MCP \uC5B4\uB311\uD130</CardTitle>
+            <CardTitle className="text-sm font-medium">MCP 어댑터</CardTitle>
           </CardHeader>
           <CardContent>
             <pre
@@ -337,7 +337,7 @@ export default function SkillDetailPage() {
       {showOpenApi && openApiSpec !== null && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">OpenAPI \uC2A4\uD399</CardTitle>
+            <CardTitle className="text-sm font-medium">OpenAPI 스펙</CardTitle>
           </CardHeader>
           <CardContent>
             <pre

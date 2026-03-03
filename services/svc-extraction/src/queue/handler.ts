@@ -328,7 +328,7 @@ async function runAnalysis(
     eventId: crypto.randomUUID(),
     occurredAt: new Date().toISOString(),
     type: "analysis.completed",
-    payload: { documentId, analysisId, organizationId, findingCount: findings.length, coreProcessCount: coreSummary.coreProcessCount },
+    payload: { documentId, extractionId, organizationId, analysisId, findingCount: findings.length, coreProcessCount: coreSummary.coreProcessCount },
   });
 
   // Emit diagnosis.completed event

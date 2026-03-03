@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,7 @@ import { getDocType, groupDocuments, getStatusInfo } from '@/lib/doc-categories'
 
 export default function AnalysisPage() {
   const { organizationId } = useOrganization();
+  const [searchParams] = useSearchParams();
   const [documents, setDocuments] = useState<DocumentRow[]>([]);
   const [selectedDoc, setSelectedDoc] = useState<DocumentRow | null>(null);
   const [chunks, setChunks] = useState<DocumentChunk[]>([]);
@@ -34,18 +36,22 @@ export default function AnalysisPage() {
   const [actionInProgress, setActionInProgress] = useState<Set<string>>(new Set());
 
   useEffect(() => {
+    const targetDocId = searchParams.get('doc');
     void fetchDocuments(organizationId).then((res) => {
       if (res.success) {
         setDocuments(res.data.documents);
-        const first = res.data.documents[0];
-        if (first) setSelectedDoc(first);
+        const target = targetDocId
+          ? res.data.documents.find((d) => d.document_id === targetDocId)
+          : undefined;
+        const fallback = res.data.documents[0];
+        setSelectedDoc(target ?? fallback ?? null);
       } else {
         toast.error('문서 목록을 불러오지 못했습니다: ' + res.error.message);
       }
     }).catch(() => {
       toast.error('문서 목록 API 호출 실패');
     });
-  }, [organizationId]);
+  }, [organizationId, searchParams]);
 
   useEffect(() => {
     if (!selectedDoc) return;

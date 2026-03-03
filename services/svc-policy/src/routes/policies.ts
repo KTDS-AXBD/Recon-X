@@ -220,6 +220,11 @@ export async function handleListPolicies(
     binds.push(status);
   }
 
+  // COUNT query (same filters, no LIMIT/OFFSET)
+  const countQuery = query.replace("SELECT *", "SELECT COUNT(*) as cnt");
+  const countResult = await env.DB_POLICY.prepare(countQuery).bind(...binds).first<{ cnt: number }>();
+  const total = countResult?.cnt ?? 0;
+
   query += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
   binds.push(limit, offset);
 
@@ -227,7 +232,7 @@ export async function handleListPolicies(
 
   const policies = (result.results ?? []).map(formatPolicyRow);
 
-  return ok({ policies, limit, offset });
+  return ok({ policies, total, limit, offset });
 }
 
 // ── GET /policies/:id ───────────────────────────────────────────────

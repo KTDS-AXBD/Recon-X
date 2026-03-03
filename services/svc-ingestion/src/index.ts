@@ -55,6 +55,12 @@ export default {
         const orgId = request.headers.get("X-Organization-Id") ?? "unknown";
         const limit = Number(url.searchParams.get("limit") ?? "50");
         const offset = Number(url.searchParams.get("offset") ?? "0");
+
+        const countResult = await env.DB_INGESTION.prepare(
+          "SELECT COUNT(*) as cnt FROM documents WHERE organization_id = ?",
+        ).bind(orgId).first<{ cnt: number }>();
+        const total = countResult?.cnt ?? 0;
+
         const { results } = await env.DB_INGESTION.prepare(
           `SELECT document_id, organization_id, uploaded_by, r2_key, file_type,
                   file_size_byte, original_name, status, uploaded_at
@@ -73,7 +79,7 @@ export default {
             status: string;
             uploaded_at: string;
           }>();
-        return Response.json({ success: true, data: { documents: results } });
+        return Response.json({ success: true, data: { documents: results, total } });
       }
 
       // GET /documents/:id/chunks — retrieve parsed chunks for a document

@@ -80,6 +80,11 @@ export async function handleQueryAudit(
   if (fromDate) { query += " AND occurred_at >= ?"; bindings.push(fromDate); }
   if (toDate) { query += " AND occurred_at <= ?"; bindings.push(toDate); }
 
+  // COUNT query (same filters, no LIMIT/OFFSET)
+  const countQuery = query.replace("SELECT *", "SELECT COUNT(*) as cnt");
+  const countResult = await env.DB_SECURITY.prepare(countQuery).bind(...bindings).first<{ cnt: number }>();
+  const total = countResult?.cnt ?? 0;
+
   query += " ORDER BY occurred_at DESC LIMIT ? OFFSET ?";
   bindings.push(limit, offset);
 
@@ -87,7 +92,7 @@ export async function handleQueryAudit(
 
   return ok({
     items: result.results,
-    pagination: { page: Math.floor(offset / limit) + 1, limit, total: result.results.length },
+    pagination: { page: Math.floor(offset / limit) + 1, limit, total },
   });
 }
 

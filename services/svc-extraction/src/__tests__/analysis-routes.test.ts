@@ -262,8 +262,8 @@ describe("analysis routes (via index.ts router)", () => {
   describe("GET /analysis/:documentId/summary", () => {
     it("returns 200 with valid summary data", async () => {
       const db = createDb({
-        "SELECT summary_json FROM analyses": {
-          first: { summary_json: sampleSummaryJson },
+        "summary_json": {
+          first: { summary_json: sampleSummaryJson, llm_provider: "anthropic", llm_model: "claude-sonnet-4-6" },
         },
       });
       const env = mockEnv(db);
@@ -276,17 +276,19 @@ describe("analysis routes (via index.ts router)", () => {
       expect(res.status).toBe(200);
       const body = await res.json() as {
         success: boolean;
-        data: { documentId: string; organizationId: string; counts: { processes: number } };
+        data: { documentId: string; organizationId: string; counts: { processes: number }; llmProvider: string; llmModel: string };
       };
       expect(body.success).toBe(true);
       expect(body.data.documentId).toBe("doc-1");
       expect(body.data.organizationId).toBe("org-1");
       expect(body.data.counts.processes).toBe(3);
+      expect(body.data.llmProvider).toBe("anthropic");
+      expect(body.data.llmModel).toBe("claude-sonnet-4-6");
     });
 
     it("returns 404 for non-existent document", async () => {
       const db = createDb({
-        "SELECT summary_json FROM analyses": { first: null },
+        "summary_json": { first: null },
       });
       const env = mockEnv(db);
       const ctx = mockCtx();
@@ -303,8 +305,8 @@ describe("analysis routes (via index.ts router)", () => {
 
     it("returns 500 when summary_json fails schema validation", async () => {
       const db = createDb({
-        "SELECT summary_json FROM analyses": {
-          first: { summary_json: JSON.stringify({ invalidField: true }) },
+        "summary_json": {
+          first: { summary_json: JSON.stringify({ invalidField: true }), llm_provider: null, llm_model: null },
         },
       });
       const env = mockEnv(db);

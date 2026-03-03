@@ -55,7 +55,7 @@ describe("callLlm", () => {
     const body = JSON.parse(opts.body as string) as Record<string, unknown>;
     expect(body["tier"]).toBe("sonnet");
     expect(body["callerService"]).toBe("svc-extraction");
-    expect(body["maxTokens"]).toBe(4096);
+    expect(body["maxTokens"]).toBe(8192);
     expect(body["messages"]).toEqual([
       { role: "user", content: "test-prompt" },
     ]);

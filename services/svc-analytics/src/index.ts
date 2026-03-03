@@ -10,7 +10,7 @@
  *   GET  /quality              — quality metrics (parsing, extraction, policy, skill)
  */
 
-import { createLogger, unauthorized, notFound, extractRbacContext, checkPermission, logAudit } from "@ai-foundry/utils";
+import { createLogger, unauthorized, verifyInternalSecret, errFromUnknown, notFound, extractRbacContext, checkPermission, logAudit } from "@ai-foundry/utils";
 import { processQueueEvent } from "./routes/queue.js";
 import { handleGetKpi, handleGetCost, handleGetDashboard } from "./routes/kpi.js";
 import { handleGetQuality } from "./routes/quality.js";
@@ -36,8 +36,7 @@ export default {
     }
 
     // All other routes require inter-service secret
-    const secret = request.headers.get("X-Internal-Secret");
-    if (!secret || secret !== env.INTERNAL_API_SECRET) {
+    if (!verifyInternalSecret(request, env.INTERNAL_API_SECRET)) {
       logger.warn("Unauthorized request", { path, method });
       return unauthorized("Missing or invalid X-Internal-Secret");
     }
@@ -97,7 +96,7 @@ export default {
       return notFound("route", path);
     } catch (e) {
       logger.error("Unhandled error", { error: String(e), path, method });
-      return new Response("Internal Server Error", { status: 500 });
+      return errFromUnknown(e);
     }
   },
 } satisfies ExportedHandler<Env>;

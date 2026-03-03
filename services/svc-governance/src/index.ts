@@ -3,7 +3,7 @@
  * Governance: Prompt Registry, cost monitoring, trust dashboard
  */
 
-import { createLogger, unauthorized, errFromUnknown, extractRbacContext, checkPermission, logAudit } from "@ai-foundry/utils";
+import { createLogger, unauthorized, verifyInternalSecret, errFromUnknown, extractRbacContext, checkPermission, logAudit } from "@ai-foundry/utils";
 import type { ExportedHandler } from "@cloudflare/workers-types";
 import type { Env } from "./env.js";
 import { handleCreatePrompt, handleListPrompts, handleGetPrompt } from "./routes/prompts.js";
@@ -32,8 +32,7 @@ export default {
     }
 
     // All other routes require inter-service secret
-    const secret = request.headers.get("X-Internal-Secret");
-    if (!secret || secret !== env.INTERNAL_API_SECRET) {
+    if (!verifyInternalSecret(request, env.INTERNAL_API_SECRET)) {
       logger.warn("Unauthorized request", { path, method });
       return unauthorized("Missing or invalid X-Internal-Secret");
     }

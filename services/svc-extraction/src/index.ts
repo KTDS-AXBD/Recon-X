@@ -9,7 +9,7 @@
  * Results are written to DB_EXTRACTION and forwarded to svc-policy via the pipeline queue.
  */
 
-import { createLogger, unauthorized, notFound, ok, extractRbacContext, checkPermission, logAudit } from "@ai-foundry/utils";
+import { createLogger, unauthorized, verifyInternalSecret, errFromUnknown, notFound, ok, extractRbacContext, checkPermission, logAudit } from "@ai-foundry/utils";
 import type { Env } from "./env.js";
 import { handleExtract } from "./routes/extract.js";
 import { handleAnalysisRoutes } from "./routes/analysis.js";
@@ -32,8 +32,7 @@ export default {
     }
 
     // All other routes require inter-service secret
-    const secret = request.headers.get("X-Internal-Secret");
-    if (!secret || secret !== env.INTERNAL_API_SECRET) {
+    if (!verifyInternalSecret(request, env.INTERNAL_API_SECRET)) {
       logger.warn("Unauthorized request", { path, method });
       return unauthorized("Missing or invalid X-Internal-Secret");
     }
@@ -166,7 +165,7 @@ export default {
       return notFound("route");
     } catch (e) {
       logger.error("Unhandled error", { error: String(e), path, method });
-      return new Response("Internal Server Error", { status: 500 });
+      return errFromUnknown(e);
     }
   },
 } satisfies ExportedHandler<Env>;

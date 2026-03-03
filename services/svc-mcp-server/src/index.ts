@@ -14,7 +14,7 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
-import { createLogger } from "@ai-foundry/utils";
+import { createLogger, timingSafeCompare } from "@ai-foundry/utils";
 import { z } from "zod";
 import type { Env } from "./env.js";
 
@@ -223,14 +223,14 @@ function authenticate(request: Request, env: Env): boolean {
   const authHeader = request.headers.get("Authorization");
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.slice(7);
-    if (token === env.INTERNAL_API_SECRET) {
+    if (timingSafeCompare(token, env.INTERNAL_API_SECRET)) {
       return true;
     }
   }
 
   // Check X-Internal-Secret header (inter-service)
   const secret = request.headers.get("X-Internal-Secret");
-  if (secret === env.INTERNAL_API_SECRET) {
+  if (secret && timingSafeCompare(secret, env.INTERNAL_API_SECRET)) {
     return true;
   }
 

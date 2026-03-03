@@ -1,4 +1,4 @@
-import { createLogger, unauthorized } from "@ai-foundry/utils";
+import { createLogger, unauthorized, verifyInternalSecret, errFromUnknown } from "@ai-foundry/utils";
 import type { Env } from "./env.js";
 import { handleHealth } from "./routes/health.js";
 import { handleComplete } from "./routes/complete.js";
@@ -15,8 +15,7 @@ export default {
     }
 
     // All other routes require inter-service secret
-    const secret = request.headers.get("X-Internal-Secret");
-    if (!secret || secret !== env.INTERNAL_API_SECRET) {
+    if (!verifyInternalSecret(request, env.INTERNAL_API_SECRET)) {
       logger.warn("Unauthorized request", {
         path: url.pathname,
         method: request.method,
@@ -39,7 +38,7 @@ export default {
       return new Response("Not Found", { status: 404 });
     } catch (e) {
       logger.error("Unhandled error", { error: String(e), path, method });
-      return new Response("Internal Server Error", { status: 500 });
+      return errFromUnknown(e);
     }
   },
 } satisfies ExportedHandler<Env>;

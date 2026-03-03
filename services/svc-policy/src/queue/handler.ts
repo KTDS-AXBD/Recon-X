@@ -89,7 +89,7 @@ export async function processQueueEvent(
       logger.error("Failed to fetch extraction", { extractionId, status: resp.status });
       return new Response(
         JSON.stringify({ status: "error", reason: `Extraction fetch failed: ${resp.status}` }),
-        { status: 200, headers: { "Content-Type": "application/json" } },
+        { status: 502, headers: { "Content-Type": "application/json" } },
       );
     }
 
@@ -99,7 +99,7 @@ export async function processQueueEvent(
     logger.error("Extraction fetch error", { extractionId, error: String(e) });
     return new Response(
       JSON.stringify({ status: "error", reason: `Extraction fetch error: ${String(e)}` }),
-      { status: 200, headers: { "Content-Type": "application/json" } },
+      { status: 502, headers: { "Content-Type": "application/json" } },
     );
   }
 
@@ -150,7 +150,7 @@ export async function processQueueEvent(
     logger.error("Opus LLM call failed", { extractionId, error: String(e) });
     return new Response(
       JSON.stringify({ status: "error", reason: `LLM call failed: ${String(e)}` }),
-      { status: 200, headers: { "Content-Type": "application/json" } },
+      { status: 502, headers: { "Content-Type": "application/json" } },
     );
   }
 

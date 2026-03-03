@@ -8,7 +8,7 @@ import {
   type PolicyCandidateReadyEvent,
   type SkillPackagedEvent,
 } from "@ai-foundry/types";
-import { createLogger, ok, badRequest } from "@ai-foundry/utils";
+import { createLogger, ok, badRequest, err } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
 
 const logger = createLogger("svc-notification:queue");
@@ -51,51 +51,39 @@ function generateId(): string {
   return `ntf-${crypto.randomUUID().slice(0, 8)}`;
 }
 
-function handlePolicyCandidateReady(
+async function handlePolicyCandidateReady(
   event: PolicyCandidateReadyEvent,
   env: Env,
-  ctx: ExecutionContext,
-): void {
+): Promise<void> {
   const { policyId, hitlSessionId, candidateCount, reviewerId } = event.payload;
   const recipientId = reviewerId ?? "reviewer-pool";
 
-  ctx.waitUntil(
-    insertNotification(env.DB_NOTIFICATION, {
-      notificationId: generateId(),
-      recipientId,
-      type: "hitl_review_needed",
-      title: `Policy review requested`,
-      body: `${candidateCount} policy candidate(s) ready for HITL review. Policy: ${policyId}, Session: ${hitlSessionId}`,
-      metadata: { policyId, hitlSessionId, candidateCount, eventId: event.eventId },
-    }).then(() =>
-      logger.info("Notification created", { type: "hitl_review_needed", policyId, recipientId }),
-    ).catch((e) =>
-      logger.error("Failed to insert notification", { error: String(e), policyId }),
-    ),
-  );
+  await insertNotification(env.DB_NOTIFICATION, {
+    notificationId: generateId(),
+    recipientId,
+    type: "hitl_review_needed",
+    title: `Policy review requested`,
+    body: `${candidateCount} policy candidate(s) ready for HITL review. Policy: ${policyId}, Session: ${hitlSessionId}`,
+    metadata: { policyId, hitlSessionId, candidateCount, eventId: event.eventId },
+  });
+  logger.info("Notification created", { type: "hitl_review_needed", policyId, recipientId });
 }
 
-function handleSkillPackaged(
+async function handleSkillPackaged(
   event: SkillPackagedEvent,
   env: Env,
-  ctx: ExecutionContext,
-): void {
+): Promise<void> {
   const { skillId, policyCount, trustScore } = event.payload;
 
-  ctx.waitUntil(
-    insertNotification(env.DB_NOTIFICATION, {
-      notificationId: generateId(),
-      recipientId: "developer-pool",
-      type: "skill_ready",
-      title: `New Skill package ready`,
-      body: `Skill ${skillId} packaged with ${policyCount} policies (trust: ${(trustScore * 100).toFixed(0)}%)`,
-      metadata: { skillId, policyCount, trustScore, eventId: event.eventId },
-    }).then(() =>
-      logger.info("Notification created", { type: "skill_ready", skillId }),
-    ).catch((e) =>
-      logger.error("Failed to insert notification", { error: String(e), skillId }),
-    ),
-  );
+  await insertNotification(env.DB_NOTIFICATION, {
+    notificationId: generateId(),
+    recipientId: "developer-pool",
+    type: "skill_ready",
+    title: `New Skill package ready`,
+    body: `Skill ${skillId} packaged with ${policyCount} policies (trust: ${(trustScore * 100).toFixed(0)}%)`,
+    metadata: { skillId, policyCount, trustScore, eventId: event.eventId },
+  });
+  logger.info("Notification created", { type: "skill_ready", skillId });
 }
 
 export async function processQueueEvent(
@@ -118,15 +106,20 @@ export async function processQueueEvent(
 
   const event = parsed.data;
 
-  switch (event.type) {
-    case "policy.candidate_ready":
-      handlePolicyCandidateReady(event, env, ctx);
-      break;
-    case "skill.packaged":
-      handleSkillPackaged(event, env, ctx);
-      break;
-    default:
-      logger.info("Ignoring unhandled event type", { type: event.type });
+  try {
+    switch (event.type) {
+      case "policy.candidate_ready":
+        await handlePolicyCandidateReady(event, env);
+        break;
+      case "skill.packaged":
+        await handleSkillPackaged(event, env);
+        break;
+      default:
+        logger.info("Ignoring unhandled event type", { type: event.type });
+    }
+  } catch (e) {
+    logger.error("Failed to process notification event", { error: String(e), type: event.type });
+    return err({ code: "INTERNAL_ERROR", message: `Notification write failed: ${String(e)}` }, 500);
   }
 
   return ok({ status: "processed", eventType: event.type });

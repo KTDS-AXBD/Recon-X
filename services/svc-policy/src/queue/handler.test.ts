@@ -188,7 +188,7 @@ describe("processQueueEvent (svc-policy)", () => {
       },
     };
     const res = await processQueueEvent(event, env, mockCtx());
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(502);
     const body = (await res.json()) as { status: string; reason: string };
     expect(body.status).toBe("error");
     expect(body.reason).toContain("Extraction fetch failed");

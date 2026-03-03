@@ -175,9 +175,7 @@ export async function processQueueEvent(
 
   const event = parsed.data;
 
-  // Fire-and-forget metric upserts
-  const work = (async () => {
-    try {
+  try {
       switch (event.type) {
         case "document.uploaded":
           await upsertPipelineMetric(env.DB_ANALYTICS, event.payload.organizationId, "documents_uploaded");
@@ -251,12 +249,9 @@ export async function processQueueEvent(
           break;
       }
       logger.info("Metric recorded", { type: event.type, eventId: event.eventId });
-    } catch (e) {
-      logger.error("Failed to record metric", { error: String(e), type: event.type });
-    }
-  })();
-
-  ctx.waitUntil(work);
+  } catch (e) {
+    logger.error("Failed to record metric", { error: String(e), type: event.type });
+  }
 
   return ok({ status: "processed", eventType: event.type });
 }

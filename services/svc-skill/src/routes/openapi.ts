@@ -10,6 +10,7 @@ import {
   createLogger,
   notFound,
   extractRbacContext,
+  errFromUnknown,
 } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
 
@@ -108,7 +109,7 @@ export async function handleGetOpenApiAdapter(
     skillPackage = JSON.parse(raw) as SkillPackage;
   } catch (e) {
     logger.error("Failed to parse skill package JSON", { skillId, error: String(e) });
-    return new Response("Internal Server Error", { status: 500 });
+    return errFromUnknown(e);
   }
 
   // Transform to OpenAPI spec

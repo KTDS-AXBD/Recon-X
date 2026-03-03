@@ -88,7 +88,7 @@ describe("processQueueEvent", () => {
     expect(res.status).toBe(200);
     const body = await res.json() as { success: boolean; data: { eventType: string } };
     expect(body.data.eventType).toBe("policy.candidate_ready");
-    expect(ctx.waitUntil).toHaveBeenCalledOnce();
+    expect(env.DB_NOTIFICATION.prepare).toHaveBeenCalled();
   });
 
   it("processes skill.packaged and creates notification", async () => {
@@ -98,7 +98,7 @@ describe("processQueueEvent", () => {
     expect(res.status).toBe(200);
     const body = await res.json() as { success: boolean; data: { eventType: string } };
     expect(body.data.eventType).toBe("skill.packaged");
-    expect(ctx.waitUntil).toHaveBeenCalledOnce();
+    expect(env.DB_NOTIFICATION.prepare).toHaveBeenCalled();
   });
 
   it("ignores unhandled event types gracefully", async () => {
@@ -120,7 +120,7 @@ describe("processQueueEvent", () => {
     const res = await processQueueEvent(jsonReq(event), env, ctx);
     expect(res.status).toBe(200);
     // No notification created for unhandled types
-    expect(ctx.waitUntil).not.toHaveBeenCalled();
+    expect(env.DB_NOTIFICATION.prepare).not.toHaveBeenCalled();
   });
 
   it("uses reviewerId as recipientId when provided", async () => {
@@ -129,8 +129,8 @@ describe("processQueueEvent", () => {
     const ctx = mockCtx();
     await processQueueEvent(jsonReq(candidateReadyEvent), env, ctx);
 
-    // The waitUntil is called with a promise that calls insertNotification
-    expect(ctx.waitUntil).toHaveBeenCalledOnce();
+    // D1 write is awaited directly (no ctx.waitUntil)
+    expect(env.DB_NOTIFICATION.prepare).toHaveBeenCalled();
   });
 
   it("uses reviewer-pool when reviewerId is not provided", async () => {
@@ -142,6 +142,6 @@ describe("processQueueEvent", () => {
     };
     const res = await processQueueEvent(jsonReq(event), env, ctx);
     expect(res.status).toBe(200);
-    expect(ctx.waitUntil).toHaveBeenCalledOnce();
+    expect(env.DB_NOTIFICATION.prepare).toHaveBeenCalled();
   });
 });

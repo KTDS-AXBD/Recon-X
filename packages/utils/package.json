@@ -9,6 +9,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit",
+    "test": "vitest run",
     "lint": "eslint src/"
   },
   "dependencies": {

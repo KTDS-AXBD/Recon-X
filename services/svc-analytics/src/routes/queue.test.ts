@@ -102,7 +102,7 @@ describe("processQueueEvent", () => {
       ctx,
     );
     expect(res.status).toBe(200);
-    expect(ctx.waitUntil).toHaveBeenCalledOnce();
+    expect(env.DB_ANALYTICS.prepare).toHaveBeenCalled();
   });
 
   it("processes policy.approved", async () => {
@@ -151,7 +151,7 @@ describe("processQueueEvent", () => {
       ctx,
     );
     expect(res.status).toBe(200);
-    expect(ctx.waitUntil).toHaveBeenCalledOnce();
+    expect(env.DB_ANALYTICS.prepare).toHaveBeenCalled();
   });
 
   it("handles ontology.normalized without error", async () => {

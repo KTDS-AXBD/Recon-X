@@ -3,7 +3,7 @@
  * Returns aggregated quality metrics for a given organization and date range.
  */
 
-import { ok, createLogger } from "@ai-foundry/utils";
+import { ok, createLogger, errFromUnknown } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
 
 const logger = createLogger("svc-analytics:quality");
@@ -148,6 +148,6 @@ export async function handleGetQuality(
     });
   } catch (e) {
     logger.error("Failed to fetch quality metrics", { error: String(e) });
-    return new Response(JSON.stringify({ error: "Internal error" }), { status: 500 });
+    return errFromUnknown(e);
   }
 }

@@ -34,7 +34,7 @@ export const googleAdapter: ProviderAdapter = {
     const gatewayUrl = env["CLOUDFLARE_AI_GATEWAY_URL"] as string;
     const apiKey = env["GOOGLE_AI_API_KEY"] as string;
     return {
-      url: `${gatewayUrl}/google-ai-studio/v1beta/models/${model}:generateContent`,
+      url: `${gatewayUrl}/google-ai-studio/v1/models/${model}:generateContent`,
       headers: {
         "Content-Type": "application/json",
         "x-goog-api-key": apiKey,

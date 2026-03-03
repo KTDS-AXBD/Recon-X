@@ -65,7 +65,7 @@ describe("googleAdapter", () => {
         GOOGLE_AI_API_KEY: "AIza-test",
       };
       const endpoint = googleAdapter.getEndpoint(env, "gemini-2.0-flash");
-      expect(endpoint.url).toBe("https://gw.example.com/google-ai-studio/v1beta/models/gemini-2.0-flash:generateContent");
+      expect(endpoint.url).toBe("https://gw.example.com/google-ai-studio/v1/models/gemini-2.0-flash:generateContent");
       expect(endpoint.headers["x-goog-api-key"]).toBe("AIza-test");
     });
   });

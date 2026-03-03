@@ -54,6 +54,20 @@ tmp/
 .tmp/
 .team-tmp/
 
+# Ralph runtime
+ralph-status.json
+ralph-workspace/
+
+# Agent memory (service-level)
+services/*/.claude/
+
+# Screenshots (temp analysis artifacts)
+analysis-report-*.png
+comparison-tab-*.png
+
+# Windows Zone.Identifier metadata
+*:Zone.Identifier
+
 # bkit state (plugin runtime)
 .bkit/
 

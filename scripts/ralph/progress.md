@@ -54,3 +54,43 @@
   - 해결: sanitize(comma→underscore, parens→underscore) 후 업로드
   - 중복 문서 일부 발생 (stopped retry script) — document_id 다르므로 파싱 결과 무해
   - batch-upload.sh 개선 필요: 파일명 sanitize 로직 추가
+
+## Iteration 9 — 2026-03-04 03:40
+- Task: R-9 — Tier 4 프로그램/배치설계서 업로드 (153건)
+- Status: success
+- Files: 151 uploaded (프로그램설계서 134 + 배치설계서 17), 0 failed
+- Verify: typecheck=n/a lint=n/a test=n/a (upload-only task)
+- Commit: (upload task, no code change)
+- Duration: ~3m
+- Notes:
+  - 3건 comma 파일명 사전 정제 (쉼표→언더스코어)
+  - 전량 xlsx → 내부 파서 처리, LLM 비용 $0
+  - PRD에 153건이라 했으나 실제 find 결과 151건 (2건 누락 또는 중복 제거)
+
+## Iteration 10 — 2026-03-04 03:47
+- Task: R-10 — Tier 5 단위테스트 업로드 (129건)
+- Status: success
+- Files: 129 uploaded (단위테스트케이스 129건), 0 failed
+- Verify: typecheck=n/a lint=n/a test=n/a (upload-only task)
+- Commit: (upload task, no code change)
+- Duration: ~2m 30s
+- Notes:
+  - 2건 comma 파일명 사전 정제 (DB,DC → DB_DC)
+  - 전량 xlsx → 내부 파서 처리, LLM 비용 $0
+  - 6개 업무영역: 지급(22) + 업무공통(18) + 상품제공(23) + 신계약(15) + 운용지시(36) + 적립금수수료(15) = 129건
+
+## Iteration 11 — 2026-03-04 03:55
+- Task: R-11 — 파싱 품질 리포트 생성
+- Status: success
+- Files: scripts/ralph/report-20260304-quality.md
+- Verify: typecheck=n/a lint=n/a test=n/a (report-only task)
+- Commit: (pending)
+- Duration: ~5m
+- Notes:
+  - 전체 1,300건 (중복 포함) 분석 완료
+  - parsed 1,278 (98.3%), failed 21, pending 1
+  - 화면설계서 10건 샘플 품질 검증 PASS (XlScreenMeta 정상 추출)
+  - ERwin xsd→txt 변환 업로드 완료 (1,205 tables)
+  - SCDSA002 4건 유저 결정 SKIP
+  - Stage 2 투입 추천: Tier 1+2 핵심 32건 우선
+  - 총 비용: ~$0.10 (Unstructured.io PPTX/DOCX만)

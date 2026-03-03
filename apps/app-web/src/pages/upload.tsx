@@ -53,6 +53,9 @@ export default function DocumentUploadPage() {
   // Group collapse state
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
+  // Track documents with an action in progress (reprocess/delete)
+  const [actionInProgress, setActionInProgress] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     void fetchDocuments(organizationId).then((res) => {
       if (res.success) setDocuments(res.data.documents);
@@ -96,6 +99,8 @@ export default function DocumentUploadPage() {
   };
 
   const handleReprocess = async (doc: DocumentRow) => {
+    if (actionInProgress.has(doc.document_id)) return;
+    setActionInProgress((prev) => new Set(prev).add(doc.document_id));
     try {
       const res = await reprocessDocument(organizationId, doc.document_id);
       if (res.success) {
@@ -106,11 +111,15 @@ export default function DocumentUploadPage() {
       }
     } catch {
       toast.error('재처리 요청 중 오류가 발생했습니다');
+    } finally {
+      setActionInProgress((prev) => { const next = new Set(prev); next.delete(doc.document_id); return next; });
     }
   };
 
   const handleDelete = async (doc: DocumentRow) => {
+    if (actionInProgress.has(doc.document_id)) return;
     if (!confirm(`정말 삭제하시겠습니까?\n${doc.original_name}`)) return;
+    setActionInProgress((prev) => new Set(prev).add(doc.document_id));
     try {
       const res = await deleteDocument(organizationId, doc.document_id);
       if (res.success) {
@@ -121,6 +130,8 @@ export default function DocumentUploadPage() {
       }
     } catch {
       toast.error('삭제 중 오류가 발생했습니다');
+    } finally {
+      setActionInProgress((prev) => { const next = new Set(prev); next.delete(doc.document_id); return next; });
     }
   };
 
@@ -397,10 +408,10 @@ export default function DocumentUploadPage() {
                               <div className="flex items-center gap-1 shrink-0">
                                 {(doc.status === 'failed' || doc.status === 'encrypted') && (
                                   <>
-                                    <Button variant="ghost" size="icon" title="재처리" onClick={() => void handleReprocess(doc)}>
-                                      <RotateCcw className="w-4 h-4" style={{ color: '#3B82F6' }} />
+                                    <Button variant="ghost" size="icon" title="재처리" disabled={actionInProgress.has(doc.document_id)} onClick={() => void handleReprocess(doc)}>
+                                      <RotateCcw className={`w-4 h-4${actionInProgress.has(doc.document_id) ? ' animate-spin' : ''}`} style={{ color: '#3B82F6' }} />
                                     </Button>
-                                    <Button variant="ghost" size="icon" title="삭제" onClick={() => void handleDelete(doc)}>
+                                    <Button variant="ghost" size="icon" title="삭제" disabled={actionInProgress.has(doc.document_id)} onClick={() => void handleDelete(doc)}>
                                       <Trash2 className="w-4 h-4" style={{ color: '#EF4444' }} />
                                     </Button>
                                   </>

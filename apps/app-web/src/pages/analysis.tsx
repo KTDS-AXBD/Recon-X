@@ -30,6 +30,9 @@ export default function AnalysisPage() {
   // Group collapse state
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
+  // Track documents with an action in progress (reprocess/delete)
+  const [actionInProgress, setActionInProgress] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     void fetchDocuments(organizationId).then((res) => {
       if (res.success) {
@@ -101,6 +104,8 @@ export default function AnalysisPage() {
   };
 
   const handleReprocess = async (doc: DocumentRow) => {
+    if (actionInProgress.has(doc.document_id)) return;
+    setActionInProgress((prev) => new Set(prev).add(doc.document_id));
     try {
       const res = await reprocessDocument(organizationId, doc.document_id);
       if (res.success) {
@@ -111,11 +116,15 @@ export default function AnalysisPage() {
       }
     } catch {
       toast.error('재처리 요청 중 오류가 발생했습니다');
+    } finally {
+      setActionInProgress((prev) => { const next = new Set(prev); next.delete(doc.document_id); return next; });
     }
   };
 
   const handleDelete = async (doc: DocumentRow) => {
+    if (actionInProgress.has(doc.document_id)) return;
     if (!confirm(`정말 삭제하시겠습니까?\n${doc.original_name}`)) return;
+    setActionInProgress((prev) => new Set(prev).add(doc.document_id));
     try {
       const res = await deleteDocument(organizationId, doc.document_id);
       if (res.success) {
@@ -126,6 +135,8 @@ export default function AnalysisPage() {
       }
     } catch {
       toast.error('삭제 중 오류가 발생했습니다');
+    } finally {
+      setActionInProgress((prev) => { const next = new Set(prev); next.delete(doc.document_id); return next; });
     }
   };
 
@@ -383,10 +394,11 @@ export default function AnalysisPage() {
                     <p className="text-xs ml-6 mb-2" style={{ color: 'var(--text-secondary)' }}>{selectedDoc.error_message}</p>
                   )}
                   <div className="flex gap-2 ml-6">
-                    <Button size="sm" variant="outline" onClick={() => void handleReprocess(selectedDoc)}>
-                      <RotateCcw className="w-3.5 h-3.5 mr-1.5" />재처리
+                    <Button size="sm" variant="outline" disabled={actionInProgress.has(selectedDoc.document_id)} onClick={() => void handleReprocess(selectedDoc)}>
+                      <RotateCcw className={`w-3.5 h-3.5 mr-1.5${actionInProgress.has(selectedDoc.document_id) ? ' animate-spin' : ''}`} />
+                      {actionInProgress.has(selectedDoc.document_id) ? '처리 중...' : '재처리'}
                     </Button>
-                    <Button size="sm" variant="outline" className="text-red-500 hover:text-red-600" onClick={() => void handleDelete(selectedDoc)}>
+                    <Button size="sm" variant="outline" className="text-red-500 hover:text-red-600" disabled={actionInProgress.has(selectedDoc.document_id)} onClick={() => void handleDelete(selectedDoc)}>
                       <Trash2 className="w-3.5 h-3.5 mr-1.5" />삭제
                     </Button>
                   </div>

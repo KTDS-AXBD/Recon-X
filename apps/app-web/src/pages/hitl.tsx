@@ -7,6 +7,7 @@ import { CheckCircle, XCircle, MessageSquare, AlertTriangle, Clock, User } from 
 import { toast } from 'sonner';
 import { fetchPolicies, approvePolicy, rejectPolicy } from '@/api/policy';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface PolicyItem {
   id: string;
@@ -22,6 +23,7 @@ interface PolicyItem {
 
 export default function HITLReviewPage() {
   const { organizationId } = useOrganization();
+  const { user } = useAuth();
   const [policies, setPolicies] = useState<PolicyItem[]>([]);
   const [selectedPolicy, setSelectedPolicy] = useState<PolicyItem | null>(null);
   const [comment, setComment] = useState('');
@@ -48,7 +50,7 @@ export default function HITLReviewPage() {
   const handleApprove = async () => {
     if (!selectedPolicy) return;
     try {
-      const res = await approvePolicy(organizationId, selectedPolicy.id, { reviewerId: 'reviewer-001', comment });
+      const res = await approvePolicy(organizationId, selectedPolicy.id, { reviewerId: user?.userId ?? 'anonymous', comment });
       if (res.success) {
         toast.success(`${selectedPolicy.policyCode} 승인 완료`);
         setComment('');
@@ -62,7 +64,7 @@ export default function HITLReviewPage() {
   const handleReject = async () => {
     if (!selectedPolicy) return;
     try {
-      const res = await rejectPolicy(organizationId, selectedPolicy.id, { reviewerId: 'reviewer-001', comment });
+      const res = await rejectPolicy(organizationId, selectedPolicy.id, { reviewerId: user?.userId ?? 'anonymous', comment });
       if (res.success) {
         toast.success(`${selectedPolicy.policyCode} 반려 완료`);
         setComment('');

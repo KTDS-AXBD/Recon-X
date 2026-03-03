@@ -4,16 +4,8 @@ import { buildHeaders } from "./headers";
 const API_BASE =
   (import.meta.env["VITE_API_BASE"] as string | undefined) ?? "/api";
 
-const USER_ID = "analyst-001";
-const USER_ROLE = "Analyst";
-
 function headers(organizationId: string): Record<string, string> {
-  return buildHeaders({
-    organizationId,
-    userId: USER_ID,
-    userRole: USER_ROLE,
-    contentType: "application/json",
-  });
+  return buildHeaders({ organizationId, contentType: "application/json" });
 }
 
 export interface TermRow {

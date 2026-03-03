@@ -4,11 +4,8 @@ import { buildHeaders } from "./headers";
 const API_BASE =
   (import.meta.env["VITE_API_BASE"] as string | undefined) ?? "/api";
 
-const USER_ID = "analyst-001";
-const USER_ROLE = "Analyst";
-
 function headers(organizationId: string): Record<string, string> {
-  return buildHeaders({ organizationId, userId: USER_ID, userRole: USER_ROLE });
+  return buildHeaders({ organizationId });
 }
 
 export interface DocumentRow {
@@ -41,11 +38,11 @@ export interface UploadResult {
 
 export async function fetchDocuments(
   organizationId: string,
-): Promise<ApiResponse<{ documents: DocumentRow[] }>> {
+): Promise<ApiResponse<{ documents: DocumentRow[]; total: number }>> {
   const res = await fetch(`${API_BASE}/documents`, {
     headers: headers(organizationId),
   });
-  return res.json() as Promise<ApiResponse<{ documents: DocumentRow[] }>>;
+  return res.json() as Promise<ApiResponse<{ documents: DocumentRow[]; total: number }>>;
 }
 
 export async function fetchDocument(

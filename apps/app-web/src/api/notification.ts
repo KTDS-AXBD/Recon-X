@@ -1,40 +1,38 @@
 import type { ApiResponse } from "@ai-foundry/types";
 import { buildHeaders } from "./headers";
+import { getAuthUser } from "./auth-store";
 
 const API_BASE =
   (import.meta.env["VITE_API_BASE"] as string | undefined) ?? "/api";
 
-const USER_ID = "admin-001";
-const USER_ROLE = "Analyst";
-
 function headers(organizationId: string): Record<string, string> {
-  return buildHeaders({
-    organizationId,
-    userId: USER_ID,
-    userRole: USER_ROLE,
-    contentType: "application/json",
-  });
+  return buildHeaders({ organizationId, contentType: "application/json" });
 }
 
 export interface Notification {
-  notification_id: string;
-  user_id: string;
+  notificationId: string;
+  recipientId: string;
   type: string;
   title: string;
   body: string;
-  read: boolean;
-  created_at: string;
+  metadata: unknown | null;
+  channel: string;
+  status: string;
+  createdAt: string;
+  sentAt: string | null;
+  readAt: string | null;
 }
 
 export async function fetchNotifications(
   organizationId: string,
-  userId = "admin-001",
-): Promise<ApiResponse<{ items: Notification[] }>> {
+  userId?: string,
+): Promise<ApiResponse<{ notifications: Notification[]; limit: number; offset: number }>> {
+  const effectiveUserId = userId ?? getAuthUser()?.userId ?? "anonymous";
   const res = await fetch(
-    `${API_BASE}/notifications?userId=${encodeURIComponent(userId)}`,
+    `${API_BASE}/notifications?userId=${encodeURIComponent(effectiveUserId)}`,
     { headers: headers(organizationId) },
   );
-  return res.json() as Promise<ApiResponse<{ items: Notification[] }>>;
+  return res.json() as Promise<ApiResponse<{ notifications: Notification[]; limit: number; offset: number }>>;
 }
 
 export async function markNotificationRead(

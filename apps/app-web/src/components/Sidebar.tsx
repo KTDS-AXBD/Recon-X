@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Upload,
@@ -16,12 +16,14 @@ import {
   Moon,
   Sun,
   Building2,
+  LogOut,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MenuItem {
   icon: React.ReactNode;
@@ -35,17 +37,19 @@ const ORGANIZATIONS = [
   { id: 'org-001', label: '파일럿', labelEn: 'Pilot' },
 ] as const;
 
-interface SidebarProps {
-  userRole?: string;
-  userName?: string;
-}
-
-export const Sidebar: React.FC<SidebarProps> = ({
-  userRole = '분석 엔지니어',
-  userName = '김민준',
-}) => {
+export const Sidebar: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { organizationId, setOrganizationId } = useOrganization();
+  const { user, logout } = useAuth();
+
+  const userName = user?.userName ?? '게스트';
+  const userRole = user?.label ?? '미인증';
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const menuItems: MenuItem[] = [
     {
@@ -238,6 +242,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {userRole}
             </Badge>
           </div>
+          <button
+            onClick={handleLogout}
+            className="p-1.5 rounded-md transition-colors hover:bg-white/10"
+            title="로그아웃"
+          >
+            <LogOut className="w-4 h-4" style={{ color: 'rgba(255, 255, 255, 0.6)' }} />
+          </button>
         </div>
       </div>
 

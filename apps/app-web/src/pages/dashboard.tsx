@@ -49,14 +49,14 @@ export default function DashboardPage() {
           fetchDocuments(organizationId),
           fetchPolicies(organizationId, { status: 'candidate', limit: 1 }),
           fetchSkills(organizationId, { limit: 1 }),
-          fetchAuditLogs(organizationId, { limit: 10 }),
+          fetchAuditLogs(organizationId, { limit: 4 }),
           fetchNotifications(organizationId),
         ]);
 
         if (cancelled) return;
 
         const docCount = docsRes.status === 'fulfilled' && docsRes.value.success
-          ? docsRes.value.data.documents.length : 0;
+          ? docsRes.value.data.total : 0;
         const candidateCount = policiesRes.status === 'fulfilled' && policiesRes.value.success
           ? policiesRes.value.data.total : 0;
         const skillCount = skillsRes.status === 'fulfilled' && skillsRes.value.success
@@ -76,7 +76,7 @@ export default function DashboardPage() {
         }
 
         if (notiRes.status === 'fulfilled' && notiRes.value.success) {
-          setNotifications(notiRes.value.data.items.slice(0, 5));
+          setNotifications(notiRes.value.data.notifications.slice(0, 5));
         }
       } catch {
         // graceful fallback
@@ -194,11 +194,11 @@ export default function DashboardPage() {
             <div className="space-y-3">
               {notifications.length > 0 ? notifications.map((n) => (
                 <div
-                  key={n.notification_id}
+                  key={n.notificationId}
                   className="p-3 rounded-lg border-l-4"
                   style={{
-                    backgroundColor: n.read ? 'var(--surface)' : 'rgba(246, 173, 85, 0.05)',
-                    borderColor: n.read ? 'var(--border)' : 'var(--accent)',
+                    backgroundColor: n.readAt ? 'var(--surface)' : 'rgba(246, 173, 85, 0.05)',
+                    borderColor: n.readAt ? 'var(--border)' : 'var(--accent)',
                   }}
                 >
                   <div className="flex items-center justify-between">
@@ -206,7 +206,7 @@ export default function DashboardPage() {
                       {n.title}
                     </div>
                     <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                      {new Date(n.created_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      {new Date(n.createdAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </div>
                   </div>
                   <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>

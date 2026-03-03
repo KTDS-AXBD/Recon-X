@@ -53,7 +53,7 @@ export default function SettingsPage() {
     try {
       const res = await fetchNotifications(organizationId);
       if (res.success && res.data) {
-        setNotifications(res.data.items);
+        setNotifications(res.data.notifications);
       }
     } catch {
       // silent — notifications unavailable
@@ -66,7 +66,7 @@ export default function SettingsPage() {
     try {
       await markNotificationRead(organizationId, id);
       setNotifications((prev) =>
-        prev.map((n) => (n.notification_id === id ? { ...n, read: true } : n)),
+        prev.map((n) => (n.notificationId === id ? { ...n, readAt: new Date().toISOString() } : n)),
       );
       toast.success('알림을 읽음 처리했습니다');
     } catch {
@@ -137,9 +137,9 @@ export default function SettingsPage() {
           <TabsTrigger value="profile"><User className="w-4 h-4 mr-2" />프로필</TabsTrigger>
           <TabsTrigger value="notifications">
             <Bell className="w-4 h-4 mr-2" />알림
-            {notifications.filter((n) => !n.read).length > 0 && (
+            {notifications.filter((n) => !n.readAt).length > 0 && (
               <span className="ml-1 text-xs bg-red-500 text-white rounded-full px-1.5 py-0.5">
-                {notifications.filter((n) => !n.read).length}
+                {notifications.filter((n) => !n.readAt).length}
               </span>
             )}
           </TabsTrigger>
@@ -220,31 +220,31 @@ export default function SettingsPage() {
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {notifications.slice(0, 20).map((n) => (
                       <div
-                        key={n.notification_id}
+                        key={n.notificationId}
                         className="flex items-start justify-between p-3 rounded-lg"
                         style={{
-                          backgroundColor: n.read ? 'var(--surface)' : 'var(--accent-bg, rgba(59,130,246,0.08))',
+                          backgroundColor: n.readAt ? 'var(--surface)' : 'var(--accent-bg, rgba(59,130,246,0.08))',
                           border: '1px solid var(--border)',
                         }}
                       >
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>
-                            {!n.read && <span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-2" />}
+                            {!n.readAt && <span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-2" />}
                             {n.title}
                           </div>
                           <div className="text-xs mt-1 truncate" style={{ color: 'var(--text-secondary)' }}>
                             {n.body}
                           </div>
                           <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
-                            {new Date(n.created_at).toLocaleString('ko-KR')}
+                            {new Date(n.createdAt).toLocaleString('ko-KR')}
                           </div>
                         </div>
-                        {!n.read && (
+                        {!n.readAt && (
                           <Button
                             variant="ghost"
                             size="sm"
                             className="ml-2 shrink-0"
-                            onClick={() => void handleMarkRead(n.notification_id)}
+                            onClick={() => void handleMarkRead(n.notificationId)}
                           >
                             읽음
                           </Button>

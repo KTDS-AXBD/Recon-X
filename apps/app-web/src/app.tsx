@@ -1,6 +1,7 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { OrganizationProvider } from "./contexts/OrganizationContext";
 import { Toaster } from "./components/ui/sonner";
 import { Layout } from "./components/Layout";
@@ -32,32 +33,42 @@ function LoadingFallback() {
   );
 }
 
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+}
+
 export function App() {
   return (
     <ThemeProvider>
+      <AuthProvider>
       <OrganizationProvider>
       <Toaster />
       <BrowserRouter>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/" element={<Layout><DashboardPage /></Layout>} />
-            <Route path="/upload" element={<Layout><UploadPage /></Layout>} />
-            <Route path="/analysis" element={<Layout><AnalysisPage /></Layout>} />
-            <Route path="/analysis-report" element={<Layout><AnalysisReportPage /></Layout>} />
-            <Route path="/hitl" element={<Layout><HITLReviewPage /></Layout>} />
-            <Route path="/ontology" element={<Layout><OntologyPage /></Layout>} />
-            <Route path="/skills" element={<Layout><SkillCatalogPage /></Layout>} />
-            <Route path="/skills/:id" element={<Layout><SkillDetailPage /></Layout>} />
-            <Route path="/api-console" element={<Layout><ApiConsolePage /></Layout>} />
-            <Route path="/trust" element={<Layout><TrustDashboardPage /></Layout>} />
-            <Route path="/audit" element={<Layout><AuditPage /></Layout>} />
-            <Route path="/settings" element={<Layout><SettingsPage /></Layout>} />
-            <Route path="*" element={<Layout><NotFoundPage /></Layout>} />
+            <Route path="/" element={<ProtectedRoute><Layout><DashboardPage /></Layout></ProtectedRoute>} />
+            <Route path="/upload" element={<ProtectedRoute><Layout><UploadPage /></Layout></ProtectedRoute>} />
+            <Route path="/analysis" element={<ProtectedRoute><Layout><AnalysisPage /></Layout></ProtectedRoute>} />
+            <Route path="/analysis-report" element={<ProtectedRoute><Layout><AnalysisReportPage /></Layout></ProtectedRoute>} />
+            <Route path="/hitl" element={<ProtectedRoute><Layout><HITLReviewPage /></Layout></ProtectedRoute>} />
+            <Route path="/ontology" element={<ProtectedRoute><Layout><OntologyPage /></Layout></ProtectedRoute>} />
+            <Route path="/skills" element={<ProtectedRoute><Layout><SkillCatalogPage /></Layout></ProtectedRoute>} />
+            <Route path="/skills/:id" element={<ProtectedRoute><Layout><SkillDetailPage /></Layout></ProtectedRoute>} />
+            <Route path="/api-console" element={<ProtectedRoute><Layout><ApiConsolePage /></Layout></ProtectedRoute>} />
+            <Route path="/trust" element={<ProtectedRoute><Layout><TrustDashboardPage /></Layout></ProtectedRoute>} />
+            <Route path="/audit" element={<ProtectedRoute><Layout><AuditPage /></Layout></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
+            <Route path="*" element={<ProtectedRoute><Layout><NotFoundPage /></Layout></ProtectedRoute>} />
           </Routes>
         </Suspense>
       </BrowserRouter>
       </OrganizationProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

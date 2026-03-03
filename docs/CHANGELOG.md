@@ -2,6 +2,19 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 081 — 2026-03-04
+**LLM 모델 매핑 전면 업그레이드**:
+- ✅ P0: OpenAI `gpt-4o` (퇴역) → `gpt-4.1`, `gpt-4o-mini` → `gpt-4.1-mini`/`gpt-4.1-nano`
+- ✅ P1: Google `gemini-2.0-flash` → `gemini-2.5-pro`/`flash`/`flash-lite` (GA)
+- ✅ P2: Embedding `bge-base-en-v1.5` → `bge-m3` (100+ 언어, 한국어 지원)
+- ✅ P3: Workers AI `llama-3.1-70b` → `glm-4.7-flash` (131K ctx, 다국어, tool calling)
+- ✅ Anthropic 모델 유지 (최신: opus/sonnet 4.6, haiku 4.5)
+- ✅ svc-llm-router Production 배포 완료 (Version: cff9606c)
+- ✅ 테스트 5개 파일 업데이트 (execute, openai, google, evaluate)
+
+**검증**: typecheck 17/17, lint 14/14, svc-llm-router 134/134 pass, svc-skill 151/151 pass
+**변경 파일**: `packages/types/src/llm.ts` + 테스트 4개 (5 files, 26+/26-)
+
 ## 세션 080 — 2026-03-04
 **CI 수정 + Production 전체 배포**:
 - ✅ fix: docx-parser.test.ts 실문서 테스트 → `describe.skipIf(!HAS_REAL_FILES)` 적용 (CI ENOENT 해결)

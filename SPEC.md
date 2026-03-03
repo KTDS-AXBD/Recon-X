@@ -52,8 +52,8 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-03-04 (세션 073)
-- **Current Phase**: Phase 4 Sprint 2 준비 — Queue 디버깅 완료, SCDSA002 탐지, 배치 자동화
+- **Last Updated**: 2026-03-04 (세션 081)
+- **Current Phase**: Phase 4 Sprint 2 진행 — bulk-approve API 완료, LLM 모델 매핑 업그레이드 완료
 - **Production E2E**: ✅ 8/8 PASS (synthetic) + 7/7 PASS (real-doc) + Batch 3: 7/11 parsed (SCDSA002 4건 → encrypted 상태)
 - **Real Document Pilot**: ✅ 20/26 문서 파싱 완료 (Batch 1: 4건, Batch 2: 9/11건, Batch 3: 7/11건)
 - **Production Data**: policies 134+ approved, terms 1,441, skills 171 (org-mirae-pension)

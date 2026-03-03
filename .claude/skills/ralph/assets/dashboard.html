@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ralph Loop — Remote Dashboard</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --muted: #8b949e; --green: #3fb950;
+    --red: #f85149; --yellow: #d29922; --blue: #58a6ff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; padding: 16px;
+  }
+  .header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+  }
+  .header h1 { font-size: 1.2rem; }
+  .status-badge {
+    padding: 4px 12px; border-radius: 16px; font-size: 0.8rem; font-weight: 600;
+  }
+  .status-running { background: rgba(63,185,80,0.15); color: var(--green); }
+  .status-completed { background: rgba(88,166,255,0.15); color: var(--blue); }
+  .status-failed { background: rgba(248,81,73,0.15); color: var(--red); }
+  .status-idle { background: rgba(139,148,158,0.15); color: var(--muted); }
+
+  .metrics {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px; margin-bottom: 16px;
+  }
+  .metric-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px; text-align: center;
+  }
+  .metric-value { font-size: 1.5rem; font-weight: 700; }
+  .metric-label { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+  .progress-bar {
+    width: 100%; height: 8px; background: var(--surface);
+    border-radius: 4px; overflow: hidden; margin-bottom: 16px;
+  }
+  .progress-fill {
+    height: 100%; background: var(--green); border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+
+  .task-list { list-style: none; }
+  .task-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .task-icon { font-size: 1.2rem; }
+  .task-name { flex: 1; font-size: 0.9rem; }
+  .task-duration { font-size: 0.8rem; color: var(--muted); }
+  .task-verify { font-size: 0.75rem; }
+
+  .current-task {
+    border-color: var(--yellow); animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { border-color: var(--yellow); }
+    50% { border-color: rgba(210,153,34,0.3); }
+  }
+
+  .log-section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px; margin-top: 16px;
+    max-height: 200px; overflow-y: auto;
+  }
+  .log-entry {
+    font-family: 'SF Mono', Menlo, monospace; font-size: 0.75rem;
+    color: var(--muted); padding: 2px 0;
+  }
+
+  .refresh-info {
+    text-align: center; padding: 8px; color: var(--muted);
+    font-size: 0.7rem; margin-top: 12px;
+  }
+
+  .error-state {
+    text-align: center; padding: 40px 16px; color: var(--muted);
+  }
+  .error-state .icon { font-size: 3rem; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="error-state">
+    <div class="icon">...</div>
+    <p>Ralph Loop 상태 로딩 중...</p>
+  </div>
+</div>
+
+<script>
+const STATUS_FILE = './ralph-status.json';
+const REFRESH_INTERVAL = 5000;
+
+// Safe DOM helpers — no innerHTML, all textContent-based
+function el(tag, attrs, children) {
+  const node = document.createElement(tag);
+  if (attrs) {
+    Object.entries(attrs).forEach(function(pair) {
+      var k = pair[0], v = pair[1];
+      if (k === 'class') node.className = v;
+      else if (k === 'style') node.style.cssText = v;
+      else if (k === 'text') node.textContent = v;
+      else node.setAttribute(k, v);
+    });
+  }
+  if (children) {
+    children.forEach(function(c) {
+      if (typeof c === 'string') node.appendChild(document.createTextNode(c));
+      else if (c) node.appendChild(c);
+    });
+  }
+  return node;
+}
+
+function statusClass(status) {
+  var map = { running: 'status-running', completed: 'status-completed',
+    failed: 'status-failed', idle: 'status-idle' };
+  return 'status-badge ' + (map[status] || 'status-idle');
+}
+
+function taskIcon(status) {
+  var map = { completed: '\u2705', failed: '\u274C', running: '\u23F3',
+    partial: '\u26A0\uFE0F', pending: '\u2B1C' };
+  return map[status] || '\u2B1C';
+}
+
+function verifyText(v) {
+  if (!v) return '';
+  if (v === 'skipped') return 'skipped';
+  var parts = [];
+  if (v.typecheck !== undefined) parts.push(v.typecheck ? 'tc\u2705' : 'tc\u274C');
+  if (v.lint !== undefined) parts.push(v.lint ? 'lint\u2705' : 'lint\u274C');
+  if (v.test !== undefined) parts.push(v.test ? 'test\u2705' : 'test\u274C');
+  return parts.join(' ');
+}
+
+function render(data) {
+  var tasks = data.tasks || [];
+  var total = tasks.length;
+  var completed = tasks.filter(function(t) { return t.status === 'completed'; }).length;
+  var failed = tasks.filter(function(t) { return t.status === 'failed'; }).length;
+  var progress = total > 0 ? (completed / total * 100) : 0;
+
+  var elapsed = data.started_at
+    ? Math.floor((Date.now() - new Date(data.started_at).getTime()) / 1000) : 0;
+  var mins = Math.floor(elapsed / 60);
+  var secs = elapsed % 60;
+
+  var app = document.getElementById('app');
+  while (app.firstChild) app.removeChild(app.firstChild);
+
+  // Header
+  app.appendChild(el('div', { class: 'header' }, [
+    el('h1', { text: 'Ralph Loop' }),
+    el('span', { class: statusClass(data.status), text: data.status || 'idle' })
+  ]));
+
+  // Metrics
+  var metricsData = [
+    { value: String(completed), label: 'Completed', color: 'var(--green)' },
+    { value: String(failed), label: 'Failed', color: 'var(--red)' },
+    { value: String(total - completed - failed), label: 'Remaining', color: 'var(--text)' },
+    { value: (data.iteration || 0) + '/' + (data.max_iterations || '?'), label: 'Iteration', color: 'var(--text)' },
+    { value: mins + 'm ' + secs + 's', label: 'Elapsed', color: 'var(--text)' }
+  ];
+  var metricsGrid = el('div', { class: 'metrics' });
+  metricsData.forEach(function(m) {
+    metricsGrid.appendChild(el('div', { class: 'metric-card' }, [
+      el('div', { class: 'metric-value', style: 'color:' + m.color, text: m.value }),
+      el('div', { class: 'metric-label', text: m.label })
+    ]));
+  });
+  app.appendChild(metricsGrid);
+
+  // Progress bar
+  var bar = el('div', { class: 'progress-bar' });
+  bar.appendChild(el('div', { class: 'progress-fill', style: 'width:' + progress + '%' }));
+  app.appendChild(bar);
+
+  // Task list
+  var list = el('ul', { class: 'task-list' });
+  tasks.forEach(function(t) {
+    var cls = 'task-item' + (t.status === 'running' ? ' current-task' : '');
+    var nameText = (t.id ? '[' + t.id + '] ' : '') + (t.name || 'Unknown');
+    var children = [
+      el('span', { class: 'task-icon', text: taskIcon(t.status) }),
+      el('span', { class: 'task-name', text: nameText })
+    ];
+    if (t.duration) children.push(el('span', { class: 'task-duration', text: t.duration }));
+    var vt = verifyText(t.verify);
+    if (vt) children.push(el('span', { class: 'task-verify', text: vt }));
+    list.appendChild(el('li', { class: cls }, children));
+  });
+  app.appendChild(list);
+
+  // Log section
+  var logs = data.logs || [];
+  if (logs.length > 0) {
+    var logDiv = el('div', { class: 'log-section' });
+    logs.slice(-20).forEach(function(l) {
+      logDiv.appendChild(el('div', { class: 'log-entry', text: l }));
+    });
+    app.appendChild(logDiv);
+  }
+
+  // Refresh info
+  var info = 'Auto-refresh: ' + (REFRESH_INTERVAL / 1000) + 's | Last: ' + new Date().toLocaleTimeString();
+  if (data.source) info += ' | Source: ' + data.source;
+  app.appendChild(el('div', { class: 'refresh-info', text: info }));
+}
+
+function showError() {
+  var app = document.getElementById('app');
+  while (app.firstChild) app.removeChild(app.firstChild);
+  var errDiv = el('div', { class: 'error-state' }, [
+    el('div', { class: 'icon', text: '\u{1F50D}' }),
+    el('p', { text: 'Ralph Loop \uC2E4\uD589 \uB300\uAE30 \uC911' }),
+    el('p', { style: 'font-size:0.8rem;margin-top:8px', text:
+      'ralph-status.json\uC744 \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. /ralph \uBA85\uB839\uC744 \uC2E4\uD589\uD558\uBA74 \uC790\uB3D9\uC73C\uB85C \uC5C5\uB370\uC774\uD2B8\uB429\uB2C8\uB2E4.' })
+  ]);
+  app.appendChild(errDiv);
+}
+
+async function fetchStatus() {
+  try {
+    var res = await fetch(STATUS_FILE + '?t=' + Date.now());
+    if (!res.ok) throw new Error('Not found');
+    var data = await res.json();
+    render(data);
+  } catch (e) {
+    showError();
+  }
+}
+
+fetchStatus();
+setInterval(fetchStatus, REFRESH_INTERVAL);
+</script>
+</body>
+</html>

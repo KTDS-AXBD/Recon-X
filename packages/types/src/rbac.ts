@@ -101,6 +101,9 @@ export const PERMISSIONS: Record<Role, Partial<Record<Resource, Action[]>>> = {
     notification: ["read"],
   },
   Executive: {
+    document: ["read"],
+    extraction: ["read"],
+    policy: ["read"],
     governance: ["read"],
     analytics: ["read"],
     skill: ["read"],

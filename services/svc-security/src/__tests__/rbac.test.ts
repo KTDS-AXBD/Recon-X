@@ -261,11 +261,11 @@ describe("handleCheckPermission", () => {
     expect(body.data.allowed).toBe(false);
   });
 
-  it("Executive cannot access document at all", async () => {
+  it("Executive can read document (dashboard access)", async () => {
     const req = createCheckRequest({ role: "Executive", resource: "document", action: "read" });
     const res = await handleCheckPermission(req);
     const body = (await res.json()) as { data: { allowed: boolean } };
-    expect(body.data.allowed).toBe(false);
+    expect(body.data.allowed).toBe(true);
   });
 
   // ── Response shape ────────────────────────────────────────────

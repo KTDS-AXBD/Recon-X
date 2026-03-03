@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 082 — 2026-03-04
+**Organization Selector — 프론트엔드 조직 선택 기능**:
+- ✅ `OrganizationContext` + `useOrganization()` 훅 (localStorage 영속화, 기본값 Miraeasset)
+- ✅ `buildHeaders()` 공유 유틸리티 (API 인증 헤더 집중)
+- ✅ 10개 API 모듈 리팩토링: `organizationId` 첫 번째 파라미터 + 하드코딩 `org-001` 제거
+- ✅ Sidebar 조직 드롭다운: Miraeasset (퇴직연금) / org-001 (Pilot)
+- ✅ Layout `key={organizationId}` (org 변경 시 전체 페이지 자동 remount)
+- ✅ 12개 페이지 + 2개 서브컴포넌트 업데이트 (FindingCard, CrossOrgComparisonTab)
+
+**검증**: typecheck 0 errors, vite build 3.03s 성공
+**변경 파일**: 29 files (+448, -236) — 신규 2 + 수정 27
+
 ## 세션 081 — 2026-03-04
 **LLM 모델 매핑 전면 업그레이드**:
 - ✅ P0: OpenAI `gpt-4o` (퇴역) → `gpt-4.1`, `gpt-4o-mini` → `gpt-4.1-mini`/`gpt-4.1-nano`

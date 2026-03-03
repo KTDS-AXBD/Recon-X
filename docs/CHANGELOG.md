@@ -2,6 +2,16 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 073 — 2026-03-04
+**Queue 디버깅 + SCDSA002 탐지 + Sprint 2 배치 자동화 (3-Worker 병렬)**:
+- ✅ Queue consumer 충돌 근본 원인 발견: default env + production env 동시 구독 → default env consumer 제거 + DLQ 추가
+- ✅ SCDSA002 암호화 파일 탐지 로직: validator에 매직 바이트 감지, status='encrypted' 분리 (11 tests)
+- ✅ batch-upload.sh / batch-status.sh 강화: --tier, --batch-size, --retry-failed, --json 옵션
+- ✅ 에러 핸들링 개선: svc-policy 200→502, svc-analytics/svc-skill errFromUnknown, svc-notification 직접 await
+- ⚠️ 수동 조치 필요: `wrangler delete --name svc-queue-router` (default env Worker 삭제)
+
+**검증**: typecheck 17/17, lint 14/14, tests 1,225 pass (18 fail = 기존 Neo4j client)
+
 ## 세션 072 — 2026-03-04
 **Phase 4 Sprint 1 — Tier 1 문서 11건 배치 투입 + 파이프라인 검증**:
 - ✅ Phase 4 Sprint 1 계획 수립 (깊이 우선 전략, Tier 1 문서 11건)

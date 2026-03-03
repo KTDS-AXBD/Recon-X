@@ -179,13 +179,11 @@ async function runExtraction(
   } catch (e) {
     // Mark extraction as failed so it doesn't stay permanently pending
     const failedAt = new Date().toISOString();
-    ctx.waitUntil(
-      env.DB_EXTRACTION.prepare(
-        `UPDATE extractions SET status = 'failed', updated_at = ? WHERE id = ?`,
-      )
-        .bind(failedAt, extractionId)
-        .run(),
-    );
+    await env.DB_EXTRACTION.prepare(
+      `UPDATE extractions SET status = 'failed', updated_at = ? WHERE id = ?`,
+    )
+      .bind(failedAt, extractionId)
+      .run();
     throw e;
   }
 }

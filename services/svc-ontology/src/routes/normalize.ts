@@ -43,7 +43,7 @@ interface TermRow {
 export async function handleNormalize(
   request: Request,
   env: Env,
-  ctx: ExecutionContext,
+  _ctx: ExecutionContext,
 ): Promise<Response> {
   // 1. Parse & validate body
   let raw: unknown;
@@ -122,16 +122,14 @@ export async function handleNormalize(
       created_at: now,
     };
 
-    ctx.waitUntil(
-      env.DB_ONTOLOGY.prepare(
-        `INSERT INTO terms (
+    await env.DB_ONTOLOGY.prepare(
+      `INSERT INTO terms (
           term_id, ontology_id, label, definition, skos_uri,
           broader_term_id, embedding_model, created_at
         ) VALUES (?, ?, ?, ?, ?, NULL, NULL, ?)`,
-      )
-        .bind(termId, ontologyId, term.label, term.definition ?? null, skosUri, now)
-        .run(),
-    );
+    )
+      .bind(termId, ontologyId, term.label, term.definition ?? null, skosUri, now)
+      .run();
 
     insertedTerms.push(termRow);
   }
@@ -187,15 +185,13 @@ export async function handleNormalize(
 
   // 5. Update ontology: status → completed, term_count, neo4j_graph_id, completed_at
   const termCount = insertedTerms.length;
-  ctx.waitUntil(
-    env.DB_ONTOLOGY.prepare(
-      `UPDATE ontologies
+  await env.DB_ONTOLOGY.prepare(
+    `UPDATE ontologies
        SET status = 'completed', term_count = ?, neo4j_graph_id = ?, completed_at = ?
        WHERE ontology_id = ?`,
-    )
-      .bind(termCount, neo4jGraphId, now, ontologyId)
-      .run(),
-  );
+  )
+    .bind(termCount, neo4jGraphId, now, ontologyId)
+    .run();
 
   // 6. Emit ontology.normalized event
   const event: OntologyNormalizedEvent = {

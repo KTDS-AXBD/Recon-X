@@ -262,7 +262,7 @@ describe("handleNormalize", () => {
     expect(firstCallSql).toContain("INSERT INTO ontologies");
   });
 
-  it("inserts terms into D1 via ctx.waitUntil", async () => {
+  it("inserts terms into D1 via await", async () => {
     const req = makeNormalizeRequest({
       policyId: "pol-1",
       organizationId: "org-1",
@@ -271,8 +271,11 @@ describe("handleNormalize", () => {
 
     await handleNormalize(req, env, ctx);
 
-    // waitUntil is called for: term inserts + ontology update + queue send
-    expect(ctx.waitUntil).toHaveBeenCalled();
+    // D1 writes are now awaited (not ctx.waitUntil) to prevent data loss
+    const prepareMock = env.DB_ONTOLOGY.prepare as ReturnType<typeof vi.fn>;
+    const allSql = prepareMock.mock.calls.map((c: unknown[]) => c[0] as string);
+    const termInserts = allSql.filter((s: string) => s.includes("INSERT INTO terms"));
+    expect(termInserts.length).toBe(2);
   });
 
   it("returns error when D1 ontology insert fails", async () => {
@@ -393,8 +396,7 @@ describe("handleNormalize", () => {
 
     await handleNormalize(req, env, ctx);
 
-    // queue send is wrapped in ctx.waitUntil
-    expect(ctx.waitUntil).toHaveBeenCalled();
+    // queue send is now awaited directly
     expect(env.QUEUE_PIPELINE.send).toHaveBeenCalledOnce();
 
     const sendMock = env.QUEUE_PIPELINE.send as ReturnType<typeof vi.fn>;

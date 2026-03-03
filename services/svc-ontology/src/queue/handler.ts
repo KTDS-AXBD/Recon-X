@@ -90,7 +90,7 @@ function extractTermsFromPolicy(policy: PolicyApiResponse["data"]): ExtractedTer
 export async function processQueueEvent(
   body: unknown,
   env: Env,
-  ctx: ExecutionContext,
+  _ctx: ExecutionContext,
 ): Promise<Response> {
   const parsed = PipelineEventSchema.safeParse(body);
   if (!parsed.success) {
@@ -180,16 +180,14 @@ export async function processQueueEvent(
     const termId = crypto.randomUUID();
     const skosUri = `urn:aif:term:${termId}`;
 
-    ctx.waitUntil(
-      env.DB_ONTOLOGY.prepare(
-        `INSERT INTO terms (
+    await env.DB_ONTOLOGY.prepare(
+      `INSERT INTO terms (
           term_id, ontology_id, label, definition, skos_uri,
           broader_term_id, embedding_model, created_at
         ) VALUES (?, ?, ?, ?, ?, NULL, NULL, ?)`,
-      )
-        .bind(termId, ontologyId, term.label, term.definition, skosUri, now)
-        .run(),
-    );
+    )
+      .bind(termId, ontologyId, term.label, term.definition, skosUri, now)
+      .run();
 
     insertedTermIds.push(termId);
     termUris.push(skosUri);
@@ -236,15 +234,13 @@ export async function processQueueEvent(
 
   // 6. Update ontology status
   const termCount = terms.length;
-  ctx.waitUntil(
-    env.DB_ONTOLOGY.prepare(
-      `UPDATE ontologies
+  await env.DB_ONTOLOGY.prepare(
+    `UPDATE ontologies
        SET status = 'completed', term_count = ?, neo4j_graph_id = ?, completed_at = ?
        WHERE ontology_id = ?`,
-    )
-      .bind(termCount, neo4jGraphId, now, ontologyId)
-      .run(),
-  );
+  )
+    .bind(termCount, neo4jGraphId, now, ontologyId)
+    .run();
 
   // 7. Emit ontology.normalized event
   const outEvent: OntologyNormalizedEvent = {

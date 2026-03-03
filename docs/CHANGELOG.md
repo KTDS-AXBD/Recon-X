@@ -2,6 +2,17 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 061 — 2026-03-03
+**Cross-Org Comparison UI 구현 — analysis-report 4번째 탭 추가**:
+- ✅ `GET /analysis/organizations` 엔드포인트 추가 (svc-extraction)
+- ✅ API 클라이언트 3함수 추가: fetchOrganizations, triggerComparison, fetchStandardization
+- ✅ CrossOrgComparisonTab 신규 컴포넌트: 조직 선택 → 비교 실행 → 4-Group 대시보드
+- ✅ analysis-report.tsx에 4번째 '조직 비교' 탭 통합 + 비교 탭 시 문서 선택 UI 숨김
+
+**검증**: typecheck 16/16, lint 13/13 PASS
+
+**산출물**: `ba32c08` feat(app-web,svc-extraction)
+
 ## 세션 060 — 2026-03-03
 **Staging E2E 검증 — 문서 업로드→3-Pass 분석→Cross-Org 비교 전체 파이프라인 테스트**:
 - ✅ 문서 업로드 → Queue 파싱 → 5 chunks 생성 (txt, ~10초)

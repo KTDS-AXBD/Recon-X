@@ -2,10 +2,36 @@
  * Admin routes for svc-skill — backfill and maintenance operations.
  */
 
-import { createLogger, ok, errFromUnknown } from "@ai-foundry/utils";
+import { createLogger, ok } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
 
 const logger = createLogger("svc-skill:admin");
+
+// ── Trust Score Computation ────────────────────────────────────────
+
+/** Base trust by review status */
+const BASE_TRUST: Record<string, number> = {
+  validated: 0.9,
+  reviewed: 0.7,
+  unreviewed: 0.3,
+};
+
+/**
+ * Compute quality factor from content_depth (total chars of condition+criteria+outcome).
+ *   depth ≥ 200 (Rich)   → 1.0
+ *   depth ≥ 50  (Medium)  → 0.7 + 0.3 × (depth-50)/150
+ *   depth < 50  (Thin)    → 0.5 + 0.2 × depth/50
+ */
+function qualityFactor(depth: number): number {
+  if (depth >= 200) return 1.0;
+  if (depth >= 50) return 0.7 + (0.3 * (depth - 50)) / 150;
+  return 0.5 + (0.2 * depth) / 50;
+}
+
+/** Round to 3 decimal places */
+function round3(n: number): number {
+  return Math.round(n * 1000) / 1000;
+}
 
 interface SkillPackagePolicy {
   condition: string;
@@ -86,5 +112,92 @@ export async function handleBackfillDepth(
     failed,
     batchSize,
     remaining: remaining?.cnt ?? 0,
+  });
+}
+
+// ── Backfill Trust Score ───────────────────────────────────────────
+
+interface TrustRow {
+  skill_id: string;
+  trust_level: string;
+  content_depth: number | null;
+}
+
+/**
+ * POST /admin/backfill-trust
+ *
+ * Computes trust_score from D1 columns (trust_level + content_depth).
+ * No R2 reads or LLM calls — pure SQL + in-memory computation.
+ *
+ * Formula: trust_score = baseTrust(trust_level) × qualityFactor(content_depth)
+ *
+ * Query params:
+ *   - batchSize (default 200, max 1000): skills per batch
+ *   - force (default false): re-score skills that already have trust_score > 0
+ */
+export async function handleBackfillTrust(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  const url = new URL(request.url);
+  const batchSize = Math.min(Number(url.searchParams.get("batchSize") ?? "200"), 1000);
+  const force = url.searchParams.get("force") === "true";
+
+  const whereClause = force
+    ? "WHERE trust_level IS NOT NULL"
+    : "WHERE trust_score = 0 OR trust_score IS NULL";
+
+  const rows = await env.DB_SKILL.prepare(
+    `SELECT skill_id, trust_level, content_depth FROM skills ${whereClause} ORDER BY created_at ASC LIMIT ?`,
+  )
+    .bind(batchSize)
+    .all<TrustRow>();
+
+  const results = rows.results ?? [];
+  let updated = 0;
+  let failed = 0;
+  const distribution = { high: 0, medium: 0, low: 0 };
+
+  for (const row of results) {
+    try {
+      const base = BASE_TRUST[row["trust_level"]] ?? 0.3;
+      const depth = row["content_depth"] ?? 0;
+      const score = round3(base * qualityFactor(depth));
+
+      await env.DB_SKILL.prepare(
+        "UPDATE skills SET trust_score = ? WHERE skill_id = ?",
+      )
+        .bind(score, row["skill_id"])
+        .run();
+
+      if (score >= 0.6) distribution.high++;
+      else if (score >= 0.4) distribution.medium++;
+      else distribution.low++;
+
+      updated++;
+    } catch (e) {
+      logger.warn("Trust backfill error", { skillId: row["skill_id"], error: String(e) });
+      failed++;
+    }
+  }
+
+  const remainingCondition = force
+    ? "SELECT 0 as cnt"
+    : "SELECT COUNT(*) as cnt FROM skills WHERE trust_score = 0 OR trust_score IS NULL";
+  const remaining = await env.DB_SKILL.prepare(remainingCondition).first<{ cnt: number }>();
+
+  logger.info("Backfill trust batch completed", {
+    updated,
+    failed,
+    distribution,
+    remaining: remaining?.cnt,
+  });
+
+  return ok({
+    updated,
+    failed,
+    batchSize,
+    remaining: remaining?.cnt ?? 0,
+    distribution,
   });
 }

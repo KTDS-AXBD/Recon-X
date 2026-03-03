@@ -34,7 +34,7 @@ import {
 import { handleGetMcpAdapter } from "./routes/mcp.js";
 import { handleGetOpenApiAdapter } from "./routes/openapi.js";
 import { handleEvaluateSkill, handleListEvaluations } from "./routes/evaluate.js";
-import { handleBackfillDepth } from "./routes/admin.js";
+import { handleBackfillDepth, handleBackfillTrust } from "./routes/admin.js";
 import { processQueueEvent } from "./queue/handler.js";
 
 export default {
@@ -68,6 +68,11 @@ export default {
       // POST /admin/backfill-depth — compute content_depth for existing skills
       if (method === "POST" && path === "/admin/backfill-depth") {
         return await handleBackfillDepth(request, env);
+      }
+
+      // POST /admin/backfill-trust — compute trust_score from trust_level + content_depth
+      if (method === "POST" && path === "/admin/backfill-trust") {
+        return await handleBackfillTrust(request, env);
       }
 
       // POST /skills — package a new Skill from confirmed policies

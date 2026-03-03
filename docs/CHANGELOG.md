@@ -2,6 +2,16 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 069 — 2026-03-04
+**Claude Desktop MCP 연동 테스트 준비**:
+- ✅ `claude_desktop_config.json` 작성 — 3개 Skill MCP 서버 등록 (Staging, Bearer 인증)
+- ✅ curl E2E 전체 플로우 검증: initialize → tools/list → tools/call (LLM 평가 포함)
+- ✅ pol-pension-ex-028: 해외여행 부적격 → 거절 판정 (confidence 0.95, 8.6s)
+- ✅ pol-pension-wd-002: 주택구입 자격 → 허용 판정 (confidence 0.9, 10.5s)
+- ✅ 테스트 가이드 문서 생성 (`docs/mcp-desktop-test-guide.md`) — 4개 시나리오 + 트러블슈팅
+
+**산출물**: `a73491a` docs: MCP Desktop test guide + xlsx-parser archive
+
 ## 세션 068 — 2026-03-04
 **PDCA Analyze → 코드 리뷰 5건 수정 + 배포 + CI/CD 정비**:
 - ✅ C1: Silent LLM catch 제거 — Pass 1 실패 시 status='partial' (MEMORY 교훈 반영)

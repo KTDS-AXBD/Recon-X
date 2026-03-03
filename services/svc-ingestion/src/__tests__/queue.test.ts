@@ -306,4 +306,72 @@ describe("processQueueEvent", () => {
     // PDF should call Unstructured.io via globalThis.fetch
     expect(globalThis.fetch).toHaveBeenCalled();
   });
+
+  // ── 화면설계서 routing to parseScreenDesign ───────────────────
+
+  it("routes 화면설계서 xlsx to parseScreenDesign", async () => {
+    // Create a minimal xlsx with screen-design-like data
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.aoa_to_sheet([["시스템명"], ["퇴직연금"]]),
+      "SCR001",
+    );
+    const arr = XLSX.write(wb, { type: "array", bookType: "xlsx" }) as number[];
+    const xlsxBuf = new Uint8Array(arr);
+
+    const screenEnv = mockEnv(true);
+    (screenEnv.R2_DOCUMENTS.get as ReturnType<typeof vi.fn>).mockResolvedValue({
+      arrayBuffer: vi.fn().mockResolvedValue(xlsxBuf.buffer),
+    });
+
+    const screenEvent = {
+      ...validDocumentUploadedEvent,
+      payload: {
+        ...validDocumentUploadedEvent.payload,
+        fileType: "xlsx" as const,
+        originalName: "화면설계서_퇴직연금_v1.xlsx",
+      },
+    };
+
+    const res = await processQueueEvent(screenEvent, screenEnv, ctx);
+    expect(res.status).toBe(200);
+    const body = await res.json() as { ok: boolean };
+    expect(body.ok).toBe(true);
+    // Should NOT call Unstructured.io
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it("routes non-화면설계 xlsx to parseXlsx", async () => {
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.aoa_to_sheet([["테이블ID", "테이블명"], ["TB001", "고객"]]),
+      "Sheet1",
+    );
+    const arr = XLSX.write(wb, { type: "array", bookType: "xlsx" }) as number[];
+    const xlsxBuf = new Uint8Array(arr);
+
+    const tableEnv = mockEnv(true);
+    (tableEnv.R2_DOCUMENTS.get as ReturnType<typeof vi.fn>).mockResolvedValue({
+      arrayBuffer: vi.fn().mockResolvedValue(xlsxBuf.buffer),
+    });
+
+    const tableEvent = {
+      ...validDocumentUploadedEvent,
+      payload: {
+        ...validDocumentUploadedEvent.payload,
+        fileType: "xlsx" as const,
+        originalName: "테이블정의서_퇴직연금.xlsx",
+      },
+    };
+
+    const res = await processQueueEvent(tableEvent, tableEnv, ctx);
+    expect(res.status).toBe(200);
+    const body = await res.json() as { ok: boolean; chunkCount: number };
+    expect(body.ok).toBe(true);
+    expect(body.chunkCount).toBeGreaterThanOrEqual(1);
+    // Should NOT call Unstructured.io
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
 });

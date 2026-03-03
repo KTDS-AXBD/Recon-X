@@ -1,5 +1,6 @@
 import * as XLSX from "xlsx";
 import type { UnstructuredElement } from "./unstructured.js";
+import { shouldSkipSheet } from "./screen-design.js";
 
 // ── SI Document Subtypes ────────────────────────────────────────
 
@@ -67,12 +68,29 @@ export function parseXlsx(fileBytes: ArrayBuffer, fileName: string): Unstructure
     elements.push(summary);
   }
 
-  // 2. Sheet content chunks
+  // 2. Program design metadata (프로그램설계서: extract R3~R4 meta from first data sheet)
+  if (siSubtype === "프로그램설계") {
+    for (const sheetName of workbook.SheetNames) {
+      if (shouldSkipSheet(sheetName)) continue;
+      const sheet = workbook.Sheets[sheetName];
+      if (!sheet) continue;
+      const meta = extractProgramMeta(sheet, sheetName);
+      if (meta) {
+        elements.push(meta);
+      }
+      break; // only first non-skipped sheet
+    }
+  }
+
+  // 3. Sheet content chunks
   for (const sheetName of workbook.SheetNames) {
+    if (shouldSkipSheet(sheetName)) continue;
     const sheet = workbook.Sheets[sheetName];
     if (!sheet) continue;
 
-    const chunks = sheetToMarkdownChunks(sheet, sheetName, siSubtype);
+    // 프로그램설계서: data starts at row 5 (row index 5), skip rows 0-4 (meta area)
+    const dataStartRow = siSubtype === "프로그램설계" ? 5 : 0;
+    const chunks = sheetToMarkdownChunks(sheet, sheetName, siSubtype, MAX_ROWS_PER_CHUNK, dataStartRow);
     elements.push(...chunks);
   }
 
@@ -88,14 +106,26 @@ export function buildWorkbookSummary(
 ): UnstructuredElement | null {
   if (workbook.SheetNames.length === 0) return null;
 
+  let skippedCount = 0;
+  const activeSheets: string[] = [];
+
+  for (const sheetName of workbook.SheetNames) {
+    if (shouldSkipSheet(sheetName)) {
+      skippedCount++;
+    } else {
+      activeSheets.push(sheetName);
+    }
+  }
+
   const lines: string[] = [
     `# Workbook: ${fileName}`,
     `- SI Subtype: ${siSubtype}`,
-    `- Sheets: ${workbook.SheetNames.length}`,
+    `- Sheets: ${workbook.SheetNames.length}` +
+      (skippedCount > 0 ? ` (${skippedCount} skipped)` : ""),
     "",
   ];
 
-  for (const sheetName of workbook.SheetNames) {
+  for (const sheetName of activeSheets) {
     const sheet = workbook.Sheets[sheetName];
     if (!sheet) continue;
 
@@ -119,10 +149,18 @@ export function buildWorkbookSummary(
     lines.push("");
   }
 
+  const metadata: Record<string, unknown> = {
+    siSubtype,
+    sheetCount: workbook.SheetNames.length,
+  };
+  if (skippedCount > 0) {
+    metadata["skippedSheets"] = skippedCount;
+  }
+
   return {
     type: "XlWorkbook",
     text: lines.join("\n").trim(),
-    metadata: { siSubtype, sheetCount: workbook.SheetNames.length },
+    metadata,
   };
 }
 
@@ -133,6 +171,7 @@ export function sheetToMarkdownChunks(
   sheetName: string,
   siSubtype: SiSubtype,
   maxRows: number = MAX_ROWS_PER_CHUNK,
+  dataStartRow: number = 0,
 ): UnstructuredElement[] {
   const ref = sheet["!ref"];
   if (!ref) return [];
@@ -143,12 +182,15 @@ export function sheetToMarkdownChunks(
   if (totalRows === 0) return [];
 
   // Read all rows as string[][]
-  const rows = readSheetRows(sheet, range);
+  const allRows = readSheetRows(sheet, range);
+
+  // Apply dataStartRow offset (e.g., skip meta rows in 프로그램설계서)
+  const rows = dataStartRow > 0 ? allRows.slice(dataStartRow) : allRows;
 
   // Skip entirely empty sheets
   if (rows.every((row) => row.every((cell) => !cell))) return [];
 
-  // Extract header row (first row)
+  // Extract header row (first row after offset)
   const headerRow = rows[0];
   if (!headerRow) return [];
 
@@ -201,6 +243,71 @@ export function sheetToMarkdownChunks(
   }
 
   return elements;
+}
+
+// ── Program Design Metadata ─────────────────────────────────────
+
+/**
+ * Extract metadata from 프로그램설계서 header area (rows 2-3).
+ * Layout:
+ *   R1(row 0): A="퇴직연금 시스템 재구축 프로젝트" | last col="프로그램설계서"
+ *   R3(row 2): A="프로그램 ID(BeanID)" | B=[value] | D="프로그램 명" | E=[value]
+ *   R4(row 3): A="고객담당자" | B=[value] | D="설계담당자" | E=[value]
+ *   R6(row 5): column headers
+ *   R7+(row 6+): data rows
+ */
+export function extractProgramMeta(
+  sheet: XLSX.WorkSheet,
+  sheetName: string,
+): UnstructuredElement | null {
+  const ref = sheet["!ref"];
+  if (!ref) return null;
+
+  const range = XLSX.utils.decode_range(ref);
+  // Need at least 4 rows (rows 0-3)
+  if (range.e.r < 3) return null;
+
+  const getCellValue = (r: number, c: number): string => {
+    const addr = XLSX.utils.encode_cell({ r, c });
+    const cell = sheet[addr] as XLSX.CellObject | undefined;
+    if (!cell) return "";
+    return getCellText(cell).trim();
+  };
+
+  // Row 2: 프로그램ID, 프로그램명
+  const programId = getCellValue(2, 1); // B3
+  const programName = getCellValue(2, 4); // E3
+
+  // Row 3: 고객담당자, 설계담당자
+  const customerManager = getCellValue(3, 1); // B4
+  const designManager = getCellValue(3, 4); // E4
+
+  // If no meaningful data found, skip
+  if (!programId && !programName && !customerManager && !designManager) {
+    return null;
+  }
+
+  const lines: string[] = [
+    `# 프로그램설계서: ${programName || sheetName}`,
+    "",
+    `- 프로그램ID: ${programId}`,
+    `- 프로그램명: ${programName}`,
+    `- 고객담당자: ${customerManager}`,
+    `- 설계담당자: ${designManager}`,
+  ];
+
+  return {
+    type: "XlProgramMeta",
+    text: lines.join("\n"),
+    metadata: {
+      sheetName,
+      siSubtype: "프로그램설계" as const,
+      programId,
+      programName,
+      customerManager,
+      designManager,
+    },
+  };
 }
 
 // ── Helpers ─────────────────────────────────────────────────────

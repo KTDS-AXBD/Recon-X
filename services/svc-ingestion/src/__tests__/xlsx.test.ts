@@ -5,7 +5,9 @@ import {
   detectSiSubtype,
   buildWorkbookSummary,
   sheetToMarkdownChunks,
+  extractProgramMeta,
 } from "../parsing/xlsx.js";
+import { shouldSkipSheet } from "../parsing/screen-design.js";
 
 // ── Helpers ─────────────────────────────────────────────────────
 
@@ -340,5 +342,207 @@ describe("parseXlsx", () => {
     const sheetChunk = elements.find((e) => e.type.startsWith("XlSheet:"));
     // Newlines within cells should be replaced with spaces for table format
     expect(sheetChunk!.text).toContain("line1 line2");
+  });
+
+  it("skips noise sheets (표지, 제개정이력, 샘플)", () => {
+    const buf = createWorkbook([
+      { name: "표지", data: [["Title"], ["퇴직연금 프로젝트"]] },
+      { name: "제개정이력", data: [["버전", "일자"], ["1.0", "2026-01-01"]] },
+      { name: "샘플", data: [["Guide"], ["작성 예시"]] },
+      { name: "화면목록", data: [["화면ID", "화면명"], ["SCR001", "로그인"]] },
+    ]);
+    const elements = parseXlsx(buf, "화면설계서.xlsx");
+
+    // Only 화면목록 sheet should produce chunks; 표지/제개정이력/샘플 skipped
+    const sheetChunks = elements.filter((e) => e.type.startsWith("XlSheet:"));
+    expect(sheetChunks).toHaveLength(1);
+    expect(sheetChunks[0]!.text).toContain("화면목록");
+    expect(sheetChunks[0]!.text).not.toContain("표지");
+  });
+
+  it("tracks skipped sheet count in workbook summary metadata", () => {
+    const buf = createWorkbook([
+      { name: "표지", data: [["Title"], ["Cover"]] },
+      { name: "제개정이력", data: [["Revision"], ["1.0"]] },
+      { name: "Data", data: [["Col"], ["val"]] },
+    ]);
+    const elements = parseXlsx(buf, "test.xlsx");
+    const summary = elements[0];
+    expect(summary).toBeDefined();
+    expect(summary!.type).toBe("XlWorkbook");
+    expect(summary!.text).toContain("2 skipped");
+    const meta = summary!.metadata as Record<string, unknown>;
+    expect(meta["skippedSheets"]).toBe(2);
+  });
+
+  it("extracts 프로그램설계서 metadata from R3-R4", () => {
+    // Build program design sheet with meta rows
+    const buf = createWorkbook([
+      {
+        name: "PGM001",
+        data: [
+          // Row 0: title row
+          ["퇴직연금 시스템 재구축 프로젝트", "", "", "", "", "프로그램설계서"],
+          // Row 1: empty
+          ["", "", "", "", "", ""],
+          // Row 2: 프로그램ID, 프로그램명
+          ["프로그램 ID(BeanID)", "BEAN_PGM001", "", "프로그램 명", "퇴직연금 가입처리", ""],
+          // Row 3: 고객담당자, 설계담당자
+          ["고객담당자", "김고객", "", "설계담당자", "이설계", ""],
+          // Row 4: empty
+          ["", "", "", "", "", ""],
+          // Row 5: column headers
+          ["No", "항목", "설명", "비고", "타입", "필수"],
+          // Row 6+: data
+          ["1", "가입자ID", "가입자 식별자", "", "String", "Y"],
+          ["2", "상품코드", "퇴직연금 상품", "", "String", "Y"],
+        ],
+      },
+    ]);
+    const elements = parseXlsx(buf, "프로그램설계서_PGM001.xlsx");
+
+    // Should have: summary + meta + data chunk(s)
+    expect(elements.length).toBeGreaterThanOrEqual(3);
+
+    const meta = elements.find((e) => e.type === "XlProgramMeta");
+    expect(meta).toBeDefined();
+    expect(meta!.text).toContain("프로그램설계서: 퇴직연금 가입처리");
+    expect(meta!.text).toContain("프로그램ID: BEAN_PGM001");
+    expect(meta!.text).toContain("고객담당자: 김고객");
+    expect(meta!.text).toContain("설계담당자: 이설계");
+
+    const metaData = meta!.metadata as Record<string, unknown>;
+    expect(metaData["programId"]).toBe("BEAN_PGM001");
+    expect(metaData["programName"]).toBe("퇴직연금 가입처리");
+  });
+
+  it("uses row 5 as header for 프로그램설계서 data", () => {
+    const buf = createWorkbook([
+      {
+        name: "PGM002",
+        data: [
+          ["프로젝트명", "", "", "", "", "프로그램설계서"],
+          ["", "", "", "", "", ""],
+          ["프로그램 ID", "PGM002", "", "프로그램 명", "해지처리", ""],
+          ["고객담당자", "박담당", "", "설계담당자", "최설계", ""],
+          ["", "", "", "", "", ""],
+          ["No", "항목명", "설명", "타입", "비고", "필수"],
+          ["1", "해지일자", "해지 요청일", "Date", "", "Y"],
+        ],
+      },
+    ]);
+    const elements = parseXlsx(buf, "프로그램설계서_PGM002.xlsx");
+
+    // Data chunks should use row 5 as headers, not row 0
+    const dataChunks = elements.filter((e) => e.type === "XlSheet:프로그램설계");
+    expect(dataChunks.length).toBeGreaterThanOrEqual(1);
+    expect(dataChunks[0]!.text).toContain("| No | 항목명 |");
+    expect(dataChunks[0]!.text).toContain("해지일자");
+    // Should NOT contain the meta row content as table data
+    expect(dataChunks[0]!.text).not.toContain("프로그램 ID");
+  });
+});
+
+// ── shouldSkipSheet ─────────────────────────────────────────────
+
+describe("shouldSkipSheet", () => {
+  it("skips 표지 sheet (exact match)", () => {
+    expect(shouldSkipSheet("표지")).toBe(true);
+  });
+
+  it("skips 제개정이력 sheet (exact match)", () => {
+    expect(shouldSkipSheet("제개정이력")).toBe(true);
+  });
+
+  it("skips sheets matching 샘플 regex", () => {
+    expect(shouldSkipSheet("샘플")).toBe(true);
+    expect(shouldSkipSheet("샘플시트")).toBe(true);
+  });
+
+  it("skips sheets matching 작성가이드 regex", () => {
+    expect(shouldSkipSheet("작성가이드")).toBe(true);
+    expect(shouldSkipSheet("작성가이드(참고)")).toBe(true);
+  });
+
+  it("skips sheets matching 명명규칙 regex", () => {
+    expect(shouldSkipSheet("명명규칙")).toBe(true);
+  });
+
+  it("does not skip normal data sheets", () => {
+    expect(shouldSkipSheet("화면목록")).toBe(false);
+    expect(shouldSkipSheet("PGM001")).toBe(false);
+    expect(shouldSkipSheet("데이터")).toBe(false);
+    expect(shouldSkipSheet("시트1")).toBe(false);
+  });
+});
+
+// ── extractProgramMeta ──────────────────────────────────────────
+
+describe("extractProgramMeta", () => {
+  it("extracts meta from valid program design sheet", () => {
+    const wb = getWorkbook([
+      {
+        name: "PGM001",
+        data: [
+          ["프로젝트명", "", "", "", "", "프로그램설계서"],
+          ["", "", "", "", "", ""],
+          ["프로그램 ID", "BEAN001", "", "프로그램 명", "가입처리", ""],
+          ["고객담당자", "홍길동", "", "설계담당자", "김설계", ""],
+        ],
+      },
+    ]);
+    const sheet = wb.Sheets["PGM001"]!;
+    const meta = extractProgramMeta(sheet, "PGM001");
+
+    expect(meta).not.toBeNull();
+    expect(meta!.type).toBe("XlProgramMeta");
+    expect(meta!.text).toContain("프로그램ID: BEAN001");
+    expect(meta!.text).toContain("프로그램명: 가입처리");
+    expect(meta!.text).toContain("고객담당자: 홍길동");
+    expect(meta!.text).toContain("설계담당자: 김설계");
+  });
+
+  it("returns null for sheets with too few rows", () => {
+    const wb = getWorkbook([
+      { name: "Small", data: [["A"], ["B"]] },
+    ]);
+    const sheet = wb.Sheets["Small"]!;
+    const meta = extractProgramMeta(sheet, "Small");
+    expect(meta).toBeNull();
+  });
+
+  it("returns null when no meta fields have values", () => {
+    const wb = getWorkbook([
+      {
+        name: "Empty",
+        data: [
+          ["", "", "", "", ""],
+          ["", "", "", "", ""],
+          ["", "", "", "", ""],
+          ["", "", "", "", ""],
+        ],
+      },
+    ]);
+    const sheet = wb.Sheets["Empty"]!;
+    const meta = extractProgramMeta(sheet, "Empty");
+    expect(meta).toBeNull();
+  });
+
+  it("uses sheetName as title fallback when programName is empty", () => {
+    const wb = getWorkbook([
+      {
+        name: "MySheet",
+        data: [
+          ["", "", "", "", ""],
+          ["", "", "", "", ""],
+          ["프로그램 ID", "ID001", "", "프로그램 명", ""],
+          ["고객담당자", "", "", "설계담당자", ""],
+        ],
+      },
+    ]);
+    const sheet = wb.Sheets["MySheet"]!;
+    const meta = extractProgramMeta(sheet, "MySheet");
+    expect(meta).not.toBeNull();
+    expect(meta!.text).toContain("프로그램설계서: MySheet");
   });
 });

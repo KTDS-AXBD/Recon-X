@@ -2,7 +2,8 @@ import { createLogger } from "@ai-foundry/utils";
 import { PipelineEventSchema } from "@ai-foundry/types";
 import type { Env } from "./env.js";
 import { parseDocument } from "./parsing/unstructured.js";
-import { parseXlsx } from "./parsing/xlsx.js";
+import { parseXlsx, detectSiSubtype } from "./parsing/xlsx.js";
+import { parseScreenDesign } from "./parsing/screen-design.js";
 import { classifyDocument, classifyXlsxElements } from "./parsing/classifier.js";
 import { maskText } from "./parsing/masking.js";
 import { validateFileFormat, classifyParseError, type ErrorType } from "./parsing/validator.js";
@@ -92,11 +93,17 @@ export async function processQueueEvent(body: unknown, env: Env, _ctx: Execution
       logger.info("Large file detected", { documentId, sizeMB: (fileBytes.byteLength / (1024 * 1024)).toFixed(1) });
     }
 
-    // 3. Parse: custom xlsx parser or Unstructured.io
+    // 3. Parse: custom xlsx parser (with screen-design routing) or Unstructured.io
     const isXlsx = fileType === "xlsx" || fileType === "xls";
-    const elements = isXlsx
-      ? parseXlsx(fileBytes, originalName)
-      : await parseDocument(fileBytes, originalName, mimeType, env);
+    let elements;
+    if (isXlsx) {
+      const siSubtype = detectSiSubtype(originalName);
+      elements = siSubtype === "화면설계"
+        ? parseScreenDesign(fileBytes, originalName)
+        : parseXlsx(fileBytes, originalName);
+    } else {
+      elements = await parseDocument(fileBytes, originalName, mimeType, env);
+    }
 
     // 4. Classify
     const classification = isXlsx

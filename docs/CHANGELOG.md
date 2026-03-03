@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 060 — 2026-03-03
+**Staging E2E 검증 — 문서 업로드→3-Pass 분석→Cross-Org 비교 전체 파이프라인 테스트**:
+- ✅ 문서 업로드 → Queue 파싱 → 5 chunks 생성 (txt, ~10초)
+- ✅ 구조 추출 (POST /extract): 프로세스 1, 엔티티 4, 규칙 6, 관계 3
+- ✅ 3-Pass 분석 (POST /analyze): 중요도 0.85, findings 2건 (critical 1, warning 1)
+- ✅ Layer 1/2/3 API 조회 + HITL 리뷰 accept 정상 동작
+- ✅ Cross-Org 비교 (2개 조직): common_standard 1건, 표준화 점수 0.8
+- ✅ Frontend 코드 검증: 3-Layer 탭 API 연동 정상, Comparison UI 미구현 확인 (Phase 3+)
+- ⚠️ Playwright MCP: WSL2 Chrome 세션 충돌 → API 기반 테스트로 전환
+
+**검증**: 코드 변경 없음 (테스트 전용 세션). LLM fallback(OpenAI) 상태에서도 양질 분석 확인.
+
 ## 세션 059 — 2026-03-03
 **Staging 배포 + Gap 분석 + Agent 병렬 수정 — 전 이슈 해소**:
 - ✅ D1 마이그레이션 `0003_analysis.sql` → staging 적용 (4 테이블 + 6 인덱스)

@@ -14,6 +14,7 @@ const OntologyPage = lazy(() => import("./pages/ontology"));
 const SkillCatalogPage = lazy(() => import("./pages/skill-catalog"));
 const ApiConsolePage = lazy(() => import("./pages/api-console"));
 const TrustDashboardPage = lazy(() => import("./pages/trust"));
+const AnalysisReportPage = lazy(() => import("./pages/analysis-report"));
 const AuditPage = lazy(() => import("./pages/audit"));
 const SettingsPage = lazy(() => import("./pages/settings"));
 const NotFoundPage = lazy(() => import("./pages/not-found"));
@@ -40,6 +41,7 @@ export function App() {
             <Route path="/" element={<Layout><DashboardPage /></Layout>} />
             <Route path="/upload" element={<Layout><UploadPage /></Layout>} />
             <Route path="/analysis" element={<Layout><AnalysisPage /></Layout>} />
+            <Route path="/analysis-report" element={<Layout><AnalysisReportPage /></Layout>} />
             <Route path="/hitl" element={<Layout><HITLReviewPage /></Layout>} />
             <Route path="/ontology" element={<Layout><OntologyPage /></Layout>} />
             <Route path="/skills" element={<Layout><SkillCatalogPage /></Layout>} />

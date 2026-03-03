@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Upload,
   FileSearch,
+  BarChart3,
   CheckSquare,
   Network,
   Package,
@@ -55,6 +56,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: '분석 결과',
       labelEn: 'Analysis',
       path: '/analysis',
+    },
+    {
+      icon: <BarChart3 className="w-5 h-5" />,
+      label: '분석 리포트',
+      labelEn: 'Analysis Report',
+      path: '/analysis-report',
     },
     {
       icon: <CheckSquare className="w-5 h-5" />,

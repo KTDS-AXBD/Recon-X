@@ -14,6 +14,7 @@ const logger = createLogger("svc-ontology:normalize");
 interface TermInput {
   label: string;
   definition?: string;
+  type?: string;
 }
 
 
@@ -38,6 +39,7 @@ interface TermRow {
   broader_term_id: string | null;
   embedding_model: string | null;
   created_at: string;
+  term_type: string;
 }
 
 export async function handleNormalize(
@@ -83,6 +85,10 @@ export async function handleNormalize(
     if (typeof definition === "string") {
       termInput.definition = definition;
     }
+    const termTypeVal = item["type"];
+    if (typeof termTypeVal === "string") {
+      termInput.type = termTypeVal;
+    }
     terms.push(termInput);
   }
 
@@ -111,6 +117,7 @@ export async function handleNormalize(
   for (const term of terms) {
     const termId = crypto.randomUUID();
     const skosUri = `urn:aif:term:${termId}`;
+    const termType = term.type ?? "entity";
     const termRow: TermRow = {
       term_id: termId,
       ontology_id: ontologyId,
@@ -120,15 +127,16 @@ export async function handleNormalize(
       broader_term_id: null,
       embedding_model: null,
       created_at: now,
+      term_type: termType,
     };
 
     await env.DB_ONTOLOGY.prepare(
       `INSERT INTO terms (
           term_id, ontology_id, label, definition, skos_uri,
-          broader_term_id, embedding_model, created_at
-        ) VALUES (?, ?, ?, ?, ?, NULL, NULL, ?)`,
+          broader_term_id, embedding_model, created_at, term_type
+        ) VALUES (?, ?, ?, ?, ?, NULL, NULL, ?, ?)`,
     )
-      .bind(termId, ontologyId, term.label, term.definition ?? null, skosUri, now)
+      .bind(termId, ontologyId, term.label, term.definition ?? null, skosUri, now, termType)
       .run();
 
     insertedTerms.push(termRow);
@@ -139,13 +147,14 @@ export async function handleNormalize(
   try {
     const statements = insertedTerms.map((t) => ({
       statement:
-        "MERGE (t:Term {uri: $uri}) SET t.label = $label, t.ontologyId = $ontologyId, t.definition = $definition " +
+        "MERGE (t:Term {uri: $uri}) SET t.label = $label, t.ontologyId = $ontologyId, t.definition = $definition, t.type = $type " +
         "WITH t MERGE (o:Ontology {id: $ontologyId}) MERGE (o)-[:HAS_TERM]->(t)",
       parameters: {
         uri: t.skos_uri,
         label: t.label,
         ontologyId,
         definition: t.definition ?? "",
+        type: t.term_type,
       } as Record<string, unknown>,
     }));
 
@@ -255,5 +264,6 @@ function formatTermRow(row: TermRow) {
     broaderTermId: row.broader_term_id,
     embeddingModel: row.embedding_model,
     createdAt: row.created_at,
+    termType: row.term_type,
   };
 }

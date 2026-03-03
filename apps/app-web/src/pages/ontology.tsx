@@ -42,6 +42,13 @@ interface OntologyNode {
 }
 
 type ViewMode = "list" | "graph";
+type TermTypeFilter = "entity" | "relation" | "attribute";
+
+const TYPE_CONFIG = {
+  entity: { label: "개체", color: "#3B82F6", shape: "circle" },
+  relation: { label: "관계", color: "#9333EA", shape: "diamond" },
+  attribute: { label: "속성", color: "#10B981", shape: "rounded-rect" },
+} as const;
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -60,12 +67,18 @@ function termsToNodes(terms: TermRow[]): OntologyNode[] {
 
   return terms.map((term): OntologyNode => {
     const children = broaderMap.get(term.termId);
-    const hasBroader = term.broaderTermId !== null;
-    const type: OntologyNode["type"] = !hasBroader
-      ? "domain"
-      : children !== undefined && children.length > 0
-        ? "concept"
-        : "attribute";
+    // Use termType from API if available, fallback to hierarchy-based inference
+    const apiType = term.termType;
+    const type: OntologyNode["type"] =
+      apiType === "relation"
+        ? "relation"
+        : apiType === "attribute"
+          ? "attribute"
+          : !term.broaderTermId
+            ? "domain"
+            : children !== undefined && children.length > 0
+              ? "concept"
+              : "attribute";
 
     const node: OntologyNode = {
       id: term.termId,
@@ -163,6 +176,9 @@ export default function OntologyPage() {
   const [graphSearchQuery, setGraphSearchQuery] = useState("");
   const [graphSearchOpen, setGraphSearchOpen] = useState(false);
   const [allTermLabels, setAllTermLabels] = useState<string[]>([]);
+  const [activeTypeFilters, setActiveTypeFilters] = useState<Set<TermTypeFilter>>(
+    new Set(["entity", "relation", "attribute"]),
+  );
   const graphSearchRef = useRef<HTMLDivElement>(null);
 
   // Graph container sizing
@@ -312,6 +328,27 @@ export default function OntologyPage() {
     [loadGraph],
   );
 
+  const toggleTypeFilter = useCallback((type: TermTypeFilter) => {
+    setActiveTypeFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(type)) {
+        if (next.size > 1) next.delete(type);
+      } else {
+        next.add(type);
+      }
+      return next;
+    });
+  }, []);
+
+  // Filter graph nodes by active type filters
+  const filteredGraphNodes = graphNodes.filter((n) =>
+    activeTypeFilters.has((n.type ?? "entity") as TermTypeFilter),
+  );
+  const filteredNodeIds = new Set(filteredGraphNodes.map((n) => n.id));
+  const filteredGraphLinks = graphLinks.filter(
+    (l) => filteredNodeIds.has(l.source) && filteredNodeIds.has(l.target),
+  );
+
   const graphSearchSuggestions = graphSearchQuery.trim()
     ? allTermLabels
         .concat(
@@ -380,7 +417,7 @@ export default function OntologyPage() {
                 className="text-xs"
                 style={{ color: "var(--text-secondary)" }}
               >
-                {isExpanded ? "\u25BC" : "\u25B6"}
+                {isExpanded ? "▼" : "▶"}
               </span>
             </button>
           ) : (
@@ -549,17 +586,25 @@ export default function OntologyPage() {
                 className="text-xs"
                 style={{ color: "var(--text-secondary)" }}
               >
-                Neo4j 노드
+                타입 분포
               </div>
             </div>
-            <div className="text-2xl font-bold" style={{ color: "#9333EA" }}>
-              {stats?.neo4j
-                ? (
-                    stats.neo4j.termNodes +
-                    stats.neo4j.ontologyNodes +
-                    stats.neo4j.policyNodes
-                  ).toLocaleString()
-                : "..."}
+            <div className="flex items-baseline gap-2">
+              {stats?.byType ? (
+                <>
+                  <span className="text-sm font-semibold" style={{ color: "#3B82F6" }}>
+                    {(stats.byType["entity"] ?? 0).toLocaleString()}
+                  </span>
+                  <span className="text-sm font-semibold" style={{ color: "#9333EA" }}>
+                    {(stats.byType["relation"] ?? 0).toLocaleString()}
+                  </span>
+                  <span className="text-sm font-semibold" style={{ color: "#10B981" }}>
+                    {(stats.byType["attribute"] ?? 0).toLocaleString()}
+                  </span>
+                </>
+              ) : (
+                <span className="text-2xl font-bold" style={{ color: "#9333EA" }}>...</span>
+              )}
             </div>
           </div>
         </div>
@@ -678,11 +723,7 @@ export default function OntologyPage() {
                               className="w-2 h-2 rounded-full flex-shrink-0"
                               style={{
                                 backgroundColor: node
-                                  ? node.group === "core"
-                                    ? "#3B82F6"
-                                    : node.group === "important"
-                                      ? "#F6AD55"
-                                      : "#10B981"
+                                  ? TYPE_CONFIG[node.type as TermTypeFilter]?.color ?? "#999"
                                   : "var(--text-secondary)",
                               }}
                             />
@@ -717,39 +758,56 @@ export default function OntologyPage() {
                   </Button>
                 )}
               </div>
-              {/* Legend */}
+              {/* Type Legend + Filter Toggles */}
               <div
-                className="absolute bottom-3 left-3 z-10 flex gap-3 px-3 py-2 rounded-lg text-xs"
+                className="absolute bottom-3 left-3 z-10 flex gap-2 px-3 py-2 rounded-lg text-xs"
                 style={{
                   backgroundColor: "var(--bg-primary)",
                   border: "1px solid var(--border)",
                 }}
               >
-                <span className="flex items-center gap-1">
-                  <span
-                    className="inline-block w-3 h-3 rounded-full"
-                    style={{ backgroundColor: "#3B82F6" }}
-                  />
-                  핵심 (Top 10)
-                </span>
-                <span className="flex items-center gap-1">
-                  <span
-                    className="inline-block w-3 h-3 rounded-full"
-                    style={{ backgroundColor: "#F6AD55" }}
-                  />
-                  주요 (11-30)
-                </span>
-                <span className="flex items-center gap-1">
-                  <span
-                    className="inline-block w-3 h-3 rounded-full"
-                    style={{ backgroundColor: "#10B981" }}
-                  />
-                  일반
-                </span>
+                {(Object.entries(TYPE_CONFIG) as [TermTypeFilter, { label: string; color: string; shape: string }][]).map(
+                  ([type, cfg]) => (
+                    <button
+                      key={type}
+                      className="flex items-center gap-1 px-1.5 py-0.5 rounded transition-all"
+                      style={{
+                        opacity: activeTypeFilters.has(type) ? 1 : 0.4,
+                        backgroundColor: activeTypeFilters.has(type)
+                          ? `${cfg.color}15`
+                          : "transparent",
+                      }}
+                      onClick={() => toggleTypeFilter(type)}
+                    >
+                      {cfg.shape === "circle" && (
+                        <span
+                          className="inline-block w-3 h-3 rounded-full"
+                          style={{ backgroundColor: cfg.color }}
+                        />
+                      )}
+                      {cfg.shape === "diamond" && (
+                        <span
+                          className="inline-block w-3 h-3"
+                          style={{
+                            backgroundColor: cfg.color,
+                            transform: "rotate(45deg) scale(0.7)",
+                          }}
+                        />
+                      )}
+                      {cfg.shape === "rounded-rect" && (
+                        <span
+                          className="inline-block w-3.5 h-2.5 rounded-sm"
+                          style={{ backgroundColor: cfg.color }}
+                        />
+                      )}
+                      {cfg.label}
+                    </button>
+                  ),
+                )}
               </div>
               <OntologyGraph
-                nodes={graphNodes}
-                links={graphLinks}
+                nodes={filteredGraphNodes}
+                links={filteredGraphLinks}
                 loading={graphLoading}
                 error={graphError}
                 onNodeClick={handleGraphNodeClick}
@@ -772,11 +830,7 @@ export default function OntologyPage() {
                         className="w-5 h-5"
                         style={{
                           color:
-                            selectedGraphNode.group === "core"
-                              ? "#3B82F6"
-                              : selectedGraphNode.group === "important"
-                                ? "#F6AD55"
-                                : "#10B981",
+                            TYPE_CONFIG[selectedGraphNode.type as TermTypeFilter]?.color ?? "#999",
                         }}
                       />
                       <h2
@@ -789,6 +843,16 @@ export default function OntologyPage() {
                     <div className="flex items-center gap-2 mt-2">
                       <Badge
                         style={{
+                          backgroundColor: `${TYPE_CONFIG[selectedGraphNode.type as TermTypeFilter]?.color ?? "#999"}15`,
+                          color: TYPE_CONFIG[selectedGraphNode.type as TermTypeFilter]?.color ?? "#999",
+                          border: "none",
+                        }}
+                        className="text-xs"
+                      >
+                        {TYPE_CONFIG[selectedGraphNode.type as TermTypeFilter]?.label ?? "개체"}
+                      </Badge>
+                      <Badge
+                        style={{
                           backgroundColor: "rgba(59, 130, 246, 0.1)",
                           color: "#3B82F6",
                           border: "none",
@@ -796,20 +860,6 @@ export default function OntologyPage() {
                         className="text-xs"
                       >
                         빈도 {selectedGraphNode.frequency}회
-                      </Badge>
-                      <Badge
-                        style={{
-                          backgroundColor: "rgba(147, 51, 234, 0.1)",
-                          color: "#9333EA",
-                          border: "none",
-                        }}
-                        className="text-xs"
-                      >
-                        {selectedGraphNode.group === "core"
-                          ? "핵심"
-                          : selectedGraphNode.group === "important"
-                            ? "주요"
-                            : "일반"}
                       </Badge>
                     </div>
                   </div>
@@ -863,11 +913,7 @@ export default function OntologyPage() {
                                   className="w-2 h-2 rounded-full flex-shrink-0"
                                   style={{
                                     backgroundColor:
-                                      node?.group === "core"
-                                        ? "#3B82F6"
-                                        : node?.group === "important"
-                                          ? "#F6AD55"
-                                          : "#10B981",
+                                      TYPE_CONFIG[node?.type as TermTypeFilter]?.color ?? "#999",
                                   }}
                                 />
                                 <span

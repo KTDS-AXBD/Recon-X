@@ -17,6 +17,7 @@ export interface TermRow {
   broaderTermId: string | null;
   embeddingModel: string | null;
   createdAt: string;
+  termType: string;
 }
 
 export async function fetchTerms(
@@ -79,6 +80,7 @@ export interface TermsStats {
   totalTerms: number;
   distinctLabels: number;
   ontologyCount: number;
+  byType: Record<string, number>;
   neo4j: {
     termNodes: number;
     ontologyNodes: number;
@@ -104,6 +106,7 @@ export interface GraphNode {
   definition: string;
   frequency: number;
   group: "core" | "important" | "standard";
+  type: "entity" | "relation" | "attribute";
 }
 
 export interface GraphLink {

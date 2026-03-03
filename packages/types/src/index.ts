@@ -8,3 +8,4 @@ export * from "./governance.js";
 export * from "./policy.js";
 export * from "./analysis.js";
 export * from "./diagnosis.js";
+export * from "./ontology.js";

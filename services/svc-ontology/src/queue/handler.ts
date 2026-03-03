@@ -11,9 +11,10 @@
  */
 
 import { PipelineEventSchema } from "@ai-foundry/types";
-import type { OntologyNormalizedEvent } from "@ai-foundry/types";
+import type { OntologyNormalizedEvent, TermType } from "@ai-foundry/types";
 import { createLogger } from "@ai-foundry/utils";
 import { neo4jQuery } from "../neo4j/client.js";
+import { classifyTermsWithLlm } from "../llm/classify-terms.js";
 import type { Env } from "../env.js";
 
 const logger = createLogger("svc-ontology:queue");
@@ -37,6 +38,7 @@ interface PolicyApiResponse {
 interface ExtractedTerm {
   label: string;
   definition: string;
+  type: TermType;
 }
 
 /**
@@ -75,6 +77,7 @@ function extractTermsFromPolicy(policy: PolicyApiResponse["data"]): ExtractedTer
       terms.push({
         label: trimmed,
         definition: `${policy.title}의 ${source.context}에서 추출된 도메인 용어`,
+        type: "entity",
       });
     }
   }
@@ -147,8 +150,21 @@ export async function processQueueEvent(
   }
 
   // 2. Extract terms from policy text
-  const terms = extractTermsFromPolicy(policy);
-  logger.info("Extracted terms from policy", { policyId, termCount: terms.length });
+  const rawTerms = extractTermsFromPolicy(policy);
+  logger.info("Extracted terms from policy", { policyId, termCount: rawTerms.length });
+
+  // 2b. Classify terms via LLM (Haiku) — graceful fallback to 'entity'
+  const classified = await classifyTermsWithLlm(env, rawTerms, policy.title);
+  const terms = rawTerms.map((t, i) => {
+    const c = classified[i];
+    return { ...t, type: c?.type ?? ("entity" as TermType) };
+  });
+  logger.info("Classified terms", {
+    policyId,
+    entity: terms.filter((t) => t.type === "entity").length,
+    relation: terms.filter((t) => t.type === "relation").length,
+    attribute: terms.filter((t) => t.type === "attribute").length,
+  });
 
   const now = new Date().toISOString();
   const ontologyId = crypto.randomUUID();
@@ -183,10 +199,10 @@ export async function processQueueEvent(
     await env.DB_ONTOLOGY.prepare(
       `INSERT INTO terms (
           term_id, ontology_id, label, definition, skos_uri,
-          broader_term_id, embedding_model, created_at
-        ) VALUES (?, ?, ?, ?, ?, NULL, NULL, ?)`,
+          broader_term_id, embedding_model, created_at, term_type
+        ) VALUES (?, ?, ?, ?, ?, NULL, NULL, ?, ?)`,
     )
-      .bind(termId, ontologyId, term.label, term.definition, skosUri, now)
+      .bind(termId, ontologyId, term.label, term.definition, skosUri, now, term.type)
       .run();
 
     insertedTermIds.push(termId);
@@ -198,13 +214,14 @@ export async function processQueueEvent(
   try {
     const statements = terms.map((t, i) => ({
       statement:
-        "MERGE (t:Term {uri: $uri}) SET t.label = $label, t.ontologyId = $ontologyId, t.definition = $definition " +
+        "MERGE (t:Term {uri: $uri}) SET t.label = $label, t.ontologyId = $ontologyId, t.definition = $definition, t.type = $type " +
         "WITH t MERGE (o:Ontology {id: $ontologyId}) MERGE (o)-[:HAS_TERM]->(t)",
       parameters: {
         uri: termUris[i] ?? "",
         label: t.label,
         ontologyId,
         definition: t.definition,
+        type: t.type,
       } as Record<string, unknown>,
     }));
 

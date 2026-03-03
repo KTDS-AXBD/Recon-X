@@ -20,6 +20,7 @@ interface TermRow {
   broader_term_id: string | null;
   embedding_model: string | null;
   created_at: string;
+  term_type: string | null;
 }
 
 // ── GET /terms/:id ───────────────────────────────────────────────────
@@ -50,6 +51,7 @@ export async function handleListTerms(
 ): Promise<Response> {
   const url = new URL(request.url);
   const ontologyId = url.searchParams.get("ontologyId");
+  const termType = url.searchParams.get("type");
   const limit = Math.min(Number(url.searchParams.get("limit") ?? "50"), 100);
   const offset = Number(url.searchParams.get("offset") ?? "0");
 
@@ -59,6 +61,11 @@ export async function handleListTerms(
   if (ontologyId) {
     query += " AND ontology_id = ?";
     binds.push(ontologyId);
+  }
+
+  if (termType) {
+    query += " AND term_type = ?";
+    binds.push(termType);
   }
 
   query += " ORDER BY created_at ASC LIMIT ? OFFSET ?";
@@ -174,10 +181,22 @@ export async function handleTermsStats(
     // Neo4j unavailable — D1 stats still returned
   }
 
+  // Type distribution counts
+  const typeCounts = await env.DB_ONTOLOGY.prepare(
+    `SELECT term_type, COUNT(*) AS cnt FROM terms GROUP BY term_type`,
+  ).all<{ term_type: string | null; cnt: number }>();
+
+  const byType: Record<string, number> = {};
+  for (const r of typeCounts.results ?? []) {
+    const key = r.term_type ?? "entity";
+    byType[key] = r.cnt;
+  }
+
   return ok({
     totalTerms: row?.total ?? 0,
     distinctLabels: row?.distinct_labels ?? 0,
     ontologyCount: row?.ontology_count ?? 0,
+    byType,
     neo4j: neo4jStats,
   });
 }
@@ -202,14 +221,15 @@ export async function handleGraphVisualization(
         "WITH o " +
         "MATCH (o)-[:HAS_TERM]->(neighbor:Term) " +
         "RETURN neighbor.label AS label, neighbor.definition AS definition, " +
-        "count(DISTINCT o) AS freq " +
+        "count(DISTINCT o) AS freq, " +
+        "coalesce(neighbor.type, 'entity') AS termType " +
         "ORDER BY freq DESC LIMIT $limit"
       : // Top terms by frequency
         "MATCH (t:Term) " +
         "WITH t.label AS label, collect(t.definition)[0] AS definition, " +
-        "count(t) AS freq " +
+        "count(t) AS freq, coalesce(collect(t.type)[0], 'entity') AS termType " +
         "ORDER BY freq DESC LIMIT $limit " +
-        "RETURN label, definition, freq";
+        "RETURN label, definition, freq, termType";
 
     const params: Record<string, unknown> = { limit };
     if (termLabel) params["termLabel"] = termLabel;
@@ -235,6 +255,7 @@ export async function handleGraphVisualization(
       definition: (d.row[1] as string | null) ?? "",
       frequency: d.row[2] as number,
       group: i < 10 ? "core" : i < 30 ? "important" : "standard",
+      type: (d.row[3] as string | null) ?? "entity",
     }));
 
     // Get co-occurrence edges: terms sharing the same Ontology
@@ -279,5 +300,6 @@ function formatTermRow(row: TermRow) {
     broaderTermId: row.broader_term_id,
     embeddingModel: row.embedding_model,
     createdAt: row.created_at,
+    termType: row.term_type ?? "entity",
   };
 }

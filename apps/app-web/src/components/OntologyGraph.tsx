@@ -21,10 +21,11 @@ interface Props {
 type FGNode = NodeObject & GraphNode;
 type FGLink = LinkObject & GraphLink;
 
-const GROUP_COLORS: Record<string, string> = {
-  core: "#3B82F6",
-  important: "#F6AD55",
-  standard: "#10B981",
+/** Type-based colors: entity=blue, relation=purple, attribute=green */
+const TYPE_COLORS: Record<string, string> = {
+  entity: "#3B82F6",
+  relation: "#9333EA",
+  attribute: "#10B981",
 };
 
 export default function OntologyGraph({
@@ -56,6 +57,7 @@ export default function OntologyGraph({
     (node: FGNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
       const label = node.label;
       const freq = node.frequency ?? 1;
+      const nodeType = node.type ?? "entity";
       const isSelected = selectedNode === label;
       const isHovered = hoveredNode === label;
       const radius = Math.max(4, Math.min(20, Math.sqrt(freq) * 3));
@@ -64,15 +66,37 @@ export default function OntologyGraph({
       const x = node.x ?? 0;
       const y = node.y ?? 0;
 
-      // Draw node circle
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, 2 * Math.PI);
-      const color = GROUP_COLORS[node.group] ?? "#999";
+      const color = TYPE_COLORS[nodeType] ?? "#999";
       ctx.fillStyle = isSelected
         ? "#1A365D"
         : isHovered
           ? color + "CC"
           : color + "99";
+
+      // Draw shape by type: entity=circle, relation=diamond, attribute=rounded rect
+      ctx.beginPath();
+      if (nodeType === "relation") {
+        // Diamond shape
+        ctx.moveTo(x, y - radius);
+        ctx.lineTo(x + radius, y);
+        ctx.lineTo(x, y + radius);
+        ctx.lineTo(x - radius, y);
+        ctx.closePath();
+      } else if (nodeType === "attribute") {
+        // Rounded rectangle
+        const w = radius * 1.6;
+        const h = radius * 1.2;
+        const r = radius * 0.3;
+        ctx.moveTo(x - w + r, y - h);
+        ctx.arcTo(x + w, y - h, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x - w, y + h, r);
+        ctx.arcTo(x - w, y + h, x - w, y - h, r);
+        ctx.arcTo(x - w, y - h, x + w, y - h, r);
+        ctx.closePath();
+      } else {
+        // Circle (entity / default)
+        ctx.arc(x, y, radius, 0, 2 * Math.PI);
+      }
       ctx.fill();
 
       if (isSelected || isHovered) {

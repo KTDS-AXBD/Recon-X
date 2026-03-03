@@ -7,6 +7,16 @@ vi.mock("../neo4j/client.js", () => ({
   neo4jQuery: vi.fn().mockResolvedValue({ results: [], errors: [] }),
 }));
 
+// ── Mock classify-terms (default: fallback to entity) ───────────
+vi.mock("../llm/classify-terms.js", () => ({
+  classifyTermsWithLlm: vi.fn().mockImplementation(
+    (_env: unknown, terms: Array<{ label: string; definition: string }>) =>
+      Promise.resolve(
+        terms.map((t) => ({ label: t.label, type: "entity", definition: t.definition })),
+      ),
+  ),
+}));
+
 // ── Helpers ──────────────────────────────────────────────────────
 
 const MOCK_POLICY_RESPONSE = {
@@ -475,5 +485,31 @@ describe("processQueueEvent", () => {
     expect(res.status).toBe(200);
     const body = await res.json() as { status: string };
     expect(body.status).toBe("processed");
+  });
+
+  // ── LLM classification integration ──────────────────────────────
+
+  it("calls classifyTermsWithLlm during processing", async () => {
+    const { classifyTermsWithLlm } = await import("../llm/classify-terms.js");
+    const event = makePolicyApprovedEvent({
+      eventId: "550e8400-e29b-41d4-a716-446655440000",
+    });
+    await processQueueEvent(event, env, ctx);
+    expect(classifyTermsWithLlm).toHaveBeenCalledOnce();
+  });
+
+  it("D1 INSERT includes term_type column", async () => {
+    const event = makePolicyApprovedEvent({
+      eventId: "550e8400-e29b-41d4-a716-446655440000",
+    });
+    await processQueueEvent(event, env, ctx);
+
+    const prepareMock = env.DB_ONTOLOGY.prepare as ReturnType<typeof vi.fn>;
+    const calls = prepareMock.mock.calls as Array<[string]>;
+    const termInsertCall = calls.find(
+      (c) => c[0].includes("INSERT INTO terms"),
+    );
+    expect(termInsertCall).toBeDefined();
+    expect(termInsertCall?.[0]).toContain("term_type");
   });
 });

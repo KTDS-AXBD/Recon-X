@@ -120,6 +120,153 @@ export async function handleGetGraph(
   }
 }
 
+// ── GET /terms/stats ─────────────────────────────────────────────────
+
+interface StatsRow {
+  total: number;
+  distinct_labels: number;
+  ontology_count: number;
+}
+
+export async function handleTermsStats(
+  _request: Request,
+  env: Env,
+): Promise<Response> {
+  const row = await env.DB_ONTOLOGY.prepare(
+    `SELECT
+       COUNT(*) AS total,
+       COUNT(DISTINCT label) AS distinct_labels,
+       COUNT(DISTINCT ontology_id) AS ontology_count
+     FROM terms`,
+  ).first<StatsRow>();
+
+  // Try to get Neo4j stats (optional, best-effort)
+  let neo4jStats: { termNodes: number; ontologyNodes: number; policyNodes: number; relationships: number } | null = null;
+  try {
+    const neo4jResponse = await neo4jQuery(env, [
+      {
+        statement:
+          "MATCH (n) WITH labels(n) AS types, count(n) AS cnt " +
+          "RETURN types, cnt " +
+          "UNION ALL " +
+          "MATCH ()-[r]->() RETURN ['_relationships'] AS types, count(r) AS cnt",
+      },
+    ]);
+    if (neo4jResponse.errors.length === 0) {
+      const firstResult = neo4jResponse.results[0];
+      const rows = firstResult?.data ?? [];
+      let termNodes = 0;
+      let ontologyNodes = 0;
+      let policyNodes = 0;
+      let relationships = 0;
+      for (const d of rows) {
+        const types = d.row[0] as string[];
+        const cnt = d.row[1] as number;
+        const firstType = types[0];
+        if (firstType === "Term") termNodes = cnt;
+        else if (firstType === "Ontology") ontologyNodes = cnt;
+        else if (firstType === "Policy") policyNodes = cnt;
+        else if (firstType === "_relationships") relationships = cnt;
+      }
+      neo4jStats = { termNodes, ontologyNodes, policyNodes, relationships };
+    }
+  } catch {
+    // Neo4j unavailable — D1 stats still returned
+  }
+
+  return ok({
+    totalTerms: row?.total ?? 0,
+    distinctLabels: row?.distinct_labels ?? 0,
+    ontologyCount: row?.ontology_count ?? 0,
+    neo4j: neo4jStats,
+  });
+}
+
+// ── GET /graph/visualization ─────────────────────────────────────────
+
+export async function handleGraphVisualization(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  const url = new URL(request.url);
+  const limitParam = url.searchParams.get("limit");
+  const limit = Math.min(Number(limitParam ?? "80"), 200);
+  const termLabel = url.searchParams.get("term");
+
+  try {
+    // If a specific term is requested, get its co-occurring terms
+    const cypher = termLabel
+      ? // Neighbors of a specific term
+        "MATCH (o:Ontology)-[:HAS_TERM]->(t:Term) " +
+        "WHERE t.label = $termLabel " +
+        "WITH o " +
+        "MATCH (o)-[:HAS_TERM]->(neighbor:Term) " +
+        "RETURN neighbor.label AS label, neighbor.definition AS definition, " +
+        "count(DISTINCT o) AS freq " +
+        "ORDER BY freq DESC LIMIT $limit"
+      : // Top terms by frequency
+        "MATCH (t:Term) " +
+        "WITH t.label AS label, collect(t.definition)[0] AS definition, " +
+        "count(t) AS freq " +
+        "ORDER BY freq DESC LIMIT $limit " +
+        "RETURN label, definition, freq";
+
+    const params: Record<string, unknown> = { limit };
+    if (termLabel) params["termLabel"] = termLabel;
+
+    const termsResp = await neo4jQuery(env, [
+      { statement: cypher, parameters: params },
+    ]);
+
+    if (termsResp.errors.length > 0) {
+      const firstError = termsResp.errors[0];
+      return badRequest(
+        `Neo4j error: ${firstError?.message ?? "unknown"}`,
+      );
+    }
+
+    const termRows = termsResp.results[0]?.data ?? [];
+    const labels = termRows.map((d) => d.row[0] as string);
+
+    // Build nodes
+    const nodes = termRows.map((d, i) => ({
+      id: d.row[0] as string,
+      label: d.row[0] as string,
+      definition: (d.row[1] as string | null) ?? "",
+      frequency: d.row[2] as number,
+      group: i < 10 ? "core" : i < 30 ? "important" : "standard",
+    }));
+
+    // Get co-occurrence edges: terms sharing the same Ontology
+    if (labels.length < 2) {
+      return ok({ nodes, links: [] });
+    }
+
+    const edgeCypher =
+      "MATCH (t1:Term)<-[:HAS_TERM]-(o:Ontology)-[:HAS_TERM]->(t2:Term) " +
+      "WHERE t1.label IN $labels AND t2.label IN $labels " +
+      "AND t1.label < t2.label " +
+      "RETURN t1.label AS source, t2.label AS target, " +
+      "count(DISTINCT o) AS weight " +
+      "ORDER BY weight DESC LIMIT 300";
+
+    const edgesResp = await neo4jQuery(env, [
+      { statement: edgeCypher, parameters: { labels } },
+    ]);
+
+    const links = (edgesResp.results[0]?.data ?? []).map((d) => ({
+      source: d.row[0] as string,
+      target: d.row[1] as string,
+      weight: d.row[2] as number,
+    }));
+
+    return ok({ nodes, links });
+  } catch (e) {
+    logger.error("Graph visualization query failed", { error: String(e) });
+    return errFromUnknown(e);
+  }
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────
 
 function formatTermRow(row: TermRow) {

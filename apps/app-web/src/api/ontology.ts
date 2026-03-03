@@ -72,3 +72,62 @@ export async function fetchGraph(
   );
   return res.json() as Promise<ApiResponse<GraphResult>>;
 }
+
+// ── Stats ────────────────────────────────────────────────────────────
+
+export interface TermsStats {
+  totalTerms: number;
+  distinctLabels: number;
+  ontologyCount: number;
+  neo4j: {
+    termNodes: number;
+    ontologyNodes: number;
+    policyNodes: number;
+    relationships: number;
+  } | null;
+}
+
+export async function fetchTermsStats(
+  organizationId: string,
+): Promise<ApiResponse<TermsStats>> {
+  const res = await fetch(`${API_BASE}/terms/stats`, {
+    headers: headers(organizationId),
+  });
+  return res.json() as Promise<ApiResponse<TermsStats>>;
+}
+
+// ── Graph Visualization ──────────────────────────────────────────────
+
+export interface GraphNode {
+  id: string;
+  label: string;
+  definition: string;
+  frequency: number;
+  group: "core" | "important" | "standard";
+}
+
+export interface GraphLink {
+  source: string;
+  target: string;
+  weight: number;
+}
+
+export interface GraphVisualizationData {
+  nodes: GraphNode[];
+  links: GraphLink[];
+}
+
+export async function fetchGraphVisualization(
+  organizationId: string,
+  params?: { limit?: number; term?: string },
+): Promise<ApiResponse<GraphVisualizationData>> {
+  const qs = new URLSearchParams();
+  if (params?.limit !== undefined) qs.set("limit", String(params.limit));
+  if (params?.term !== undefined) qs.set("term", params.term);
+  const q = qs.toString();
+  const res = await fetch(
+    `${API_BASE}/graph/visualization${q ? `?${q}` : ""}`,
+    { headers: headers(organizationId) },
+  );
+  return res.json() as Promise<ApiResponse<GraphVisualizationData>>;
+}

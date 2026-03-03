@@ -22,7 +22,7 @@ import {
 } from "@ai-foundry/utils";
 import type { Env } from "./env.js";
 import { handleNormalize } from "./routes/normalize.js";
-import { handleGetTerm, handleListTerms, handleGetGraph } from "./routes/terms.js";
+import { handleGetTerm, handleListTerms, handleGetGraph, handleTermsStats, handleGraphVisualization } from "./routes/terms.js";
 import { processQueueEvent } from "./queue/handler.js";
 
 export default {
@@ -69,6 +69,26 @@ export default {
           );
         }
         return await handleNormalize(request, env, ctx);
+      }
+
+      // GET /terms/stats — aggregate counts
+      if (method === "GET" && path === "/terms/stats") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "ontology", "read");
+          if (denied) return denied;
+        }
+        return await handleTermsStats(request, env);
+      }
+
+      // GET /graph/visualization — force-graph-ready data
+      if (method === "GET" && path === "/graph/visualization") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "ontology", "read");
+          if (denied) return denied;
+        }
+        return await handleGraphVisualization(request, env);
       }
 
       // GET /terms — list terms with optional ontologyId filter

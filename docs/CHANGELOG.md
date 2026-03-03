@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 077 — 2026-03-04
+**Queue 정상화 + Batch 3 Stage 3 재전파**:
+- ✅ P1: `wrangler delete --name svc-queue-router` — default env Worker 삭제 (consumer 충돌 해소)
+- ✅ P2: `wrangler deploy --env production` — DLQ 포함 재배포, consumer 단일 등록 확인
+- ✅ P3: 자동 파이프라인 E2E 검증 — document.uploaded → parsed → extraction completed 자동 전파
+- ✅ Batch 3 extraction.completed 9건 svc-policy 재전파 → **306 신규 policy candidates** 생성
+- ✅ PDCA Analyze v2: Phase 4 Sprint 1 match rate **82% → 93%** (SC-5 FAIL→PASS, Pipeline E2E 40%→88%)
+- ✅ 미커밋 코드 정리: queue handler ctx.waitUntil→await fix, auth utility 추가
+
+**메트릭**: policies 653 (approved 162 + candidate 491), terms 1,448, skills 171
+**검증**: typecheck 17/17, lint 14/14
+
 ## 세션 076 — 2026-03-04
 **Phase 4 Sprint 1 잔여 커밋 정리**:
 - ✅ feat(svc-ingestion): 내부 DOCX 파서 추가 (mammoth.js, 587 lines)

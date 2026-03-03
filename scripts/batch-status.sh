@@ -8,6 +8,8 @@
 #   ./scripts/batch-status.sh --format detail
 #   ./scripts/batch-status.sh --format csv > documents.csv
 #   ./scripts/batch-status.sh --wait
+#   ./scripts/batch-status.sh --tier tier2 --failed-only
+#   ./scripts/batch-status.sh --encrypted-only --json
 #
 # Options:
 #   --org ID          Organization ID (default: Miraeasset)
@@ -15,6 +17,10 @@
 #   --secret SECRET   Internal API secret (or set INTERNAL_API_SECRET env var)
 #   --format FMT      Output format: summary (default), detail, csv
 #   --wait            Poll until all documents are parsed (check every 10s)
+#   --tier TIER       Filter by tier: tier1, tier2, tier3 (filename pattern match)
+#   --failed-only     Show only documents with status=failed
+#   --encrypted-only  Show only encrypted documents (SCDSA002, format_invalid)
+#   --json            Output results in JSON format
 #   -h, --help        Show this help
 #
 set -euo pipefail
@@ -25,21 +31,29 @@ ENVIRONMENT="production"
 SECRET="${INTERNAL_API_SECRET:-}"
 FORMAT="summary"
 WAIT_MODE=false
+TIER_FILTER=""
+FAILED_ONLY=false
+ENCRYPTED_ONLY=false
+JSON_OUTPUT=false
 
 # ── Argument parsing ──────────────────────────────────────────────────
 show_help() {
-  sed -n '3,18p' "$0" | sed 's/^# \?//'
+  sed -n '3,24p' "$0" | sed 's/^# \?//'
   exit 0
 }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --org)       ORG_ID="$2";      shift 2 ;;
-    --env)       ENVIRONMENT="$2"; shift 2 ;;
-    --secret)    SECRET="$2";      shift 2 ;;
-    --format)    FORMAT="$2";      shift 2 ;;
-    --wait)      WAIT_MODE=true;   shift ;;
-    -h|--help)   show_help ;;
+    --org)             ORG_ID="$2";        shift 2 ;;
+    --env)             ENVIRONMENT="$2";   shift 2 ;;
+    --secret)          SECRET="$2";        shift 2 ;;
+    --format)          FORMAT="$2";        shift 2 ;;
+    --wait)            WAIT_MODE=true;     shift ;;
+    --tier)            TIER_FILTER="$2";   shift 2 ;;
+    --failed-only)     FAILED_ONLY=true;   shift ;;
+    --encrypted-only)  ENCRYPTED_ONLY=true; shift ;;
+    --json)            JSON_OUTPUT=true;   shift ;;
+    -h|--help)         show_help ;;
     -*)
       echo "ERROR: Unknown option: $1"
       echo "Use --help for usage."
@@ -66,6 +80,11 @@ fi
 
 if [[ "$FORMAT" != "summary" && "$FORMAT" != "detail" && "$FORMAT" != "csv" ]]; then
   echo "ERROR: --format must be 'summary', 'detail', or 'csv' (got: $FORMAT)"
+  exit 1
+fi
+
+if [[ -n "$TIER_FILTER" && "$TIER_FILTER" != "tier1" && "$TIER_FILTER" != "tier2" && "$TIER_FILTER" != "tier3" ]]; then
+  echo "ERROR: --tier must be 'tier1', 'tier2', or 'tier3' (got: $TIER_FILTER)"
   exit 1
 fi
 
@@ -157,6 +176,39 @@ extract_field_num() {
   echo "$json" | grep -o "\"${field}\":[0-9]*" | head -1 | sed "s/\"${field}\"://"
 }
 
+# ── Tier filter function ─────────────────────────────────────────────
+matches_tier() {
+  local name="$1"
+  local tier="$2"
+
+  if [[ -z "$tier" ]]; then
+    return 0
+  fi
+
+  local lower_name="${name,,}"
+  if [[ "$lower_name" == *"$tier"* ]]; then
+    return 0
+  fi
+
+  return 1
+}
+
+# ── Check if document is encrypted (SCDSA002 pattern) ────────────────
+is_encrypted_doc() {
+  local status="$1"
+  local name="$2"
+
+  # Status "failed" with common encrypted document indicators
+  if [[ "$status" == "failed" ]]; then
+    # Known encrypted format patterns — name doesn't always tell us,
+    # but "format_invalid" status is a strong signal. We also check the API
+    # error field if available. For now, rely on explicit status or naming.
+    return 0
+  fi
+
+  return 1
+}
+
 # ── Parse documents into arrays ───────────────────────────────────────
 parse_documents() {
   local raw_docs="$1"
@@ -164,7 +216,9 @@ parse_documents() {
   DOC_COUNT=0
   COUNT_PARSED=0
   COUNT_PENDING=0
+  COUNT_PROCESSING=0
   COUNT_FAILED=0
+  COUNT_ENCRYPTED=0
 
   # Associative arrays for aggregation
   declare -gA FILE_TYPE_COUNTS
@@ -177,6 +231,7 @@ parse_documents() {
   declare -ga DOC_NAMES=()
   declare -ga DOC_SIZES=()
   declare -ga DOC_DATES=()
+  declare -ga DOC_ERRORS=()
 
   if [[ -z "$raw_docs" ]]; then
     return
@@ -185,15 +240,39 @@ parse_documents() {
   while IFS= read -r line; do
     [[ -z "$line" ]] && continue
 
-    local doc_id status file_type original_name file_size uploaded_at
+    local doc_id status file_type original_name file_size uploaded_at error_msg
     doc_id=$(extract_field "$line" "document_id")
     status=$(extract_field "$line" "status")
     file_type=$(extract_field "$line" "file_type")
     original_name=$(extract_field "$line" "original_name")
     file_size=$(extract_field_num "$line" "file_size_byte")
     uploaded_at=$(extract_field "$line" "uploaded_at")
+    error_msg=$(extract_field "$line" "error")
 
     [[ -z "$doc_id" ]] && continue
+
+    # Tier filter: match on original_name
+    if ! matches_tier "$original_name" "$TIER_FILTER"; then
+      continue
+    fi
+
+    # Detect encrypted documents (SCDSA002 magic bytes result in format_invalid)
+    local is_encrypted=false
+    if [[ "$status" == "failed" ]]; then
+      if [[ "$error_msg" == *"SCDSA"* || "$error_msg" == *"format_invalid"* || "$error_msg" == *"encrypted"* || "$error_msg" == *"magic"* ]]; then
+        is_encrypted=true
+      fi
+    fi
+
+    # Filter: --failed-only
+    if [[ "$FAILED_ONLY" == "true" && "$status" != "failed" ]]; then
+      continue
+    fi
+
+    # Filter: --encrypted-only
+    if [[ "$ENCRYPTED_ONLY" == "true" && "$is_encrypted" != "true" ]]; then
+      continue
+    fi
 
     DOC_IDS+=("$doc_id")
     DOC_STATUSES+=("$status")
@@ -201,14 +280,21 @@ parse_documents() {
     DOC_NAMES+=("$original_name")
     DOC_SIZES+=("${file_size:-0}")
     DOC_DATES+=("$uploaded_at")
+    DOC_ERRORS+=("$error_msg")
 
     DOC_COUNT=$((DOC_COUNT + 1))
 
     case "$status" in
-      parsed)  COUNT_PARSED=$((COUNT_PARSED + 1)) ;;
-      pending) COUNT_PENDING=$((COUNT_PENDING + 1)) ;;
-      failed)  COUNT_FAILED=$((COUNT_FAILED + 1)) ;;
-      *)       COUNT_FAILED=$((COUNT_FAILED + 1)) ;;
+      parsed)     COUNT_PARSED=$((COUNT_PARSED + 1)) ;;
+      pending)    COUNT_PENDING=$((COUNT_PENDING + 1)) ;;
+      processing) COUNT_PROCESSING=$((COUNT_PROCESSING + 1)) ;;
+      failed)
+        COUNT_FAILED=$((COUNT_FAILED + 1))
+        if [[ "$is_encrypted" == "true" ]]; then
+          COUNT_ENCRYPTED=$((COUNT_ENCRYPTED + 1))
+        fi
+        ;;
+      *)          COUNT_FAILED=$((COUNT_FAILED + 1)) ;;
     esac
 
     # File type aggregation
@@ -283,21 +369,98 @@ sort_assoc_desc() {
   done | sort -rn | awk '{print $2}'
 }
 
+# ── Output: JSON ──────────────────────────────────────────────────────
+print_json() {
+  echo '{'
+  echo '  "organization": "'"${ORG_ID}"'",'
+  echo '  "environment": "'"${ENVIRONMENT}"'",'
+
+  # Filters applied
+  local filters=""
+  if [[ -n "$TIER_FILTER" ]]; then
+    filters="${filters}\"tier\":\"${TIER_FILTER}\","
+  fi
+  if [[ "$FAILED_ONLY" == "true" ]]; then
+    filters="${filters}\"failedOnly\":true,"
+  fi
+  if [[ "$ENCRYPTED_ONLY" == "true" ]]; then
+    filters="${filters}\"encryptedOnly\":true,"
+  fi
+  if [[ -n "$filters" ]]; then
+    echo "  \"filters\": {${filters%,}},"
+  fi
+
+  echo '  "summary": {'
+  echo "    \"total\": ${DOC_COUNT},"
+  echo "    \"parsed\": ${COUNT_PARSED},"
+  echo "    \"pending\": ${COUNT_PENDING},"
+  echo "    \"processing\": ${COUNT_PROCESSING},"
+  echo "    \"failed\": ${COUNT_FAILED},"
+  echo "    \"encrypted\": ${COUNT_ENCRYPTED}"
+  echo '  },'
+  echo '  "documents": ['
+
+  local first=true
+  for i in "${!DOC_IDS[@]}"; do
+    local comma=""
+    if [[ "$first" == "true" ]]; then
+      first=false
+    else
+      comma=","
+    fi
+
+    # Escape special chars in name/error
+    local name="${DOC_NAMES[$i]}"
+    name="${name//\\/\\\\}"
+    name="${name//\"/\\\"}"
+    local err="${DOC_ERRORS[$i]}"
+    err="${err//\\/\\\\}"
+    err="${err//\"/\\\"}"
+
+    echo "${comma}    {"
+    echo "      \"documentId\": \"${DOC_IDS[$i]}\","
+    echo "      \"status\": \"${DOC_STATUSES[$i]}\","
+    echo "      \"fileType\": \"${DOC_FILE_TYPES[$i]}\","
+    echo "      \"originalName\": \"${name}\","
+    echo "      \"uploadedAt\": \"${DOC_DATES[$i]}\","
+    echo "      \"error\": \"${err}\""
+    echo "    }"
+  done
+
+  echo '  ]'
+  echo '}'
+}
+
 # ── Output: Summary ──────────────────────────────────────────────────
 print_summary() {
-  local pct_parsed pct_pending pct_failed
+  local pct_parsed pct_pending pct_processing pct_failed
   pct_parsed=$(pct "$COUNT_PARSED" "$DOC_COUNT")
   pct_pending=$(pct "$COUNT_PENDING" "$DOC_COUNT")
+  pct_processing=$(pct "$COUNT_PROCESSING" "$DOC_COUNT")
   pct_failed=$(pct "$COUNT_FAILED" "$DOC_COUNT")
 
   echo ""
-  printf '%0.s═' {1..50}; echo ""
+  printf '%0.s═' {1..55}; echo ""
   echo " AI Foundry Batch Status — ${ORG_ID} (${ENVIRONMENT})"
-  printf '%0.s═' {1..50}; echo ""
+  if [[ -n "$TIER_FILTER" || "$FAILED_ONLY" == "true" || "$ENCRYPTED_ONLY" == "true" ]]; then
+    local filter_desc=""
+    [[ -n "$TIER_FILTER" ]] && filter_desc="${filter_desc} tier=${TIER_FILTER}"
+    [[ "$FAILED_ONLY" == "true" ]] && filter_desc="${filter_desc} failed-only"
+    [[ "$ENCRYPTED_ONLY" == "true" ]] && filter_desc="${filter_desc} encrypted-only"
+    echo " Filters:${filter_desc}"
+  fi
+  printf '%0.s═' {1..55}; echo ""
   printf " Total documents:  %d\n" "$DOC_COUNT"
   printf " ├─ Parsed:        %4d (%s%%)\n" "$COUNT_PARSED" "$pct_parsed"
   printf " ├─ Pending:       %4d (%s%%)\n" "$COUNT_PENDING" "$pct_pending"
-  printf " └─ Failed:        %4d (%s%%)\n" "$COUNT_FAILED" "$pct_failed"
+  if [[ "$COUNT_PROCESSING" -gt 0 ]]; then
+    printf " ├─ Processing:    %4d (%s%%)\n" "$COUNT_PROCESSING" "$pct_processing"
+  fi
+  printf " ├─ Failed:        %4d (%s%%)\n" "$COUNT_FAILED" "$pct_failed"
+  if [[ "$COUNT_ENCRYPTED" -gt 0 ]]; then
+    printf " │  (encrypted):   %4d\n" "$COUNT_ENCRYPTED"
+  fi
+  printf " └─ ─────────────────────\n"
 
   # File type breakdown
   if [[ ${#FILE_TYPE_COUNTS[@]} -gt 0 ]]; then
@@ -347,7 +510,7 @@ print_summary() {
     done
   fi
 
-  printf '%0.s═' {1..50}; echo ""
+  printf '%0.s═' {1..55}; echo ""
   echo ""
 }
 
@@ -356,13 +519,24 @@ print_detail() {
   echo ""
   printf '%0.s═' {1..80}; echo ""
   echo " AI Foundry Batch Status — ${ORG_ID} (${ENVIRONMENT}) [detail]"
+  if [[ -n "$TIER_FILTER" || "$FAILED_ONLY" == "true" || "$ENCRYPTED_ONLY" == "true" ]]; then
+    local filter_desc=""
+    [[ -n "$TIER_FILTER" ]] && filter_desc="${filter_desc} tier=${TIER_FILTER}"
+    [[ "$FAILED_ONLY" == "true" ]] && filter_desc="${filter_desc} failed-only"
+    [[ "$ENCRYPTED_ONLY" == "true" ]] && filter_desc="${filter_desc} encrypted-only"
+    echo " Filters:${filter_desc}"
+  fi
   printf '%0.s═' {1..80}; echo ""
-  printf " Total: %d (parsed: %d, pending: %d, failed: %d)\n" \
-    "$DOC_COUNT" "$COUNT_PARSED" "$COUNT_PENDING" "$COUNT_FAILED"
+  printf " Total: %d (parsed: %d, pending: %d, processing: %d, failed: %d" \
+    "$DOC_COUNT" "$COUNT_PARSED" "$COUNT_PENDING" "$COUNT_PROCESSING" "$COUNT_FAILED"
+  if [[ "$COUNT_ENCRYPTED" -gt 0 ]]; then
+    printf ", encrypted: %d" "$COUNT_ENCRYPTED"
+  fi
+  echo ")"
   printf '%0.s─' {1..80}; echo ""
 
-  # Group by status: failed first, then pending, then parsed
-  for target_status in "failed" "pending" "parsed"; do
+  # Group by status: failed first, then pending, then processing, then parsed
+  for target_status in "failed" "pending" "processing" "parsed"; do
     local group_count=0
     for i in "${!DOC_STATUSES[@]}"; do
       [[ "${DOC_STATUSES[$i]}" == "$target_status" ]] && group_count=$((group_count + 1))
@@ -372,10 +546,11 @@ print_detail() {
 
     local label
     case "$target_status" in
-      failed)  label="FAILED" ;;
-      pending) label="PENDING" ;;
-      parsed)  label="PARSED" ;;
-      *)       label="$target_status" ;;
+      failed)     label="FAILED" ;;
+      pending)    label="PENDING" ;;
+      processing) label="PROCESSING" ;;
+      parsed)     label="PARSED" ;;
+      *)          label="$target_status" ;;
     esac
 
     echo ""
@@ -399,14 +574,18 @@ print_detail() {
 
 # ── Output: CSV ───────────────────────────────────────────────────────
 print_csv() {
-  echo "document_id,status,file_type,original_name,uploaded_at"
+  echo "document_id,status,file_type,original_name,uploaded_at,error"
   for i in "${!DOC_IDS[@]}"; do
     # Escape commas in original_name by quoting
     local name="${DOC_NAMES[$i]}"
     if [[ "$name" == *","* || "$name" == *'"'* ]]; then
       name="\"${name//\"/\"\"}\""
     fi
-    echo "${DOC_IDS[$i]},${DOC_STATUSES[$i]},${DOC_FILE_TYPES[$i]},${name},${DOC_DATES[$i]}"
+    local err="${DOC_ERRORS[$i]}"
+    if [[ "$err" == *","* || "$err" == *'"'* ]]; then
+      err="\"${err//\"/\"\"}\""
+    fi
+    echo "${DOC_IDS[$i]},${DOC_STATUSES[$i]},${DOC_FILE_TYPES[$i]},${name},${DOC_DATES[$i]},${err}"
   done
 }
 
@@ -428,11 +607,11 @@ run_wait_mode() {
     raw_docs=$(fetch_all_documents)
     parse_documents "$raw_docs"
 
-    printf "\r  [%ds] %d/%d parsed, %d pending, %d failed..." \
-      "$elapsed" "$COUNT_PARSED" "$DOC_COUNT" "$COUNT_PENDING" "$COUNT_FAILED"
+    printf "\r  [%ds] %d/%d parsed, %d pending, %d processing, %d failed..." \
+      "$elapsed" "$COUNT_PARSED" "$DOC_COUNT" "$COUNT_PENDING" "$COUNT_PROCESSING" "$COUNT_FAILED"
 
-    # Exit conditions: no pending left, or interrupted
-    if [[ "$COUNT_PENDING" -eq 0 ]]; then
+    # Exit conditions: no pending/processing left, or interrupted
+    if [[ "$COUNT_PENDING" -eq 0 && "$COUNT_PROCESSING" -eq 0 ]]; then
       echo ""
       echo ""
       echo "All documents processed."
@@ -458,7 +637,11 @@ run_wait_mode() {
     fetch_classifications
   fi
 
-  print_summary
+  if [[ "$JSON_OUTPUT" == "true" ]]; then
+    print_json
+  else
+    print_summary
+  fi
 }
 
 # ── Main ──────────────────────────────────────────────────────────────
@@ -468,7 +651,7 @@ if [[ "$WAIT_MODE" == "true" ]]; then
 fi
 
 # Non-wait mode: single fetch
-if [[ "$FORMAT" != "csv" ]]; then
+if [[ "$FORMAT" != "csv" && "$JSON_OUTPUT" != "true" ]]; then
   echo "Fetching documents from ${BASE_URL}..."
 fi
 
@@ -476,11 +659,28 @@ RAW_DOCS=$(fetch_all_documents)
 parse_documents "$RAW_DOCS"
 
 if [[ "$DOC_COUNT" -eq 0 ]]; then
-  if [[ "$FORMAT" == "csv" ]]; then
-    echo "document_id,status,file_type,original_name,uploaded_at"
+  if [[ "$JSON_OUTPUT" == "true" ]]; then
+    echo '{"organization":"'"${ORG_ID}"'","environment":"'"${ENVIRONMENT}"'","summary":{"total":0},"documents":[]}'
+  elif [[ "$FORMAT" == "csv" ]]; then
+    echo "document_id,status,file_type,original_name,uploaded_at,error"
   else
     echo "No documents found for organization: ${ORG_ID}"
+    if [[ -n "$TIER_FILTER" ]]; then
+      echo "  (tier filter: $TIER_FILTER)"
+    fi
+    if [[ "$FAILED_ONLY" == "true" ]]; then
+      echo "  (filter: failed-only)"
+    fi
+    if [[ "$ENCRYPTED_ONLY" == "true" ]]; then
+      echo "  (filter: encrypted-only)"
+    fi
   fi
+  exit 0
+fi
+
+# JSON output takes precedence over FORMAT
+if [[ "$JSON_OUTPUT" == "true" ]]; then
+  print_json
   exit 0
 fi
 

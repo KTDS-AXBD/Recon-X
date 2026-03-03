@@ -2,6 +2,14 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 074 — 2026-03-04
+**Staging 검증 배포 + CI 파이프라인 수정**:
+- ✅ Staging 12/12 + Production 12/12 health check 전체 통과
+- ✅ CI 실패 수정: `packages/utils` 테스트 파일 커밋 (21 tests — response helpers)
+- ✅ CI + Deploy 워크플로우 정상 복구 확인 (CI 57s, Deploy 11/11 staging 배포)
+
+**검증**: typecheck 17/17, lint 14/14, tests 전체 통과, CI/CD green
+
 ## 세션 073 — 2026-03-04
 **Queue 디버깅 + SCDSA002 탐지 + Sprint 2 배치 자동화 (3-Worker 병렬)**:
 - ✅ Queue consumer 충돌 근본 원인 발견: default env + production env 동시 구독 → default env consumer 제거 + DLQ 추가

@@ -172,11 +172,11 @@ export default function AnalysisReportPage() {
             </p>
             <LlmModelBadge provider={llmInfo?.provider ?? null} model={llmInfo?.model ?? null} />
           </div>
-          {activeTab !== "comparison" && llmInfo && (
+          {activeTab !== "comparison" && summary && (
             <div className="mt-2">
               <ReanalysisPopover
-                currentProvider={llmInfo.provider}
-                currentModel={llmInfo.model}
+                currentProvider={llmInfo?.provider}
+                currentModel={llmInfo?.model}
                 onReanalyze={handleReanalyze}
                 disabled={reanalyzing || !summary}
               />

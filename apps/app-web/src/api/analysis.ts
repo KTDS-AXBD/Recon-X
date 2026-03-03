@@ -77,13 +77,15 @@ export async function reviewFinding(
   >;
 }
 
-export type LlmProvider = "anthropic" | "openai" | "google" | "workers-ai";
+import type { LlmProvider } from "@ai-foundry/types";
+export type { LlmProvider };
+/** UI에서 선택 가능한 tier — Opus/Workers는 UI 노출 제외 */
 export type LlmTier = "sonnet" | "haiku";
 
 export async function triggerAnalysis(body: {
   documentId: string;
   extractionId: string;
-  organizationId?: string;
+  organizationId: string;
   preferredProvider?: LlmProvider;
   preferredTier?: LlmTier;
 }): Promise<ApiResponse<{ analysisId: string; status: string }>> {

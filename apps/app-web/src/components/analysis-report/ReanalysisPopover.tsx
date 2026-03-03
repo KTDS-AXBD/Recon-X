@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/popover";
 import type { LlmProvider, LlmTier } from "@/api/analysis";
 
+const VALID_PROVIDERS: LlmProvider[] = ["anthropic", "openai", "google", "workers-ai"];
+
 const PROVIDERS: { value: LlmProvider; label: string; color: string }[] = [
   { value: "anthropic", label: "Anthropic (Claude)", color: "#9333EA" },
   { value: "openai", label: "OpenAI (GPT)", color: "#10A37F" },
@@ -22,10 +24,10 @@ const TIERS: { value: LlmTier; label: string; description: string }[] = [
 ];
 
 interface ReanalysisPopoverProps {
-  currentProvider?: string;
-  currentModel?: string;
+  currentProvider?: string | undefined;
+  currentModel?: string | undefined;
   onReanalyze: (provider: LlmProvider, tier: LlmTier) => Promise<void>;
-  disabled?: boolean;
+  disabled?: boolean | undefined;
 }
 
 export function ReanalysisPopover({
@@ -36,7 +38,9 @@ export function ReanalysisPopover({
 }: ReanalysisPopoverProps) {
   const [open, setOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<LlmProvider>(
-    (currentProvider as LlmProvider) || "anthropic"
+    VALID_PROVIDERS.includes(currentProvider as LlmProvider)
+      ? (currentProvider as LlmProvider)
+      : "anthropic"
   );
   const [selectedTier, setSelectedTier] = useState<LlmTier>("sonnet");
   const [loading, setLoading] = useState(false);

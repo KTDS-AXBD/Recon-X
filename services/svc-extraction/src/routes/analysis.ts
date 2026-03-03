@@ -421,17 +421,10 @@ async function runAnalysisPasses(
   try {
     // Pass 1: Scoring + Core Identification
     const scoringPrompt = buildScoringPrompt(extractionResult);
-    let scoringResult;
-    let llmProvider = "unknown";
-    let llmModel = "unknown";
-    try {
-      const scoringMeta = await callLlmWithMeta(scoringPrompt, tier, env.LLM_ROUTER, env.INTERNAL_API_SECRET, 8192, llmOptions);
-      scoringResult = parseScoringResult(scoringMeta.content);
-      llmProvider = scoringMeta.provider;
-      llmModel = scoringMeta.model;
-    } catch {
-      scoringResult = { scoredProcesses: [], coreJudgments: [], processTree: [] };
-    }
+    const scoringMeta = await callLlmWithMeta(scoringPrompt, tier, env.LLM_ROUTER, env.INTERNAL_API_SECRET, 8192, llmOptions);
+    const scoringResult = parseScoringResult(scoringMeta.content);
+    const llmProvider = scoringMeta.provider;
+    const llmModel = scoringMeta.model;
 
     const coreSummary = buildCoreSummary(scoringResult.scoredProcesses);
 

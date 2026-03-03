@@ -2,6 +2,22 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 088 — 2026-03-04
+**실패 문서 관리 + 중복 정리 + UX 개선**:
+- ✅ Backend: GET /documents에 error_message/error_type 필드 추가
+- ✅ Backend: DELETE /documents/:id (failed/encrypted only, Admin)
+- ✅ Backend: POST /documents/:id/reprocess (failed/encrypted, Admin+Analyst)
+- ✅ RBAC: Analyst에 document:update 권한 추가
+- ✅ Frontend: upload.tsx + analysis.tsx — 에러 표시, 재처리/삭제 버튼
+- ✅ UX: 버튼 로딩 상태 + 중복 클릭 방지 (actionInProgress Set)
+- ✅ UX: analysis 페이지 ?doc= 파라미터 → 해당 문서 자동 선택 + 그룹 펼침 + 스크롤
+- ✅ 상태 필터에 pending/encrypted 옵션 추가
+- ✅ CI/CD: push to main → production 직접 배포로 변경
+- ✅ D1 중복 정리: 444건 duplicate 삭제 (1,299→855 고유 문서)
+
+**검증**: typecheck ✅, lint ✅, Production 배포 완료 (Pages 5회)
+**변경 파일**: 7 files — svc-ingestion 1, packages/types 1, app-web 4 (api, lib, upload, analysis), CI/CD 2
+
 ## 세션 086 — 2026-03-04
 **HITL 데모 데이터 조정 — Admin Reopen API + 버그 수정 3건**:
 - ✅ HitlSession DO: `/reset` 엔드포인트 추가 (storage 완전 초기화)

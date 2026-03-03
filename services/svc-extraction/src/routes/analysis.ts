@@ -73,6 +73,11 @@ export async function handleAnalysisRoutes(
   const path = url.pathname;
   const method = request.method;
 
+  // GET /analysis/organizations — 분석 완료된 조직 목록
+  if (method === "GET" && path === "/analysis/organizations") {
+    return handleGetOrganizations(env);
+  }
+
   // POST /analyze — 3-Pass 분석 트리거
   if (method === "POST" && path === "/analyze") {
     return handleAnalyzeTrigger(request, env, ctx);
@@ -121,6 +126,36 @@ export async function handleAnalysisRoutes(
   }
 
   return notFound("route");
+}
+
+// ── GET /analysis/organizations ──────────────────────────────────────
+
+async function handleGetOrganizations(env: Env): Promise<Response> {
+  const { results } = await env.DB_EXTRACTION.prepare(
+    `SELECT organization_id,
+            COUNT(*) AS analysis_count,
+            SUM(process_count) AS total_processes,
+            MAX(created_at) AS last_analysis_at
+     FROM analyses
+     WHERE status = 'completed'
+     GROUP BY organization_id
+     ORDER BY last_analysis_at DESC`
+  )
+    .all<{
+      organization_id: string;
+      analysis_count: number;
+      total_processes: number;
+      last_analysis_at: string;
+    }>();
+
+  return ok({
+    organizations: results.map((r) => ({
+      organizationId: r.organization_id,
+      analysisCount: r.analysis_count,
+      totalProcesses: r.total_processes,
+      lastAnalysisAt: r.last_analysis_at,
+    })),
+  });
 }
 
 // ── GET /analysis/:documentId/summary ────────────────────────────────

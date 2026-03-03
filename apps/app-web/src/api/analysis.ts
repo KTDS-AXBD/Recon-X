@@ -4,6 +4,7 @@ import type {
   CoreIdentification,
   DiagnosisResult,
   DiagnosisFinding,
+  CrossOrgComparison,
 } from "@ai-foundry/types";
 
 const API_BASE =
@@ -88,5 +89,65 @@ export async function triggerAnalysis(body: {
   });
   return res.json() as Promise<
     ApiResponse<{ analysisId: string; status: string }>
+  >;
+}
+
+// ── Cross-Org Comparison ─────────────────────────────────────────────
+
+export interface OrganizationSummary {
+  organizationId: string;
+  analysisCount: number;
+  totalProcesses: number;
+  lastAnalysisAt: string;
+}
+
+export async function fetchOrganizations(): Promise<
+  ApiResponse<{ organizations: OrganizationSummary[] }>
+> {
+  const res = await fetch(`${API_BASE}/analysis/organizations`, {
+    headers: HEADERS,
+  });
+  return res.json() as Promise<
+    ApiResponse<{ organizations: OrganizationSummary[] }>
+  >;
+}
+
+export async function triggerComparison(body: {
+  organizationIds: string[];
+  domain?: string;
+}): Promise<ApiResponse<CrossOrgComparison>> {
+  const res = await fetch(`${API_BASE}/analysis/compare`, {
+    method: "POST",
+    headers: HEADERS,
+    body: JSON.stringify(body),
+  });
+  return res.json() as Promise<ApiResponse<CrossOrgComparison>>;
+}
+
+export async function fetchStandardization(
+  comparisonId: string,
+): Promise<
+  ApiResponse<{
+    candidates: Array<{
+      name: string;
+      score: number;
+      orgsInvolved: string[];
+      note: string;
+    }>;
+  }>
+> {
+  const res = await fetch(
+    `${API_BASE}/analysis/compare/${comparisonId}/standardization`,
+    { headers: HEADERS },
+  );
+  return res.json() as Promise<
+    ApiResponse<{
+      candidates: Array<{
+        name: string;
+        score: number;
+        orgsInvolved: string[];
+        note: string;
+      }>;
+    }>
   >;
 }

@@ -24,6 +24,7 @@ import type {
 import { ExtractionSummaryTab } from "@/components/analysis-report/ExtractionSummaryTab";
 import { CoreProcessesTab } from "@/components/analysis-report/CoreProcessesTab";
 import { DiagnosticFindingsTab } from "@/components/analysis-report/DiagnosticFindingsTab";
+import { CrossOrgComparisonTab } from "@/components/analysis-report/CrossOrgComparisonTab";
 
 export default function AnalysisReportPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -127,27 +128,29 @@ export default function AnalysisReportPage() {
             분석 리포트 Analysis Report
           </h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
-            문서별 3-Layer 분석 결과: 추출 요약 → 핵심 프로세스 → 진단 소견
+            문서별 3-Layer 분석 + 조직 간 비교
           </p>
         </div>
-        <div className="w-72">
-          <Select
-            value={selectedDocId}
-            onValueChange={setSelectedDocId}
-            disabled={loadingDocs}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="문서 선택..." />
-            </SelectTrigger>
-            <SelectContent>
-              {documents.map((doc) => (
-                <SelectItem key={doc.document_id} value={doc.document_id}>
-                  {doc.original_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {activeTab !== "comparison" && (
+          <div className="w-72">
+            <Select
+              value={selectedDocId}
+              onValueChange={setSelectedDocId}
+              disabled={loadingDocs}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="문서 선택..." />
+              </SelectTrigger>
+              <SelectContent>
+                {documents.map((doc) => (
+                  <SelectItem key={doc.document_id} value={doc.document_id}>
+                    {doc.original_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
@@ -156,6 +159,7 @@ export default function AnalysisReportPage() {
           <TabsTrigger value="summary">추출 요약</TabsTrigger>
           <TabsTrigger value="core">핵심 프로세스</TabsTrigger>
           <TabsTrigger value="findings">진단 소견</TabsTrigger>
+          <TabsTrigger value="comparison">조직 비교</TabsTrigger>
         </TabsList>
 
         <TabsContent value="summary" className="mt-4">
@@ -181,6 +185,10 @@ export default function AnalysisReportPage() {
             documentId={selectedDocId}
             onRefresh={handleRefreshFindings}
           />
+        </TabsContent>
+
+        <TabsContent value="comparison" className="mt-4">
+          <CrossOrgComparisonTab />
         </TabsContent>
       </Tabs>
     </div>

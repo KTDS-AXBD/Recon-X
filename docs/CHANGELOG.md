@@ -2,6 +2,28 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 048 — 2026-03-03
+**퇴직연금 프로젝트 실문서 대량 업로드 + 5-Stage 파이프라인 E2E 검증**:
+- ✅ 퇴직연금 프로젝트 카테고리별 대표 11건 Production 업로드
+- ✅ Stage 1 Ingestion: 9/11 parsed (2건 SCDSA002 비표준 XLSX 포맷 실패)
+- ✅ Stage 2 Extraction: 9/9 completed (47 processes, 37 entities)
+- ✅ Stage 3 Policy+HITL: 34 candidate policies → 34/34 batch approved
+- ✅ Stage 4 Ontology: 220 new terms (1,228 → 1,441)
+- ✅ Stage 5 Skill: 37 new skills (134 → 171)
+- ✅ WSL curl MIME type 감지 실패 해결 (한글 파일명 → 명시적 `;type=` 지정)
+
+**업로드 문서 (9/11 성공)**:
+- 요구사항정의서(13c, 7p/4e), Gap분석서(5p/4e), 코드정의서(2p/2e)
+- 요구사항추적표(5c, 5p/5e), 테스트계획서(197c, 4p/5e), 통합테스트시나리오(7p/4e)
+- 화면설계서(39c, 5p/4e), 프로그램설계서(90c, 7p/6e), 배치설계서(25c, 5p/3e)
+- ❌ 메뉴구조도, 테이블정의서: SCDSA002 magic bytes (비표준 XLSX)
+
+**Production 수치**:
+- Policies: 134+ approved (org-mirae-pension)
+- Terms: 1,441
+- Skills: 171
+- Unit Tests: 822/822 passed (50 test files)
+
 ## 세션 047 — 2026-03-03
 **HITL 승인 + Stage 4-5 + 4문서 OpenAI fallback 재extraction 검증**:
 - ✅ Neo4j Aura 새 인스턴스 시크릿 업데이트 (c22f7f0f) — production + staging 4개 secrets

@@ -2,6 +2,15 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 078 — 2026-03-04
+**PDCA Analyze 기반 보안/품질 강화 (P0~P1 수정)**:
+- ✅ P0: ctx.waitUntil → await 전환 (svc-ontology 4곳 + svc-extraction 1곳) — D1 쓰기 유실 방지
+- ✅ P1: timingSafeEqual 유틸 추가 (`packages/utils/src/auth.ts`) + 11개 서비스 적용 — timing 공격 방어
+- ✅ P1: errFromUnknown 통일 (9개 서비스 top-level catch) — 구조화된 JSON 에러 응답
+- ✅ PDCA Analyze 실행: Code Analyzer 78/100, Gap Detector 95%, Test Coverage 1,291
+
+**검증**: typecheck 17/17, lint 14/14
+
 ## 세션 077 — 2026-03-04
 **Queue 정상화 + Batch 3 Stage 3 재전파**:
 - ✅ P1: `wrangler delete --name svc-queue-router` — default env Worker 삭제 (consumer 충돌 해소)

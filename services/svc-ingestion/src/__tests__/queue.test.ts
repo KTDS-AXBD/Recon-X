@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import * as XLSX from "xlsx";
 import { processQueueEvent } from "../queue.js";
 import type { Env } from "../env.js";
 
@@ -198,7 +199,16 @@ describe("processQueueEvent", () => {
   });
 
   it("uses correct MIME mapping for file types", async () => {
+    // Create a real xlsx file for the custom parser
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["A"], ["1"]]), "S1");
+    const arr = XLSX.write(wb, { type: "array", bookType: "xlsx" }) as number[];
+    const xlsxBytes = new Uint8Array(arr);
+
     const xlsxEnv = mockEnv(true, OOXML_MAGIC);
+    (xlsxEnv.R2_DOCUMENTS.get as ReturnType<typeof vi.fn>).mockResolvedValue({
+      arrayBuffer: vi.fn().mockResolvedValue(xlsxBytes.buffer),
+    });
     const xlsxEvent = {
       ...validDocumentUploadedEvent,
       payload: {
@@ -230,5 +240,70 @@ describe("processQueueEvent", () => {
     expect(res.status).toBe(500);
     const body = await res.json() as { ok: boolean; error: string };
     expect(body.error).toBe("format_invalid");
+  });
+
+  // ── xlsx dispatch tests ─────────────────────────────────────────
+
+  it("uses custom parseXlsx for xlsx files instead of Unstructured.io", async () => {
+    // Create a real xlsx buffer
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["ID", "Name"], ["1", "Alice"]]), "Sheet1");
+    const arr = XLSX.write(wb, { type: "array", bookType: "xlsx" }) as number[];
+    const xlsxBuf = new Uint8Array(arr);
+
+    const xlsxEnv = mockEnv(true);
+    // Override R2 to return real xlsx bytes
+    (xlsxEnv.R2_DOCUMENTS.get as ReturnType<typeof vi.fn>).mockResolvedValue({
+      arrayBuffer: vi.fn().mockResolvedValue(xlsxBuf.buffer),
+    });
+
+    const xlsxEvent = {
+      ...validDocumentUploadedEvent,
+      payload: {
+        ...validDocumentUploadedEvent.payload,
+        fileType: "xlsx" as const,
+        originalName: "테이블정의서.xlsx",
+      },
+    };
+
+    const res = await processQueueEvent(xlsxEvent, xlsxEnv, ctx);
+    expect(res.status).toBe(200);
+    const body = await res.json() as { ok: boolean; chunkCount: number };
+    expect(body.ok).toBe(true);
+    // Should have chunks from custom parser (summary + sheet data)
+    expect(body.chunkCount).toBeGreaterThanOrEqual(1);
+    // Unstructured.io should NOT have been called
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it("uses custom parseXlsx for xls files", async () => {
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["A"], ["1"]]), "S1");
+    const arr = XLSX.write(wb, { type: "array", bookType: "biff8" }) as number[];
+    const xlsBuf = new Uint8Array(arr);
+
+    const xlsEnv = mockEnv(true);
+    (xlsEnv.R2_DOCUMENTS.get as ReturnType<typeof vi.fn>).mockResolvedValue({
+      arrayBuffer: vi.fn().mockResolvedValue(xlsBuf.buffer),
+    });
+
+    const xlsEvent = {
+      ...validDocumentUploadedEvent,
+      payload: {
+        ...validDocumentUploadedEvent.payload,
+        fileType: "xls" as const,
+        originalName: "legacy.xls",
+      },
+    };
+
+    const res = await processQueueEvent(xlsEvent, xlsEnv, ctx);
+    expect(res.status).toBe(200);
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it("still uses Unstructured.io for non-xlsx formats", async () => {
+    await processQueueEvent(validDocumentUploadedEvent, env, ctx);
+    // PDF should call Unstructured.io via globalThis.fetch
+    expect(globalThis.fetch).toHaveBeenCalled();
   });
 });

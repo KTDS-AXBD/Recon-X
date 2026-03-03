@@ -2,7 +2,8 @@ import { createLogger } from "@ai-foundry/utils";
 import { PipelineEventSchema } from "@ai-foundry/types";
 import type { Env } from "./env.js";
 import { parseDocument } from "./parsing/unstructured.js";
-import { classifyDocument } from "./parsing/classifier.js";
+import { parseXlsx } from "./parsing/xlsx.js";
+import { classifyDocument, classifyXlsxElements } from "./parsing/classifier.js";
 import { maskText } from "./parsing/masking.js";
 import { validateFileFormat, classifyParseError, type ErrorType } from "./parsing/validator.js";
 
@@ -20,6 +21,7 @@ const MIME_MAP: Record<string, string> = {
 };
 
 const MAX_ELEMENTS = 200;
+const MAX_ELEMENTS_XLSX = 500;
 
 /**
  * Process a single queue event delivered via HTTP from the queue router.
@@ -90,15 +92,21 @@ export async function processQueueEvent(body: unknown, env: Env, _ctx: Execution
       logger.info("Large file detected", { documentId, sizeMB: (fileBytes.byteLength / (1024 * 1024)).toFixed(1) });
     }
 
-    // 3. Parse with Unstructured.io
-    const elements = await parseDocument(fileBytes, originalName, mimeType, env);
+    // 3. Parse: custom xlsx parser or Unstructured.io
+    const isXlsx = fileType === "xlsx" || fileType === "xls";
+    const elements = isXlsx
+      ? parseXlsx(fileBytes, originalName)
+      : await parseDocument(fileBytes, originalName, mimeType, env);
 
     // 4. Classify
-    const classification = classifyDocument(elements, fileType);
+    const classification = isXlsx
+      ? classifyXlsxElements(elements)
+      : classifyDocument(elements, fileType);
 
-    // 5. Insert chunks (max 200, skip blank text)
+    // 5. Insert chunks (xlsx: max 500, others: max 200, skip blank text)
+    const maxElements = isXlsx ? MAX_ELEMENTS_XLSX : MAX_ELEMENTS;
     let chunkIndex = 0;
-    for (const element of elements.slice(0, MAX_ELEMENTS)) {
+    for (const element of elements.slice(0, maxElements)) {
       const text = element.text.trim();
       if (!text) continue;
 

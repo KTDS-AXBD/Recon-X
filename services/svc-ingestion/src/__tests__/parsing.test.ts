@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { classifyDocument } from "../parsing/classifier.js";
+import { classifyDocument, classifyXlsxElements } from "../parsing/classifier.js";
 import { maskText } from "../parsing/masking.js";
 import { parseDocument } from "../parsing/unstructured.js";
 import type { UnstructuredElement } from "../parsing/unstructured.js";
@@ -129,6 +129,73 @@ describe("classifyDocument", () => {
     const result = classifyDocument(elements, "xlsx");
     // xlsx boost: requirements += 0.5, process += 0.3
     expect(result.category).toBe("requirements");
+  });
+});
+
+// ── classifyXlsxElements ────────────────────────────────────────
+
+describe("classifyXlsxElements", () => {
+  it("maps 화면설계 to screen_design with high confidence", () => {
+    const elements: UnstructuredElement[] = [
+      { type: "XlWorkbook", text: "summary" },
+      { type: "XlSheet:화면설계", text: "content" },
+    ];
+    const result = classifyXlsxElements(elements);
+    expect(result.category).toBe("screen_design");
+    expect(result.confidence).toBe(0.9);
+  });
+
+  it("maps 프로그램설계 to screen_design", () => {
+    const elements: UnstructuredElement[] = [
+      { type: "XlSheet:프로그램설계", text: "content" },
+    ];
+    expect(classifyXlsxElements(elements).category).toBe("screen_design");
+  });
+
+  it("maps 테이블정의 to erd", () => {
+    const elements: UnstructuredElement[] = [
+      { type: "XlSheet:테이블정의", text: "content" },
+    ];
+    expect(classifyXlsxElements(elements).category).toBe("erd");
+  });
+
+  it("maps 요구사항 to requirements", () => {
+    const elements: UnstructuredElement[] = [
+      { type: "XlSheet:요구사항", text: "content" },
+    ];
+    expect(classifyXlsxElements(elements).category).toBe("requirements");
+  });
+
+  it("maps 인터페이스설계 to api_spec", () => {
+    const elements: UnstructuredElement[] = [
+      { type: "XlSheet:인터페이스설계", text: "content" },
+    ];
+    expect(classifyXlsxElements(elements).category).toBe("api_spec");
+  });
+
+  it("maps 배치설계 to process", () => {
+    const elements: UnstructuredElement[] = [
+      { type: "XlSheet:배치설계", text: "content" },
+    ];
+    expect(classifyXlsxElements(elements).category).toBe("process");
+  });
+
+  it("returns general with 0.5 for unknown subtype", () => {
+    const elements: UnstructuredElement[] = [
+      { type: "XlSheet:unknown", text: "content" },
+    ];
+    const result = classifyXlsxElements(elements);
+    expect(result.category).toBe("general");
+    expect(result.confidence).toBe(0.5);
+  });
+
+  it("returns general with 0.3 when no XlSheet elements", () => {
+    const elements: UnstructuredElement[] = [
+      { type: "XlWorkbook", text: "summary only" },
+    ];
+    const result = classifyXlsxElements(elements);
+    expect(result.category).toBe("general");
+    expect(result.confidence).toBe(0.3);
   });
 });
 

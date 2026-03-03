@@ -1,4 +1,5 @@
 import type { UnstructuredElement } from "./unstructured.js";
+import type { SiSubtype } from "./xlsx.js";
 
 export type DocumentCategory =
   | "erd"
@@ -12,6 +13,47 @@ export type DocumentClassification = {
   category: DocumentCategory;
   confidence: number;
 };
+
+// ── SI Subtype → DocumentCategory mapping ───────────────────────
+
+const SI_SUBTYPE_CATEGORY: Partial<Record<SiSubtype, DocumentCategory>> = {
+  "화면설계": "screen_design",
+  "프로그램설계": "screen_design",
+  "테이블정의": "erd",
+  "코드정의": "erd",
+  "요구사항": "requirements",
+  "업무규칙": "requirements",
+  "인터페이스설계": "api_spec",
+  "배치설계": "process",
+  "단위테스트": "process",
+  "통합테스트": "process",
+  "공통": "general",
+};
+
+/**
+ * Classify xlsx elements using the SI subtype tag embedded in element_type.
+ * Element types follow the format "XlSheet:<siSubtype>".
+ * Falls back to "general" with low confidence when no subtype is detected.
+ */
+export function classifyXlsxElements(
+  elements: UnstructuredElement[],
+): DocumentClassification {
+  // Find the first XlSheet element to extract siSubtype
+  for (const el of elements) {
+    if (el.type.startsWith("XlSheet:")) {
+      const siSubtype = el.type.slice("XlSheet:".length) as SiSubtype;
+      const category = SI_SUBTYPE_CATEGORY[siSubtype];
+      if (category) {
+        return { category, confidence: 0.9 };
+      }
+      // Known subtype but no category mapping (e.g., "unknown")
+      return { category: "general", confidence: 0.5 };
+    }
+  }
+
+  // No XlSheet elements found (unlikely — only summary)
+  return { category: "general", confidence: 0.3 };
+}
 
 const KEYWORD_RULES: Array<{ keywords: string[]; category: DocumentCategory }> = [
   { keywords: ["ERD", "엔터티", "entity", "관계"], category: "erd" },

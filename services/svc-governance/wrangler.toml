@@ -110,6 +110,9 @@ service = "svc-ontology-staging"
 binding = "SVC_ANALYTICS"
 service = "svc-analytics-staging"
 
+[env.staging.ai]
+binding = "AI"
+
 # ---------------------------------------------------------------------------
 # Production environment
 # ---------------------------------------------------------------------------
@@ -156,3 +159,6 @@ service = "svc-ontology"
 [[env.production.services]]
 binding = "SVC_ANALYTICS"
 service = "svc-analytics"
+
+[env.production.ai]
+binding = "AI"

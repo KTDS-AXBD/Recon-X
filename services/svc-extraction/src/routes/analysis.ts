@@ -25,6 +25,8 @@ import { buildDiagnosisPrompt, parseDiagnosisResult } from "../prompts/diagnosis
 import { callLlm, callLlmWithMeta } from "../llm/caller.js";
 import type { LlmCallOptions } from "../llm/caller.js";
 import type { LlmProvider } from "@ai-foundry/types";
+import { scoreProgrammatically, type ExtractionInput } from "../analysis/programmatic-scorer.js";
+import { diagnoseProgrammatically } from "../analysis/programmatic-diagnosis.js";
 import type { Env } from "../env.js";
 
 // ── D1 행 타입 ─────────────────────────────────────────────────────────
@@ -311,6 +313,7 @@ interface BatchAnalyzeBody {
   organizationId: string;
   preferredProvider?: string;
   preferredTier?: string;
+  preferredMode?: "llm" | "programmatic";
 }
 
 async function handleBatchAnalyze(request: Request, env: Env): Promise<Response> {
@@ -321,7 +324,7 @@ async function handleBatchAnalyze(request: Request, env: Env): Promise<Response>
     return badRequest("Request body must be valid JSON");
   }
 
-  const { documentIds, organizationId, preferredProvider, preferredTier } = body;
+  const { documentIds, organizationId, preferredProvider, preferredTier, preferredMode } = body;
   if (!Array.isArray(documentIds) || documentIds.length === 0) {
     return badRequest("documentIds must be a non-empty array");
   }
@@ -329,7 +332,9 @@ async function handleBatchAnalyze(request: Request, env: Env): Promise<Response>
     return badRequest("organizationId is required");
   }
 
+  const isProgrammatic = preferredMode === "programmatic";
   let submitted = 0;
+  let completed = 0;
   let skipped = 0;
   const errors: string[] = [];
 
@@ -348,35 +353,61 @@ async function handleBatchAnalyze(request: Request, env: Env): Promise<Response>
 
     // extraction 확인
     const extraction = await env.DB_EXTRACTION.prepare(
-      `SELECT id FROM extractions WHERE document_id = ? AND status = 'completed' ORDER BY created_at DESC LIMIT 1`
+      `SELECT id, result_json FROM extractions WHERE document_id = ? AND status = 'completed' ORDER BY created_at DESC LIMIT 1`
     )
       .bind(docId)
-      .first<{ id: string }>();
+      .first<{ id: string; result_json: string | null }>();
 
     if (!extraction) {
       errors.push(`${docId}: no completed extraction`);
       continue;
     }
 
-    // Queue에 analysis.requested 이벤트 발행
-    await env.QUEUE_PIPELINE.send({
-      eventId: crypto.randomUUID(),
-      occurredAt: new Date().toISOString(),
-      type: "analysis.requested",
-      payload: {
-        documentId: docId,
-        extractionId: extraction.id,
-        organizationId,
-        mode: "diagnosis-sync",
-        ...(preferredProvider ? { preferredProvider } : {}),
-        ...(preferredTier ? { preferredTier } : {}),
-      },
-    });
-
-    submitted++;
+    if (isProgrammatic) {
+      // 프로그래밍 모드: Queue 없이 직접 실행
+      if (!extraction.result_json) {
+        errors.push(`${docId}: no extraction result_json`);
+        continue;
+      }
+      try {
+        const extractionResult = JSON.parse(extraction.result_json) as ExtractionInput;
+        await runProgrammaticAnalysis(env, {
+          analysisId: crypto.randomUUID(),
+          documentId: docId,
+          extractionId: extraction.id,
+          organizationId,
+          extractionResult,
+        });
+        completed++;
+      } catch (e) {
+        errors.push(`${docId}: ${String(e)}`);
+      }
+    } else {
+      // LLM 모드: Queue에 analysis.requested 이벤트 발행
+      await env.QUEUE_PIPELINE.send({
+        eventId: crypto.randomUUID(),
+        occurredAt: new Date().toISOString(),
+        type: "analysis.requested",
+        payload: {
+          documentId: docId,
+          extractionId: extraction.id,
+          organizationId,
+          mode: "diagnosis-sync",
+          ...(preferredProvider ? { preferredProvider } : {}),
+          ...(preferredTier ? { preferredTier } : {}),
+        },
+      });
+      submitted++;
+    }
   }
 
-  return ok({ submitted, skipped, errors });
+  return ok({
+    submitted,
+    completed,
+    skipped,
+    errors,
+    ...(isProgrammatic ? { mode: "programmatic" as const } : {}),
+  });
 }
 
 // ── GET /analysis/domain-report ──────────────────────────────────────
@@ -743,7 +774,7 @@ interface AnalyzeBody {
   documentId: string;
   extractionId: string;
   organizationId: string;
-  mode: "standard" | "diagnosis" | "diagnosis-sync";
+  mode: "standard" | "diagnosis" | "diagnosis-sync" | "programmatic";
   preferredProvider?: LlmProvider;
   preferredTier?: "sonnet" | "haiku";
 }
@@ -769,7 +800,7 @@ async function handleAnalyzeTrigger(
   const llmOptions: LlmCallOptions = {};
   if (preferredProvider) llmOptions.provider = preferredProvider;
 
-  if (mode !== "diagnosis" && mode !== "diagnosis-sync") {
+  if (mode !== "diagnosis" && mode !== "diagnosis-sync" && mode !== "programmatic") {
     return ok({ message: "Standard mode: no diagnosis analysis performed", documentId, extractionId });
   }
 
@@ -802,6 +833,21 @@ async function handleAnalyzeTrigger(
     llmOptions,
     tier: preferredTier ?? "sonnet" as const,
   };
+
+  // 프로그래밍 모드: LLM 없이 직접 스코어링+진단
+  if (mode === "programmatic") {
+    try {
+      await runProgrammaticAnalysis(env, {
+        analysisId, documentId, extractionId, organizationId, extractionResult,
+      });
+      return ok({ analysisId, status: "completed", mode: "programmatic", documentId, extractionId, organizationId });
+    } catch (e) {
+      return Response.json({
+        success: false,
+        error: { code: "PROGRAMMATIC_ANALYSIS_ERROR", message: String(e) },
+      }, { status: 500 });
+    }
+  }
 
   if (mode === "diagnosis-sync") {
     // 동기 모드: 에러를 응답에 직접 포함
@@ -988,4 +1034,134 @@ async function runAnalysisPasses(
       .bind(analysisId)
       .run();
   }
+}
+
+// ── 프로그래밍 기반 분석 (LLM-Free) ──────────────────────────────────
+
+type ExtractionResult = {
+  processes: Array<{ name: string; description: string; steps: string[] }>;
+  entities: Array<{ name: string; type: string; attributes: string[] }>;
+  rules: Array<{ condition: string; outcome: string }>;
+  relationships: Array<{ from: string; to: string; type: string }>;
+};
+
+async function runProgrammaticAnalysis(
+  env: Env,
+  opts: {
+    analysisId: string;
+    documentId: string;
+    extractionId: string;
+    organizationId: string;
+    extractionResult: ExtractionResult;
+  }
+): Promise<void> {
+  const { analysisId, documentId, extractionId, organizationId, extractionResult } = opts;
+
+  // Pass 1: 프로그래밍 스코어링
+  const scoringResult = scoreProgrammatically(extractionResult);
+  const coreSummary = buildCoreSummary(scoringResult.scoredProcesses);
+
+  const summaryJson = JSON.stringify({
+    documentId,
+    organizationId,
+    extractionId,
+    counts: {
+      processes: extractionResult.processes.length,
+      entities: extractionResult.entities.length,
+      rules: extractionResult.rules.length,
+      relationships: extractionResult.relationships.length,
+    },
+    processes: scoringResult.scoredProcesses,
+    entities: extractionResult.entities.map((e) => ({
+      ...e,
+      usageCount: 0,
+      isOrphan: false,
+    })),
+    documentClassification: "general",
+    analysisTimestamp: new Date().toISOString(),
+  });
+
+  const coreIdentificationJson = JSON.stringify({
+    documentId,
+    organizationId,
+    coreProcesses: scoringResult.coreJudgments,
+    processTree: scoringResult.processTree,
+    summary: coreSummary,
+  });
+
+  const now = new Date().toISOString();
+  await env.DB_EXTRACTION.prepare(
+    `INSERT INTO analyses
+     (analysis_id, document_id, extraction_id, organization_id,
+      process_count, entity_count, rule_count, relationship_count,
+      core_process_count, mega_process_count,
+      summary_json, core_identification_json, llm_provider, llm_model, status, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', ?)`
+  )
+    .bind(
+      analysisId,
+      documentId,
+      extractionId,
+      organizationId,
+      extractionResult.processes.length,
+      extractionResult.entities.length,
+      extractionResult.rules.length,
+      extractionResult.relationships.length,
+      coreSummary.coreProcessCount,
+      coreSummary.megaProcessCount,
+      summaryJson,
+      coreIdentificationJson,
+      "programmatic",
+      "rule-based-v1",
+      now
+    )
+    .run();
+
+  // Pass 2: 프로그래밍 진단
+  const findings = diagnoseProgrammatically(scoringResult.scoredProcesses, extractionResult);
+
+  if (findings.length > 0) {
+    for (const finding of findings) {
+      await env.DB_EXTRACTION.prepare(
+        `INSERT INTO diagnosis_findings
+         (finding_id, analysis_id, document_id, organization_id,
+          type, severity, finding, evidence, recommendation,
+          related_processes, related_entities, source_document_ids,
+          confidence, hitl_status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`
+      )
+        .bind(
+          finding.findingId,
+          analysisId,
+          documentId,
+          organizationId,
+          finding.type,
+          finding.severity,
+          finding.finding,
+          finding.evidence,
+          finding.recommendation,
+          JSON.stringify(finding.relatedProcesses),
+          finding.relatedEntities ? JSON.stringify(finding.relatedEntities) : null,
+          JSON.stringify(finding.sourceDocumentIds),
+          finding.confidence,
+          now
+        )
+        .run();
+    }
+  }
+
+  // analysis.completed 이벤트 발행
+  await env.QUEUE_PIPELINE.send({
+    eventId: crypto.randomUUID(),
+    occurredAt: new Date().toISOString(),
+    type: "analysis.completed",
+    payload: {
+      documentId,
+      extractionId,
+      organizationId,
+      analysisId,
+      findingCount: findings.length,
+      coreProcessCount: coreSummary.coreProcessCount,
+    },
+  });
 }

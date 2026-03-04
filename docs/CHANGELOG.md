@@ -2,6 +2,15 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 094 — 2026-03-04
+**Skill Marketplace 통계 카드 수정**:
+- ✅ Fix: stats 카드가 로드된 100개 subset 기준으로 표시 → `/skills/stats` API 호출로 전체 수치 표시
+- ✅ 수정 전: 총 Skill 2,551 / 상세 100 / 보통 0 / 간략 0 / 총 정책 100
+- ✅ 수정 후: 총 Skill 3,104 / 상세 597 / 보통 1,954 / 간략 553 / 총 정책 3,104
+
+**검증**: typecheck ✅
+**변경 파일**: 2 files — app-web (api/skill.ts, pages/skill-catalog.tsx)
+
 ## 세션 093 — 2026-03-04
 **Skill Trust Score Backfill + 분석 리포트 v2 API 검증**:
 - ✅ Backend: `POST /admin/backfill-trust` — D1 컬럼(trust_level + content_depth)으로 trust_score 계산. LLM/R2 미사용

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { User, Bot, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { MarkdownContent } from '@/components/markdown-content';
 
 interface ChatMessageProps {
   role: 'user' | 'assistant';
@@ -57,7 +58,7 @@ export function ChatMessage({ role, content }: ChatMessageProps) {
 
       <div className="max-w-[85%] space-y-2">
         <div
-          className="px-3 py-2 rounded-xl text-sm leading-relaxed whitespace-pre-wrap"
+          className="px-3 py-2 rounded-xl text-sm leading-relaxed"
           style={{
             backgroundColor: isUser ? 'var(--accent)' : 'var(--surface)',
             color: isUser ? 'var(--accent-foreground)' : 'var(--text-primary)',
@@ -65,7 +66,13 @@ export function ChatMessage({ role, content }: ChatMessageProps) {
             borderBottomLeftRadius: !isUser ? '4px' : undefined,
           }}
         >
-          {text || (content === '' ? '...' : text)}
+          {isUser ? (
+            <span className="whitespace-pre-wrap">{text}</span>
+          ) : text ? (
+            <MarkdownContent content={text} />
+          ) : (
+            '...'
+          )}
         </div>
 
         {actions.length > 0 && (

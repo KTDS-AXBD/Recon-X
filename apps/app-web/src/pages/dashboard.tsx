@@ -11,6 +11,8 @@ import {
   AlertCircle,
   Bell,
   FileText,
+  BookOpen,
+  ArrowRight,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { fetchSkills } from '@/api/skill';
@@ -105,6 +107,35 @@ export default function DashboardPage() {
           AI Foundry 플랫폼 통합 관리
         </p>
       </div>
+
+      {/* Guide Banner — shown when 0 documents */}
+      {!loading && stats[0]?.value === '0건' && (
+        <Link to="/guide">
+          <Card
+            className="transition-all hover:shadow-lg cursor-pointer"
+            style={{
+              borderRadius: 'var(--radius-lg)',
+              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))',
+              border: '1px solid rgba(59, 130, 246, 0.2)',
+            }}
+          >
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-500/10">
+                <BookOpen className="w-6 h-6" style={{ color: '#3B82F6' }} />
+              </div>
+              <div className="flex-1">
+                <div className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
+                  AI Foundry 시작하기
+                </div>
+                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  문서 업로드부터 AI Skill 생성까지 — 이용 가이드에서 시작하세요
+                </div>
+              </div>
+              <ArrowRight className="w-5 h-5" style={{ color: '#3B82F6' }} />
+            </CardContent>
+          </Card>
+        </Link>
+      )}
 
       {/* System Status */}
       <div className="grid grid-cols-4 gap-4">

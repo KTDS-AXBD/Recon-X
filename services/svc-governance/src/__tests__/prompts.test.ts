@@ -36,6 +36,7 @@ function mockEnv(dbOverrides?: Parameters<typeof mockDb>[0], kvOverrides?: Param
     DB_GOVERNANCE: mockDb(dbOverrides),
     KV_PROMPTS: mockKv(kvOverrides),
     SECURITY: { fetch: vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true, data: { allowed: true } }), { status: 200 })) } as unknown as Fetcher,
+    LLM_ROUTER: { fetch: vi.fn() } as unknown as Fetcher,
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-governance",
     INTERNAL_API_SECRET: "test-secret",

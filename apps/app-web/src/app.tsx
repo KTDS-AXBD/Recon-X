@@ -19,6 +19,7 @@ const ApiConsolePage = lazy(() => import("./pages/api-console"));
 const TrustDashboardPage = lazy(() => import("./pages/trust"));
 const AnalysisReportPage = lazy(() => import("./pages/analysis-report"));
 const AuditPage = lazy(() => import("./pages/audit"));
+const GuidePage = lazy(() => import("./pages/guide"));
 const SettingsPage = lazy(() => import("./pages/settings"));
 const NotFoundPage = lazy(() => import("./pages/not-found"));
 
@@ -62,6 +63,7 @@ export function App() {
             <Route path="/api-console" element={<ProtectedRoute><Layout><ApiConsolePage /></Layout></ProtectedRoute>} />
             <Route path="/trust" element={<ProtectedRoute><Layout><TrustDashboardPage /></Layout></ProtectedRoute>} />
             <Route path="/audit" element={<ProtectedRoute><Layout><AuditPage /></Layout></ProtectedRoute>} />
+            <Route path="/guide" element={<ProtectedRoute><Layout><GuidePage /></Layout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
             <Route path="*" element={<ProtectedRoute><Layout><NotFoundPage /></Layout></ProtectedRoute>} />
           </Routes>

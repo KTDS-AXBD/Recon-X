@@ -1,5 +1,6 @@
 import React from 'react';
 import { Sidebar } from './Sidebar';
+import { ChatWidget } from './chat/ChatWidget';
 import { useOrganization } from '@/contexts/OrganizationContext';
 
 interface LayoutProps {
@@ -15,6 +16,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <main key={organizationId} className="flex-1 overflow-auto p-8">
         {children}
       </main>
+      <ChatWidget />
     </div>
   );
 };

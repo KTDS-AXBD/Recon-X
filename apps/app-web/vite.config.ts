@@ -30,6 +30,7 @@ const SERVICE_MAP: Record<string, { service: string; port: number }> = {
   prompts: { service: "svc-governance", port: 8708 },
   "golden-tests": { service: "svc-governance", port: 8708 },
   "quality-evaluations": { service: "svc-governance", port: 8708 },
+  chat: { service: "svc-governance", port: 8708 },
   notifications: { service: "svc-notification", port: 8709 },
   kpi: { service: "svc-analytics", port: 8710 },
   dashboards: { service: "svc-analytics", port: 8710 },

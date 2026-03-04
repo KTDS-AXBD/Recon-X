@@ -11,6 +11,7 @@ import { handleGetCost } from "./routes/cost.js";
 import { handleGetTrust, handleCreateTrustEvaluation } from "./routes/trust.js";
 import { handleGetGoldenTests } from "./routes/golden-tests.js";
 import { handleCreateQualityEvaluation, handleListQualityEvaluations, handleQualityEvaluationsSummary } from "./routes/quality-evaluations.js";
+import { handleChat } from "./routes/chat.js";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -142,6 +143,11 @@ export default {
           }));
         }
         return await handleCreateQualityEvaluation(request, env);
+      }
+
+      // AI Chat Agent (guide assistant)
+      if (method === "POST" && path === "/chat") {
+        return await handleChat(request, env, ctx);
       }
 
       return new Response("Not Found", { status: 404 });

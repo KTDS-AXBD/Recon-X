@@ -49,6 +49,7 @@ const ROUTE_TABLE: Record<string, string> = {
   prompts: "svc-governance",
   "golden-tests": "svc-governance",
   "quality-evaluations": "svc-governance",
+  chat: "svc-governance",
   notifications: "svc-notification",
   kpi: "svc-analytics",
   dashboards: "svc-analytics",

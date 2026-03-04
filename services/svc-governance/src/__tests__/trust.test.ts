@@ -30,6 +30,7 @@ function mockEnv(dbOverrides?: Parameters<typeof mockDb>[0]): Env {
       put: vi.fn().mockResolvedValue(undefined),
     } as unknown as KVNamespace,
     SECURITY: { fetch: vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true, data: { allowed: true } }), { status: 200 })) } as unknown as Fetcher,
+    LLM_ROUTER: { fetch: vi.fn() } as unknown as Fetcher,
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-governance",
     INTERNAL_API_SECRET: "test-secret",

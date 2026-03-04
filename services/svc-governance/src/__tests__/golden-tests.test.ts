@@ -48,6 +48,7 @@ function mockEnv(dbOverrides?: Parameters<typeof mockDb>[0]): Env {
         ),
       ),
     } as unknown as Fetcher,
+    LLM_ROUTER: { fetch: vi.fn() } as unknown as Fetcher,
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-governance",
     INTERNAL_API_SECRET: "test-secret",

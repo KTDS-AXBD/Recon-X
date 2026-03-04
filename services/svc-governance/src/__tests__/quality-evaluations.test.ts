@@ -25,6 +25,7 @@ function mockEnv(dbOverrides?: Parameters<typeof mockDb>[0]): Env {
     DB_GOVERNANCE: mockDb(dbOverrides),
     KV_PROMPTS: { get: vi.fn(), put: vi.fn() } as unknown as KVNamespace,
     SECURITY: { fetch: vi.fn() } as unknown as Fetcher,
+    LLM_ROUTER: { fetch: vi.fn() } as unknown as Fetcher,
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-governance",
     INTERNAL_API_SECRET: "test-secret",

@@ -21,6 +21,11 @@ id = "98ef788593e44f638a94cc7838f9a310"
 binding = "SECURITY"
 service = "svc-security"
 
+# Service binding to svc-llm-router for AI chat
+[[services]]
+binding = "LLM_ROUTER"
+service = "svc-llm-router"
+
 [vars]
 ENVIRONMENT = "development"
 SERVICE_NAME = "svc-governance"
@@ -46,6 +51,10 @@ id = "35b9f45b0fa44bde89b20cc1b9fc9d80"
 binding = "SECURITY"
 service = "svc-security-staging"
 
+[[env.staging.services]]
+binding = "LLM_ROUTER"
+service = "svc-llm-router-staging"
+
 # ---------------------------------------------------------------------------
 # Production environment
 # ---------------------------------------------------------------------------
@@ -64,3 +73,7 @@ id = "98ef788593e44f638a94cc7838f9a310"
 [[env.production.services]]
 binding = "SECURITY"
 service = "svc-security"
+
+[[env.production.services]]
+binding = "LLM_ROUTER"
+service = "svc-llm-router"

@@ -11,6 +11,7 @@ import {
   Plug,
   ShieldCheck,
   FileText,
+  BookOpen,
   Settings,
   User,
   Moon,
@@ -58,6 +59,12 @@ export const Sidebar: React.FC = () => {
       label: '대시보드',
       labelEn: 'Dashboard',
       path: '/',
+    },
+    {
+      icon: <BookOpen className="w-5 h-5" />,
+      label: '이용 가이드',
+      labelEn: 'User Guide',
+      path: '/guide',
     },
     {
       icon: <Upload className="w-5 h-5" />,

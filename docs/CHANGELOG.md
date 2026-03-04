@@ -2,6 +2,17 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 099 — 2026-03-05
+**프로그래밍 기반 배치 분석 (LLM-Free Analysis)**:
+- ✅ programmatic-scorer.ts: 4-factor 통계 스코어링 (frequency, dependency, domainRelevance, dataFlowCentrality) + 35개 퇴직연금 키워드 사전
+- ✅ programmatic-diagnosis.ts: 4대 규칙 기반 진단 (missing, duplicate, overspec, inconsistency)
+- ✅ POST /analyze mode="programmatic" + POST /analysis/batch-analyze preferredMode="programmatic"
+- ✅ batch-analyze-programmatic.sh 스크립트 (triage 조회 → 배치 실행)
+- ✅ svc-extraction production 배포 + Miraeasset 전체 1,143건 분석 100% 완료 ($0 LLM 비용)
+- ✅ Domain Report: processes 2,879 / entities 5,530 / rules 3,598 / rels 3,349 / findings 1,142
+
+**검증**: typecheck ✅, lint ✅, production 5건 테스트 후 전체 배치 실행
+
 ## 세션 098 — 2026-03-04
 **Gap Analysis + SPEC 동기화 + 프로젝트 정리**:
 - ✅ 종합 Gap Analysis 실행: 94% Match Rate (158개 항목 중 149개 일치)

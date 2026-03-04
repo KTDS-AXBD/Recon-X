@@ -410,7 +410,7 @@ export function ProjectStatusTab() {
               </li>
               <li className="flex items-start gap-1.5">
                 <CircleDot className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "#10b981" }} />
-                <span><strong style={{ color: "var(--text-primary)" }}>비용 효율</strong> — 787건 문서 전체 파이프라인 처리에 ~$25, 문서당 3센트</span>
+                <span><strong style={{ color: "var(--text-primary)" }}>비용 효율</strong> — 787건 문서 전체 파일럿에 ~$75 (Anthropic API 전체), 문서당 ~10센트</span>
               </li>
               <li className="flex items-start gap-1.5">
                 <CircleDot className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "#10b981" }} />
@@ -592,22 +592,30 @@ export function ProjectStatusTab() {
           subtitle="Anthropic API 사용량 및 멀티 프로바이더 전략"
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
           <div className="p-4 rounded-lg border" style={{ borderColor: "var(--border)" }}>
             <div className="flex items-center gap-2 mb-1">
               <DollarSign className="w-4 h-4" style={{ color: "#ef4444" }} />
-              <span className="text-xs" style={{ color: "var(--text-secondary)" }}>파일럿 누적 비용</span>
+              <span className="text-xs" style={{ color: "var(--text-secondary)" }}>Anthropic API 총 소진</span>
             </div>
-            <div className="text-2xl font-bold" style={{ color: "#ef4444" }}>~$25</div>
-            <div className="text-[0.65rem]" style={{ color: "var(--text-secondary)" }}>787건 문서 · 3,046 정책 · 3,104 Skill 생성</div>
+            <div className="text-2xl font-bold" style={{ color: "#ef4444" }}>~$75</div>
+            <div className="text-[0.65rem]" style={{ color: "var(--text-secondary)" }}>파이프라인 + 개발 + 테스트 포함</div>
           </div>
           <div className="p-4 rounded-lg border" style={{ borderColor: "var(--border)" }}>
             <div className="flex items-center gap-2 mb-1">
-              <Clock className="w-4 h-4" style={{ color: "#f59e0b" }} />
-              <span className="text-xs" style={{ color: "var(--text-secondary)" }}>일평균 비용</span>
+              <Zap className="w-4 h-4" style={{ color: "#f59e0b" }} />
+              <span className="text-xs" style={{ color: "var(--text-secondary)" }}>잔여 크레딧</span>
             </div>
-            <div className="text-2xl font-bold" style={{ color: "#f59e0b" }}>$11~25</div>
-            <div className="text-[0.65rem]" style={{ color: "var(--text-secondary)" }}>작업 강도에 따라 변동</div>
+            <div className="text-2xl font-bold" style={{ color: "#f59e0b" }}>$6.44</div>
+            <div className="text-[0.65rem]" style={{ color: "var(--text-secondary)" }}>총 충전 $80.92 중</div>
+          </div>
+          <div className="p-4 rounded-lg border" style={{ borderColor: "var(--border)" }}>
+            <div className="flex items-center gap-2 mb-1">
+              <Clock className="w-4 h-4" style={{ color: "#3b82f6" }} />
+              <span className="text-xs" style={{ color: "var(--text-secondary)" }}>문서당 비용</span>
+            </div>
+            <div className="text-2xl font-bold" style={{ color: "#3b82f6" }}>~10¢</div>
+            <div className="text-[0.65rem]" style={{ color: "var(--text-secondary)" }}>787건 기준 · 전체 파이프라인</div>
           </div>
           <div className="p-4 rounded-lg border" style={{ borderColor: "var(--border)" }}>
             <div className="flex items-center gap-2 mb-1">
@@ -620,6 +628,25 @@ export function ProjectStatusTab() {
         </div>
 
         <h4 className="text-sm font-medium mb-2" style={{ color: "var(--text-primary)" }}>
+          Anthropic 크레딧 내역
+        </h4>
+        <DataTable
+          headers={["날짜", "유형", "금액", "비고"]}
+          highlightCol={2}
+          rows={[
+            ["2026-03-04", "Credit grant (paid)", "$33.00", "크레딧 구매"],
+            ["2026-03-04", "Credit grant", "$12.12", "만료 2027-04-01"],
+            ["2026-03-04", "Credit grant", "$12.60", "만료 2027-04-01"],
+            ["2026-03-03", "Credit grant", "$11.10", "만료 2027-04-01"],
+            ["2026-03-03", "Credit grant", "$6.60", "만료 2027-03-04"],
+            ["2026-02-26", "Credit grant", "$5.50", "만료 2027-02-27"],
+            ["", "합계 충전", "$80.92", ""],
+            ["", "소진", "−$74.48", "파이프라인 + 개발"],
+            ["", "잔액", "$6.44", ""],
+          ]}
+        />
+
+        <h4 className="text-sm font-medium mb-2 mt-4" style={{ color: "var(--text-primary)" }}>
           멀티 프로바이더 티어 매핑
         </h4>
         <DataTable

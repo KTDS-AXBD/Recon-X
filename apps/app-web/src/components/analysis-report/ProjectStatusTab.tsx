@@ -327,6 +327,7 @@ export function ProjectStatusTab() {
             "BN-724: 퇴직연금 사업자 변경 시 이전 수수료 면제 조건 — 문서에 명시되지 않은 3년 유지 조건을 추론",
             "CL-409: 고객 민원 대응 시 '확약 금지' 원칙 — 교육 자료에서만 확인 가능한 운영 규범 자동 추출",
             "CT-361: 계약 이전 심사 시 자산 유동성 검증 기준 — 여러 문서의 단편 정보를 조합해 완성된 정책 도출",
+            "787건 미래에셋 문서에서 3,000+ 정책 자동 생성 — 문서당 평균 3.8건 정책 추출",
           ]}
         />
 
@@ -336,9 +337,10 @@ export function ProjectStatusTab() {
             title="한계점"
             color="#f59e0b"
             items={[
-              "신호 대 잡음 (Signal-to-Noise): 미래에셋 문서 기준 유효 정책 비율 ~78%, 나머지는 일반적인 설명",
+              "신호 대 잡음 (Signal-to-Noise): 787건 문서 기준 유효 정책 비율 ~78%, 나머지는 일반적인 설명 또는 중복",
               "메타데이터 미완성: 원본 문서의 section/page 매핑이 불완전 — provenance 추적에 한계",
               "깊이 한계: 복합 조건(AND/OR 3단계 이상) 정책은 단순화되는 경향",
+              "온톨로지 26,000+ 용어 중 타입 분류가 entity 단일 — 세부 분류(process, rule, metric 등) 필요",
             ]}
           />
         </div>
@@ -352,9 +354,9 @@ export function ProjectStatusTab() {
             rows={[
               ["단순 정책 추출", "★★★★☆", "규정·약관 기반 조건-기준-결과 추출 안정적"],
               ["암묵지 추론", "★★★☆☆", "교육 자료·FAQ에서 비명시 규범 도출 가능, 복합 추론 한계"],
-              ["정책 품질 (정밀도)", "★★★★☆", "승인율 기반, HITL 보정 후"],
-              ["커버리지 (재현율)", "★★★☆☆", "문서 구조 의존, 비정형 영역 누락 가능"],
-              ["온톨로지 일관성", "★★★☆☆", "유사 용어 병합 필요, 도메인 전문가 검증 미완"],
+              ["정책 품질 (정밀도)", "★★★★☆", "3,028/3,046 자동 승인, HITL 18건 데모"],
+              ["커버리지 (재현율)", "★★★☆☆", "787건 → 3,046 정책, 문서당 3.8건"],
+              ["온톨로지 일관성", "★★★☆☆", "26,825 용어, 타입 세분화 및 병합 필요"],
             ]}
           />
         </div>
@@ -362,8 +364,9 @@ export function ProjectStatusTab() {
         <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: "color-mix(in srgb, var(--accent) 8%, transparent)" }}>
           <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
             <strong style={{ color: "var(--text-primary)" }}>결론:</strong>{" "}
-            단순·규정 기반 정책은 80%+ 품질로 자동 추출되며, 암묵지 추론은 HITL 보정으로 실용 수준 달성 가능.
-            운영 환경 적용을 위해서는 도메인 전문가 리뷰 프로세스(HITL) 고도화가 핵심.
+            787건 미래에셋 문서에서 3,046건 정책을 자동 추출하고 3,104건 Skill로 패키징 완료.
+            규정 기반 정책은 99%+ 자동 승인율이며, 암묵지 추론은 HITL 보정으로 실용 수준 달성 가능.
+            다음 단계는 도메인 전문가 리뷰(HITL) 고도화와 온톨로지 품질 개선.
           </p>
         </div>
       </section>
@@ -382,8 +385,8 @@ export function ProjectStatusTab() {
               <DollarSign className="w-4 h-4" style={{ color: "#ef4444" }} />
               <span className="text-xs" style={{ color: "var(--text-secondary)" }}>파일럿 누적 비용</span>
             </div>
-            <div className="text-2xl font-bold" style={{ color: "#ef4444" }}>$23.56</div>
-            <div className="text-[0.65rem]" style={{ color: "var(--text-secondary)" }}>미래에셋 787건 문서 처리 기준</div>
+            <div className="text-2xl font-bold" style={{ color: "#ef4444" }}>~$25</div>
+            <div className="text-[0.65rem]" style={{ color: "var(--text-secondary)" }}>787건 문서 · 3,046 정책 · 3,104 Skill 생성</div>
           </div>
           <div className="p-4 rounded-lg border" style={{ borderColor: "var(--border)" }}>
             <div className="flex items-center gap-2 mb-1">
@@ -467,9 +470,9 @@ export function ProjectStatusTab() {
           />
           <TaskCard
             priority="medium"
-            title="대규모 문서 처리 성능"
-            description="1,000건+ 문서 배치 처리 시 Queue 안정성, Worker 메모리, D1 동시성 검증"
-            status="Phase 5"
+            title="온톨로지 용어 타입 세분화"
+            description="현재 26,825 용어 전체가 entity 타입 — process, rule, metric 등 세부 분류 + 유사 용어 병합"
+            status="진행 중"
           />
           <TaskCard
             priority="low"

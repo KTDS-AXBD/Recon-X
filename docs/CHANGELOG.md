@@ -2,6 +2,17 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 103 — 2026-03-05
+**LPON 온보딩 Wave 1 — 업로드 + 파이프라인 실행**:
+- ✅ Ralph P1~P5: Org(헤더 기반 skip) + SCDSA002 검사(2건 암호화) + 매니페스트(84→63 dedup) + 배치 스크립트
+- ✅ `infra/scripts/batch-upload-lpon.sh` 590 LOC (매니페스트 기반, symlink, MIME, resume, tier/group 필터)
+- ✅ Wave 1 업로드: 61/61 파일 성공 (Tier 1: 17, Tier 2: 38, Tier 3: 6)
+- ✅ xlsx 15건 커스텀 파서 파싱 → 32+ LPON policies 생성 (파이프라인 자동 실행)
+- ⚠️ pptx/pdf/docx 46건: Unstructured.io 402 쿼터 소진 → 리셋 후 재시도 필요
+- ✅ 발견: Organization은 DB 테이블 없음 (헤더 기반 참조 아키텍처) — Plan P1/P2 불필요
+
+**검증**: dry-run 61건 정상 ✅ | 업로드 100% ✅ | 파이프라인 xlsx 정상 ✅
+
 ## 세션 102 — 2026-03-05
 **LPON 전자식 온누리상품권 온보딩 Plan 작성**:
 - ✅ 소스 파일 심층 분석: 1,152파일 → 477건(업로드 가능) → 65건(Core dedup 후)

@@ -2,6 +2,15 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 102 — 2026-03-05
+**LPON 전자식 온누리상품권 온보딩 Plan 작성**:
+- ✅ 소스 파일 심층 분석: 1,152파일 → 477건(업로드 가능) → 65건(Core dedup 후)
+- ✅ 버전 히스토리 분류: Archive 127건, 참고자료 13건, 컨설팅예시 30건, 사본 8건 식별
+- ✅ 2-Wave 업로드 전략 수립: Core 65건 우선 → Archive 127건 선택적
+- ✅ 5-Stage 파이프라인별 Extraction Map + 도메인 특화 정책 유형 예측
+- ✅ 특수 파일명 7건 사전 식별 (괄호/대괄호 → symlink 패턴)
+- ✅ Plan: `docs/01-plan/features/lpon-onboarding.plan.md` v2.0
+
 ## 세션 101 — 2026-03-05
 **Org 통합: org-mirae-pension → Miraeasset**:
 - ✅ tmux /team으로 2 Worker 병렬 D1 데이터 조사 (Miraeasset + org-mirae-pension + 전체 org 분포)

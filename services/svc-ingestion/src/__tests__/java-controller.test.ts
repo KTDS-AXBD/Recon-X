@@ -109,6 +109,29 @@ public class SimpleController {
     expect(result!.endpoints[0]!.path).toBe("/health");
   });
 
+  test("class-level @RequestMapping with constant reference — basePath empty, no method path leak", () => {
+    const source = `
+package com.kt.onnuripay.externalapi.common.controller;
+
+@Api(tags = "공통")
+@RequiredArgsConstructor
+@RequestMapping(value = GlobalConstants.API_BASE_PATH + "/common")
+@RestController
+public class CommonController {
+    @ApiOperation(value = "DB시간조회")
+    @RequestMapping(value = "/utils/getNow", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResponseEntity<BaseGenericRes<String>> getNow() {
+        return null;
+    }
+}
+    `;
+    const result = parseJavaController(source, "CommonController.java");
+    expect(result).not.toBeNull();
+    // basePath should be "" (constant reference not parseable), NOT "/utils/getNow"
+    expect(result!.basePath).toBe("");
+    expect(result!.endpoints[0]!.path).toBe("/utils/getNow");
+  });
+
   test("@RequestParam with required=false", () => {
     const source = `
 @RestController

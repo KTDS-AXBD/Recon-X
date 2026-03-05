@@ -192,14 +192,6 @@ function parseJavaFile(file: ExtractedFile): UnstructuredElement[] {
           text: JSON.stringify(tx),
         });
       }
-      // Also check if it's a data model (some ServiceImpl also have VO inner classes)
-      const dataModel = parseJavaDataModel(file.content, file.filename);
-      if (dataModel) {
-        elements.push({
-          type: "CodeDataModel",
-          text: JSON.stringify(dataModel),
-        });
-      }
       break;
     }
     default:

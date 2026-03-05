@@ -44,8 +44,13 @@ export function parseJavaController(source: string, filename: string): CodeContr
 
   const packageMatch = RE_PACKAGE.exec(source);
   const classMatch = RE_CLASS_NAME.exec(source);
-  const basePathMatch = RE_REQUEST_MAPPING_CLASS.exec(source);
   const tagMatch = RE_API_TAG.exec(source);
+
+  // Only search for class-level @RequestMapping BEFORE the class declaration
+  // to avoid capturing method-level @RequestMapping paths as basePath.
+  const classPos = classMatch?.index ?? source.length;
+  const preClassSource = source.slice(0, classPos);
+  const basePathMatch = RE_REQUEST_MAPPING_CLASS.exec(preClassSource);
 
   const className = classMatch?.[1] ?? filename.replace(".java", "");
   const packageName = packageMatch?.[1] ?? "";

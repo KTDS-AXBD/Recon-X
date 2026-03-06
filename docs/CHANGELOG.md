@@ -2,6 +2,14 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 121 — 2026-03-06
+**LLM Semantic Match 재실행 (9f8f68fc) — PM VO fix 이후 최신 결과**:
+- PM VO severity fix 영향 분석: PM gaps 164→87 (-77건, 47% 감소), 총 gaps 459→382
+- LLM match 배치 실행: 284 MID items → **15건 매칭** (5.3%), offset=100 일시 오류 → 재개 완료
+- **Coverage**: 25.7% (structural) → **29.6%** (+ LLM semantic)
+- **KPI 분리 확인**: API Coverage 42.6% (98/230), Table Coverage 4.6% (7/152)
+- Active Gaps: 382→365 pending (5 dismissed + 12 auto_resolved)
+
 ## 세션 120 — 2026-03-06
 **Factcheck 재실행 — PM 필터 + VO LOW severity 적용 확인**:
 - Factcheck 재트리거 (LPON org): Queue 지연 → `/internal/queue-event` 직접 트리거

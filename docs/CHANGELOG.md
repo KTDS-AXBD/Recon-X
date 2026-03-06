@@ -2,6 +2,16 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 119 — 2026-03-06
+**PM VO severity 다운그레이드 + /team 스킬 수정**:
+- `gap-detector.ts`: @RequestBody VO/DTO 파라미터 PM gap → LOW severity 다운그레이드 (87건 대상)
+- `source-aggregator.ts`: SourceSpec에 transactions/queries 필드 추가, CodeTransaction 수집
+- `relevance-scorer.ts`: 실 데이터(transaction/query)로 relevance 분류 (기존 empty [] 대체)
+- `export.ts`: cached D1 match_result_json 사용 (extractDocSpec+structuralMatch 재실행 제거)
+- `/team` 스킬 버그 수정: `tmux display-message` → `$TMUX_PANE` (잘못된 pane 분할 방지)
+- `/team` 스킬: `command claude` → `command claude -p` (로그 마커 정상 기록)
+- 326 tests PASS, typecheck+lint 0 errors
+
 ## 세션 117 — 2026-03-06
 **PM 164건 분석 + False Positive 필터링 (PM 164→87, -47%)**:
 - PM gap 168건 상세 분석: Auth 헤더(76건) + PathVariable(5건) + VO body(87건)

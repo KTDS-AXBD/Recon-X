@@ -53,7 +53,7 @@
 ## 5) Current Status
 
 - **Last Updated**: 2026-03-06
-- **Current Phase**: Phase 4 Sprint 2 완료 — 전체 파이프라인 완결 (Miraeasset 948 + LPON 533 approved → 3,504 policies → 3,580 skills)
+- **Current Phase**: v0.7.4 Pivot Phase 2-E 완료 — Pilot Core 8/8 기능 구현 (97%), KPI 공식 PRD 정렬 완료 (API 95.4%, Table 100%)
 - **Production E2E**: ✅ 8/8 PASS (synthetic) + 7/7 PASS (real-doc) + Batch 3: 7/11 parsed (SCDSA002 4건 → encrypted 상태)
 - **Real Document Pilot**: ✅ 20/26 문서 파싱 완료 (Batch 1: 4건, Batch 2: 9/11건, Batch 3: 7/11건)
 - **Production Data**: policies 3,504 approved + 18 HITL candidate, skills 3,580. Miraeasset + LPON 2-org. 1,143건 분석 완료

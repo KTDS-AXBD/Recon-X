@@ -2,6 +2,17 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 123 — 2026-03-06
+**PRD Gap Analysis v2.0 + KPI 공식 수정 (PRD SS8.2 준수)**:
+- **F-1 KPI 공식 불일치 발견+수정**: Coverage 분모를 `totalSourceItems` → `totalDocItems`로 변경 (PRD SS8.2 정의 준수)
+  - API Coverage: 45.2% → **95.4%** (FAIL→PASS), Table Coverage: 7.2% → **100%** (FAIL→PASS)
+  - 보조 지표 `apiDocCompleteness`/`tableDocCompleteness` 추가 (소스 분모, 문서화 완성도)
+- **PRD-Implementation Gap Analysis v2.0**: `v074-pivot-prd-impl-gap.analysis.md` 전면 갱신 (v1.0 35% → v2.0 88%)
+  - PRD v0.7.4 전 섹션(SS1-SS11) 대비 106개 항목 평가: 84 PASS, 11 GAP, 11 N/A
+  - 기술적 Gap 2건 (KPI 공식, 유형별 precision), 프로세스 Gap 4건 (리뷰어, KPI 합의)
+- **Phase 2-E Full Analysis 커밋**: `v074-pivot-phase2e-full.analysis.md` (97% 구현 완성도)
+- 331 tests PASS, typecheck+lint 0 errors, CI/CD 배포 성공 (svc-extraction production)
+
 ## 세션 122 — 2026-03-06
 **KPI Coverage 분리 + LLM Match 재실행**:
 - **GAP-1 해소**: KPI API/Table Coverage 분리 구현 (D1 스키마 변경 없이 `match_result_json` 파싱)

@@ -113,7 +113,7 @@ export async function fetchResult(
   organizationId: string,
   resultId: string,
 ): Promise<ApiResponse<FactCheckResult>> {
-  const res = await fetch(`${FACTCHECK_API_BASE}/factcheck/${resultId}`, {
+  const res = await fetch(`${FACTCHECK_API_BASE}/factcheck/results/${resultId}`, {
     headers: headersNoContentType(organizationId),
   });
   return res.json() as Promise<ApiResponse<FactCheckResult>>;
@@ -129,7 +129,7 @@ export async function fetchGaps(
   if (filters?.severity) qs.set("severity", filters.severity);
   if (filters?.reviewStatus) qs.set("review_status", filters.reviewStatus);
   const query = qs.toString();
-  const url = `${FACTCHECK_API_BASE}/factcheck/${resultId}/gaps${query ? `?${query}` : ""}`;
+  const url = `${FACTCHECK_API_BASE}/factcheck/results/${resultId}/gaps${query ? `?${query}` : ""}`;
   const res = await fetch(url, {
     headers: headersNoContentType(organizationId),
   });
@@ -140,7 +140,7 @@ export async function fetchReport(
   organizationId: string,
   resultId: string,
 ): Promise<ApiResponse<{ markdown: string }>> {
-  const res = await fetch(`${FACTCHECK_API_BASE}/factcheck/${resultId}/report`, {
+  const res = await fetch(`${FACTCHECK_API_BASE}/factcheck/results/${resultId}/report`, {
     headers: headersNoContentType(organizationId),
   });
   return res.json() as Promise<ApiResponse<{ markdown: string }>>;

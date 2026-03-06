@@ -838,6 +838,27 @@ async function handleGetKpi(
     resultRow.total_source_items,
   );
 
+  // Reconcile: D1 matched_items may be higher than JSON sum if LLM
+  // matches were applied before match_result_json sync was deployed.
+  // Attribute the delta proportionally (or all to API if no tables).
+  const jsonTotal = split.apiMatched + split.tableMatched;
+  const d1Delta = Math.max(0, resultRow.matched_items - jsonTotal);
+  if (d1Delta > 0) {
+    // Distribute delta proportionally; if no table matches yet, all go to API
+    if (split.tableMatched === 0) {
+      split.apiMatched += d1Delta;
+      split.unmatchedSourceApis = Math.max(0, split.unmatchedSourceApis - d1Delta);
+    } else {
+      const apiRatio = split.apiMatched / jsonTotal;
+      const apiDelta = Math.round(d1Delta * apiRatio);
+      const tableDelta = d1Delta - apiDelta;
+      split.apiMatched += apiDelta;
+      split.tableMatched += tableDelta;
+      split.unmatchedSourceApis = Math.max(0, split.unmatchedSourceApis - apiDelta);
+      split.unmatchedSourceTables = Math.max(0, split.unmatchedSourceTables - tableDelta);
+    }
+  }
+
   const totalSourceApis = split.apiMatched + split.unmatchedSourceApis;
   const totalSourceTables = split.tableMatched + split.unmatchedSourceTables;
   const totalDocApis = split.apiMatched + split.unmatchedDocApis;

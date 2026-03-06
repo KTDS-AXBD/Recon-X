@@ -75,6 +75,10 @@ export interface FactCheckKpi {
   specEditTimeReduction: number;
   specEditTimeReductionTarget: number;
   specEditTimeReductionPass: boolean;
+  apiDetail?: { sourceApis: number; documentApis: number; matchedApis: number };
+  tableDetail?: { sourceTables: number; documentTables: number; matchedTables: number };
+  gapDetail?: { totalGaps: number; confirmedGaps: number; dismissedGaps: number; pendingGaps: number };
+  computedAt?: string;
 }
 
 // --- API Functions ---

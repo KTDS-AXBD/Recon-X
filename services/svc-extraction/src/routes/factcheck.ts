@@ -691,6 +691,85 @@ async function handleDedupGaps(
 
 // ── GET /factcheck/kpi ────────────────────────────────────────────
 
+/** Empty KPI response matching frontend FactCheckKpi flat interface. */
+function emptyKpi(): Record<string, unknown> {
+  return {
+    apiCoverage: 0, apiCoverageTarget: 80, apiCoveragePass: false,
+    tableCoverage: 0, tableCoverageTarget: 80, tableCoveragePass: false,
+    gapPrecision: 0, gapPrecisionTarget: 75, gapPrecisionPass: false,
+    reviewerAcceptance: 0, reviewerAcceptanceTarget: 70, reviewerAcceptancePass: false,
+    specEditTimeReduction: 0, specEditTimeReductionTarget: 30, specEditTimeReductionPass: false,
+    apiDetail: { sourceApis: 0, documentApis: 0, matchedApis: 0 },
+    tableDetail: { sourceTables: 0, documentTables: 0, matchedTables: 0 },
+    gapDetail: { totalGaps: 0, confirmedGaps: 0, dismissedGaps: 0, pendingGaps: 0 },
+    computedAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Parse match_result_json to split API vs Table matched counts.
+ * Returns { apiMatched, tableMatched, unmatchedSourceApis/Tables, unmatchedDocApis/Tables }.
+ */
+export function parseMatchResultForKpi(
+  json: string | null,
+  fallbackMatched: number,
+  fallbackTotalSource: number,
+): {
+  apiMatched: number;
+  tableMatched: number;
+  unmatchedSourceApis: number;
+  unmatchedSourceTables: number;
+  unmatchedDocApis: number;
+  unmatchedDocTables: number;
+} {
+  if (!json) {
+    // No cached data: treat all as API (backward-compatible)
+    return {
+      apiMatched: fallbackMatched,
+      tableMatched: 0,
+      unmatchedSourceApis: Math.max(0, fallbackTotalSource - fallbackMatched),
+      unmatchedSourceTables: 0,
+      unmatchedDocApis: 0,
+      unmatchedDocTables: 0,
+    };
+  }
+
+  try {
+    const cached = JSON.parse(json) as {
+      matchedItems?: Array<{ sourceRef: { type: string } }>;
+      unmatchedSourceApis?: number;
+      unmatchedDocApis?: number;
+      unmatchedSourceTables?: number;
+      unmatchedDocTables?: number;
+    };
+
+    let apiMatched = 0;
+    let tableMatched = 0;
+    for (const item of cached.matchedItems ?? []) {
+      if (item.sourceRef.type === "table") tableMatched++;
+      else apiMatched++;
+    }
+
+    return {
+      apiMatched,
+      tableMatched,
+      unmatchedSourceApis: cached.unmatchedSourceApis ?? 0,
+      unmatchedSourceTables: cached.unmatchedSourceTables ?? 0,
+      unmatchedDocApis: cached.unmatchedDocApis ?? 0,
+      unmatchedDocTables: cached.unmatchedDocTables ?? 0,
+    };
+  } catch {
+    return {
+      apiMatched: fallbackMatched,
+      tableMatched: 0,
+      unmatchedSourceApis: Math.max(0, fallbackTotalSource - fallbackMatched),
+      unmatchedSourceTables: 0,
+      unmatchedDocApis: 0,
+      unmatchedDocTables: 0,
+    };
+  }
+}
+
 async function handleGetKpi(
   request: Request,
   env: Env,
@@ -700,9 +779,10 @@ async function handleGetKpi(
     return badRequest("X-Organization-Id header is required");
   }
 
-  // Get the latest completed result for KPI calculation
+  // Get the latest completed result WITH match_result_json for API/Table split
   const resultRow = await env.DB_EXTRACTION.prepare(
-    `SELECT result_id, total_source_items, total_doc_items, matched_items, gap_count, coverage_pct, spec_type
+    `SELECT result_id, total_source_items, total_doc_items, matched_items,
+            gap_count, coverage_pct, spec_type, match_result_json
      FROM fact_check_results
      WHERE organization_id = ? AND status = 'completed'
      ORDER BY created_at DESC LIMIT 1`,
@@ -716,50 +796,31 @@ async function handleGetKpi(
       gap_count: number;
       coverage_pct: number;
       spec_type: string;
+      match_result_json: string | null;
     }>();
 
-  // Default empty KPI
   if (!resultRow) {
-    return ok({
-      organizationId,
-      criticalApiCoverage: {
-        value: 0,
-        target: 80,
-        pass: false,
-        detail: { sourceApis: 0, documentApis: 0, matchedApis: 0 },
-      },
-      criticalTableCoverage: {
-        value: 0,
-        target: 80,
-        pass: false,
-        detail: { sourceTables: 0, documentTables: 0, matchedTables: 0 },
-      },
-      gapPrecision: {
-        value: 0,
-        target: 75,
-        pass: false,
-        detail: { totalGaps: 0, confirmedGaps: 0, dismissedGaps: 0, pendingGaps: 0 },
-      },
-      reviewerAcceptanceRate: {
-        value: null,
-        target: 70,
-        note: "Requires Phase 2-D UI tracking",
-      },
-      specEditTimeReduction: {
-        value: null,
-        target: 30,
-        note: "Requires Phase 2-D UI tracking",
-      },
-      computedAt: new Date().toISOString(),
-    });
+    return ok(emptyKpi());
   }
 
-  // KPI-1 & KPI-2: Coverage from matched_items / total_source_items
-  // For mixed results, we use total numbers; for specific types, use those
-  const apiCoverage = resultRow.total_source_items > 0
-    ? Math.round((resultRow.matched_items / resultRow.total_source_items) * 1000) / 10
+  // Split API vs Table from cached match_result_json
+  const split = parseMatchResultForKpi(
+    resultRow.match_result_json,
+    resultRow.matched_items,
+    resultRow.total_source_items,
+  );
+
+  const totalSourceApis = split.apiMatched + split.unmatchedSourceApis;
+  const totalSourceTables = split.tableMatched + split.unmatchedSourceTables;
+  const totalDocApis = split.apiMatched + split.unmatchedDocApis;
+  const totalDocTables = split.tableMatched + split.unmatchedDocTables;
+
+  const apiCoverage = totalSourceApis > 0
+    ? Math.round((split.apiMatched / totalSourceApis) * 1000) / 10
     : 0;
-  const tableCoverage = apiCoverage; // Same data for mixed; per-type breakdown needs separate queries
+  const tableCoverage = totalSourceTables > 0
+    ? Math.round((split.tableMatched / totalSourceTables) * 1000) / 10
+    : 0;
 
   // KPI-3: Gap Precision — confirmed / (confirmed + dismissed)
   const gapStatsRow = await env.DB_EXTRACTION.prepare(
@@ -781,56 +842,46 @@ async function handleGetKpi(
 
   const confirmed = gapStatsRow?.confirmed ?? 0;
   const dismissed = gapStatsRow?.dismissed ?? 0;
-  const pending = gapStatsRow?.pending ?? 0;
   const totalGaps = gapStatsRow?.total_gaps ?? 0;
+  const pending = gapStatsRow?.pending ?? 0;
 
   const reviewedTotal = confirmed + dismissed;
   const gapPrecision = reviewedTotal > 0
     ? Math.round((confirmed / reviewedTotal) * 1000) / 10
     : 0;
 
+  // Return flat structure matching frontend FactCheckKpi interface
   return ok({
-    organizationId,
-    criticalApiCoverage: {
-      value: apiCoverage,
-      target: 80,
-      pass: apiCoverage >= 80,
-      detail: {
-        sourceApis: resultRow.total_source_items,
-        documentApis: resultRow.total_doc_items,
-        matchedApis: resultRow.matched_items,
-      },
+    apiCoverage,
+    apiCoverageTarget: 80,
+    apiCoveragePass: apiCoverage >= 80,
+    tableCoverage,
+    tableCoverageTarget: 80,
+    tableCoveragePass: tableCoverage >= 80,
+    gapPrecision,
+    gapPrecisionTarget: 75,
+    gapPrecisionPass: gapPrecision >= 75,
+    reviewerAcceptance: 0,
+    reviewerAcceptanceTarget: 70,
+    reviewerAcceptancePass: false,
+    specEditTimeReduction: 0,
+    specEditTimeReductionTarget: 30,
+    specEditTimeReductionPass: false,
+    apiDetail: {
+      sourceApis: totalSourceApis,
+      documentApis: totalDocApis,
+      matchedApis: split.apiMatched,
     },
-    criticalTableCoverage: {
-      value: tableCoverage,
-      target: 80,
-      pass: tableCoverage >= 80,
-      detail: {
-        sourceTables: resultRow.total_source_items,
-        documentTables: resultRow.total_doc_items,
-        matchedTables: resultRow.matched_items,
-      },
+    tableDetail: {
+      sourceTables: totalSourceTables,
+      documentTables: totalDocTables,
+      matchedTables: split.tableMatched,
     },
-    gapPrecision: {
-      value: gapPrecision,
-      target: 75,
-      pass: gapPrecision >= 75,
-      detail: {
-        totalGaps,
-        confirmedGaps: confirmed,
-        dismissedGaps: dismissed,
-        pendingGaps: pending,
-      },
-    },
-    reviewerAcceptanceRate: {
-      value: null,
-      target: 70,
-      note: "Requires Phase 2-D UI tracking",
-    },
-    specEditTimeReduction: {
-      value: null,
-      target: 30,
-      note: "Requires Phase 2-D UI tracking",
+    gapDetail: {
+      totalGaps,
+      confirmedGaps: confirmed,
+      dismissedGaps: dismissed,
+      pendingGaps: pending,
     },
     computedAt: new Date().toISOString(),
   });

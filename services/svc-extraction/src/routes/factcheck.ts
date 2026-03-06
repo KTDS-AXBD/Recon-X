@@ -16,6 +16,10 @@
 import { ok, badRequest, notFound } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
 import { generateFactCheckReport } from "../factcheck/report.js";
+import { llmSemanticMatch } from "../factcheck/llm-matcher.js";
+import { aggregateSourceSpec } from "../factcheck/source-aggregator.js";
+import { extractDocSpec } from "../factcheck/doc-spec-extractor.js";
+import { structuralMatch } from "../factcheck/matcher.js";
 import type { FactCheckGap } from "@ai-foundry/types";
 
 // ── D1 row types ──────────────────────────────────────────────────
@@ -172,7 +176,7 @@ export async function handleFactcheckRoutes(
   if (method === "POST" && llmMatch) {
     const resultId = llmMatch[1];
     if (!resultId) return notFound("result");
-    return ok({ resultId, message: "LLM matching will be available in Phase 2-B Session 4" });
+    return handleLlmMatch(env, resultId);
   }
 
   // GET /factcheck/results/:resultId — single result
@@ -229,9 +233,10 @@ async function handleTriggerFactCheck(
   // Create result record in D1
   await env.DB_EXTRACTION.prepare(
     `INSERT INTO fact_check_results
-     (result_id, organization_id, spec_type, total_source_items, total_doc_items,
-      matched_items, gap_count, coverage_pct, status, created_at, updated_at)
-     VALUES (?, ?, ?, 0, 0, 0, 0, 0, 'processing', ?, ?)`,
+     (result_id, organization_id, spec_type, source_document_ids, doc_document_ids,
+      total_source_items, total_doc_items, matched_items, gap_count, coverage_pct,
+      status, created_at, updated_at)
+     VALUES (?, ?, ?, '[]', '[]', 0, 0, 0, 0, 0, 'processing', ?, ?)`,
   )
     .bind(resultId, organizationId, specType, now, now)
     .run();
@@ -456,6 +461,79 @@ async function handleReviewGap(
   }
 
   return ok({ gapId, reviewStatus, reviewedAt });
+}
+
+// ── POST /factcheck/results/:resultId/llm-match ──────────────────
+
+async function handleLlmMatch(
+  env: Env,
+  resultId: string,
+): Promise<Response> {
+  // Verify result exists and is completed
+  const resultRow = await env.DB_EXTRACTION.prepare(
+    `SELECT * FROM fact_check_results WHERE result_id = ?`,
+  )
+    .bind(resultId)
+    .first<ResultRow>();
+
+  if (!resultRow) {
+    return notFound("result", resultId);
+  }
+
+  if (resultRow.status !== "completed") {
+    return badRequest("Fact check must be completed before running LLM matching");
+  }
+
+  const organizationId = resultRow.organization_id;
+
+  // Re-aggregate source and doc specs
+  const sourceSpec = await aggregateSourceSpec(env, organizationId);
+  const docSpec = await extractDocSpec(env, organizationId);
+
+  // Re-run structural matching to get unmatched items
+  const matchResult = structuralMatch(sourceSpec, docSpec);
+
+  // Run LLM semantic matching on unmatched items
+  const llmResult = await llmSemanticMatch(
+    matchResult,
+    docSpec,
+    env.LLM_ROUTER,
+    env.INTERNAL_API_SECRET,
+  );
+
+  // Update match count and coverage if new matches found
+  if (llmResult.newMatches.length > 0) {
+    const newMatchedCount = resultRow.matched_items + llmResult.newMatches.length;
+    const totalSourceItems = resultRow.total_source_items;
+    const newCoverage = totalSourceItems > 0
+      ? (newMatchedCount / totalSourceItems) * 100
+      : 0;
+
+    await env.DB_EXTRACTION.prepare(
+      `UPDATE fact_check_results
+       SET matched_items = ?, coverage_pct = ?, updated_at = ?
+       WHERE result_id = ?`,
+    )
+      .bind(
+        newMatchedCount,
+        Math.round(newCoverage * 10) / 10,
+        new Date().toISOString(),
+        resultId,
+      )
+      .run();
+  }
+
+  return ok({
+    resultId,
+    llmMatching: {
+      processed: llmResult.stats.processed,
+      newMatches: llmResult.stats.matched,
+      confirmedGaps: llmResult.stats.confirmed,
+      errors: llmResult.stats.errors,
+    },
+    newMatches: llmResult.newMatches,
+    confirmedGaps: llmResult.confirmedGaps,
+  });
 }
 
 // ── GET /factcheck/summary ────────────────────────────────────────

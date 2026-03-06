@@ -2,6 +2,15 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 110 — 2026-03-06
+**LPON Skills Trust Score Backfill (533건)**:
+- ✅ content_depth: 이미 Queue handler에서 생성 시 계산 완료 (backfill 불필요)
+- ✅ trust_score: 533건 backfill (batch1: 500건 + batch2: 33건, 실패 0건)
+- 📊 분포: High(≥0.6) 187건, Medium(0.4~0.6) 346건, Low 0건
+- 📊 전체 3,580 skills: Rich 675 / Medium 2,371 / Thin 534
+
+**검증**: Production `/skills/stats` API 확인 ✅ | 실패 0건 ✅
+
 ## 세션 109 — 2026-03-06
 **v0.7.4 Phase 2-B Session 2 — Fact Check Core (aggregator + extractor + matcher)**:
 - ✅ `factcheck/types.ts` — 내부 타입 (SourceApi, DocTable, SourceSpec, DocSpec 등)

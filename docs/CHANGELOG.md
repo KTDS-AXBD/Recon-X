@@ -17,6 +17,17 @@
 
 **검증**: typecheck 17/17 ✅ | lint 14/14 ✅ | tests 273/273 ✅
 
+## 세션 106 — 2026-03-06
+**LPON 파이프라인 잔여 정리 + Unstructured.io 유료 전환**:
+- ✅ Extraction 누락 2건 수동 재전파 성공 (processes 15, entities 12)
+- ✅ Unstructured.io 타임아웃 180초→300초 상향 + 배포
+- ✅ Unstructured.io 유료 전환 확인 (402→524 전환)
+- ✅ 문서 메타데이터 수정: `.pdf.pdf` → `.pdf`
+- ⏭️ 3건 스킵: 1,2번 파싱 불필요, 3번 524 서버 타임아웃 (Unstructured.io CDN 한계)
+- 📊 LPON 최종: 62건 중 59 parsed, **59/59 extracted** (100%)
+
+**검증**: CI/CD 배포 ✅ | extraction 재전파 2/2 ✅
+
 ## 세션 105 — 2026-03-06
 **LPON 재파싱 — Unstructured.io API 키 교체 + 타임아웃 증가**:
 - ✅ Unstructured.io API 키 교체: `ktds.axbd@gmail.com` 계정 (default + production env)

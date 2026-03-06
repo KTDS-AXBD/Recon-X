@@ -2,6 +2,14 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 120 — 2026-03-06
+**Factcheck 재실행 — PM 필터 + VO LOW severity 적용 확인**:
+- Factcheck 재트리거 (LPON org): Queue 지연 → `/internal/queue-event` 직접 트리거
+- **VO LOW severity 검증**: PM 87건 중 86건 HIGH→LOW 다운그레이드 확인 (Before HIGH=369 → After HIGH=271)
+- Dedup: 764→370 (Queue 2회 실행 + MID 12건 내부 중복 제거)
+- D1 result record 보정: `gapsByType`/`gapsBySeverity`를 D1 실 수치로 갱신
+- **최종 gap 분포**: MID 272 + MC 11 + PM 87 = 370건 (HIGH 271, MEDIUM 11, LOW 88)
+
 ## 세션 118 — 2026-03-06
 **Phase 2-E: LPON Export E2E + KPI 측정 + 3가지 개선**:
 - **Export E2E 성공**: `pkg-f1e20fb3` — spec-api.json(184KB), spec-table.json(307KB), fact-check-report.md(140KB), spec-summary.csv(33KB)

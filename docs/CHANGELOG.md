@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 124 — 2026-03-06
+**Phase 2-E 데모 준비 — 전체 데모 리허설 + BUG 6건 수정**:
+- **BUG-1**: `/specs/classified` 응답 shape 불일치 → enriched ClassifiedSpecs 반환으로 재작성
+- **BUG-2**: `/export/spec-package` organizationId 누락 → 헤더 우선 + body fallback
+- **BUG-3**: 구형 Export 패키지 → `pkg-275fee8a`, `pkg-8a13decc` 재생성
+- **BUG-4**: Pages proxy에 factcheck/specs/export route 누락 → ROUTE_TABLE 3건 추가 + API base path 수정
+- **BUG-5**: Fact Check 프론트엔드 snake_case↔camelCase 불일치 → `FactCheckResult`, `FactCheckGap`, `FactCheckSummary` 인터페이스 + 3개 컴포넌트 전면 수정
+- **BUG-6**: fetchGaps/fetchResult/fetchReport URL에 `/results/` 세그먼트 누락 → 경로 수정
+- **브라우저 E2E 검증 완료**: Fact Check (KPI 카드 + 365 gaps 테이블), Spec Catalog (230 APIs, 152 Tables), Export Center (4 packages + KPI 90.4%/100%)
+- **데모 시나리오 문서**: `docs/04-report/features/v074-demo-scenario.md` 체크리스트 갱신
+- 4 commits, CI/CD 4회 배포 성공 (svc-extraction production + Pages 3회)
+
 ## 세션 123 — 2026-03-06
 **PRD Gap Analysis v2.0 + KPI 공식 수정 (PRD SS8.2 준수)**:
 - **F-1 KPI 공식 불일치 발견+수정**: Coverage 분모를 `totalSourceItems` → `totalDocItems`로 변경 (PRD SS8.2 정의 준수)

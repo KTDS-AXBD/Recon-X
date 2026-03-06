@@ -2,6 +2,17 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 116 — 2026-03-06
+**v0.7.4 Phase 2-B Final Analysis + Matcher Improvement**:
+- Phase 2-B 완료 Gap Analysis 리포트 생성: 97% match rate (63/63 설계 항목 100% 구현)
+- `matcher.ts`: normalizePath에 v1.0 → 1.0 정규화 + hostname 제거 추가
+- `matcher.ts`: Step 1.5 method-augmented exact match (basePath + methodName 결합 패턴)
+- `source-aggregator.ts`: root-only path (`/`) view controller 필터링
+- `matcher.test.ts`: v1.0 normalization + method-augmented + hostname 제거 테스트 (+7 cases)
+- Phase 2-B 최종 산출물: 8 factcheck modules (2,391 LOC) + 10 API endpoints + 170 tests + D1 2 tables
+
+**검증**: typecheck 0 errors | 43 matcher tests PASS | 322 svc-extraction tests PASS
+
 ## 세션 115 — 2026-03-06
 **v0.7.4 Phase 2-B Session 5 — LLM Semantic Match E2E + Gap Resolution**:
 - Batch LLM match: `batchSize`/`offset` 파라미터 추가 (Worker CPU timeout 방지, default 10, max 50)

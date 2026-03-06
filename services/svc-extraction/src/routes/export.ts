@@ -144,9 +144,10 @@ export async function handleExportRoutes(
 // ── POST /export/spec-package ───────────────────────────────────
 
 interface CreateBody {
-  organizationId: string;
+  organizationId?: string;
   resultId?: string;
   includeNonCore?: boolean;
+  description?: string;
 }
 
 async function handleCreateSpecPackage(
@@ -157,12 +158,16 @@ async function handleCreateSpecPackage(
   try {
     body = (await request.json()) as CreateBody;
   } catch {
-    return badRequest("Request body must be valid JSON");
+    body = {};
   }
 
-  const { organizationId } = body;
+  // Prefer header (consistent with other endpoints), fallback to body
+  const organizationId =
+    request.headers.get("X-Organization-Id") ??
+    body.organizationId;
+
   if (!organizationId || typeof organizationId !== "string") {
-    return badRequest("organizationId is required");
+    return badRequest("organizationId is required (header or body)");
   }
 
   // Find result to use

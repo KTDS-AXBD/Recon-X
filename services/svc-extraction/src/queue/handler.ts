@@ -12,6 +12,10 @@ import { buildExtractionPrompt } from "../prompts/structure.js";
 import { buildScoringPrompt, parseScoringResult, buildCoreSummary } from "../prompts/scoring.js";
 import { buildDiagnosisPrompt, parseDiagnosisResult } from "../prompts/diagnosis.js";
 import { callLlm } from "../llm/caller.js";
+import { aggregateSourceSpec } from "../factcheck/source-aggregator.js";
+import { extractDocSpec } from "../factcheck/doc-spec-extractor.js";
+import { structuralMatch } from "../factcheck/matcher.js";
+import { detectGaps } from "../factcheck/gap-detector.js";
 import type { Env } from "../env.js";
 
 const logger = createLogger("svc-extraction:queue");
@@ -72,7 +76,7 @@ function selectTier(chunks: ChunkWithMeta[]): "sonnet" | "haiku" {
 async function runExtraction(
   event: IngestionCompletedEvent,
   env: Env,
-  ctx: ExecutionContext,
+  _ctx: ExecutionContext,
 ): Promise<{ extractionId: string; processNodeCount: number; entityCount: number }> {
   const { documentId, organizationId } = event.payload;
   const extractionId = crypto.randomUUID();
@@ -376,6 +380,25 @@ export async function processQueueEvent(
     return Response.json({ skipped: true }, { status: 200 });
   }
 
+  // Handle factcheck.requested — run fact check pipeline
+  if (parseResult.data.type === "factcheck.requested") {
+    const { resultId, organizationId, specType } = parseResult.data.payload;
+    try {
+      const result = await runFactCheck(resultId, organizationId, specType ?? "mixed", env);
+      logger.info("Fact check completed via queue", result);
+      return Response.json({ success: true, ...result }, { status: 200 });
+    } catch (e) {
+      // Update result status to failed
+      await env.DB_EXTRACTION.prepare(
+        `UPDATE fact_check_results SET status = 'failed', error_message = ?, updated_at = ? WHERE result_id = ?`,
+      )
+        .bind(String(e), new Date().toISOString(), resultId)
+        .run();
+      logger.error("Fact check failed", { resultId, error: String(e) });
+      return Response.json({ success: false, error: String(e) }, { status: 500 });
+    }
+  }
+
   // Handle analysis.requested — run Pass 1+2 analysis from DB data
   if (parseResult.data.type === "analysis.requested") {
     const { documentId, extractionId, organizationId } = parseResult.data.payload;
@@ -408,6 +431,156 @@ export async function processQueueEvent(
       { status: 500 },
     );
   }
+}
+
+/**
+ * Run the full fact-check pipeline:
+ * 1. Aggregate source spec from ingestion chunks
+ * 2. Extract doc spec from document chunks
+ * 3. Structural matching (exact + fuzzy)
+ * 4. Gap detection
+ * 5. Persist gaps to D1
+ * 6. Update result record
+ * 7. Emit factcheck.completed event
+ */
+async function runFactCheck(
+  resultId: string,
+  organizationId: string,
+  specType: string,
+  env: Env,
+): Promise<{ resultId: string; matchedItems: number; gapCount: number; coveragePct: number }> {
+  // Step 1: Aggregate source spec
+  const sourceSpec = await aggregateSourceSpec(env, organizationId);
+
+  // Step 2: Extract doc spec
+  const docSpec = await extractDocSpec(env, organizationId);
+
+  // Step 3: Structural matching
+  const matchResult = structuralMatch(sourceSpec, docSpec);
+
+  // Step 4: Gap detection
+  const gapResult = detectGaps(matchResult, sourceSpec, docSpec, resultId, organizationId);
+
+  // Compute stats
+  const totalSourceItems = sourceSpec.apis.length + sourceSpec.tables.length;
+  const totalDocItems = docSpec.apis.length + docSpec.tables.length;
+  const matchedItemCount = matchResult.matchedItems.length;
+  const gapCount = gapResult.gaps.length;
+  const coveragePct = totalSourceItems > 0
+    ? (matchedItemCount / totalSourceItems) * 100
+    : 0;
+
+  // Collect source/doc document IDs
+  const sourceDocIds = new Set<string>();
+  for (const api of sourceSpec.apis) sourceDocIds.add(api.documentId);
+  for (const tbl of sourceSpec.tables) sourceDocIds.add(tbl.documentId);
+
+  const docDocIds = new Set<string>();
+  for (const api of docSpec.apis) docDocIds.add(api.documentId);
+  for (const tbl of docSpec.tables) docDocIds.add(tbl.documentId);
+
+  // Step 5: Persist gaps to D1 (batch 50 per statement)
+  const gaps = gapResult.gaps;
+  const BATCH_SIZE = 50;
+
+  for (let i = 0; i < gaps.length; i += BATCH_SIZE) {
+    const batch = gaps.slice(i, i + BATCH_SIZE);
+    for (const gap of batch) {
+      await env.DB_EXTRACTION.prepare(
+        `INSERT INTO fact_check_gaps
+         (gap_id, result_id, organization_id, gap_type, severity,
+          source_item, source_document_id, document_item, document_id,
+          description, evidence, auto_resolved, review_status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
+      )
+        .bind(
+          gap.gapId,
+          gap.resultId,
+          gap.organizationId,
+          gap.gapType,
+          gap.severity,
+          gap.sourceItem,
+          gap.sourceDocumentId ?? null,
+          gap.documentItem ?? null,
+          gap.documentId ?? null,
+          gap.description,
+          gap.evidence ?? null,
+          gap.autoResolved ? 1 : 0,
+          gap.createdAt,
+        )
+        .run();
+    }
+  }
+
+  // Step 6: Update result record
+  const now = new Date().toISOString();
+
+  await env.DB_EXTRACTION.prepare(
+    `UPDATE fact_check_results
+     SET status = 'completed',
+         source_document_ids = ?,
+         doc_document_ids = ?,
+         total_source_items = ?,
+         total_doc_items = ?,
+         matched_items = ?,
+         gap_count = ?,
+         coverage_pct = ?,
+         gaps_by_type = ?,
+         gaps_by_severity = ?,
+         match_result_json = ?,
+         updated_at = ?
+     WHERE result_id = ?`,
+  )
+    .bind(
+      JSON.stringify([...sourceDocIds]),
+      JSON.stringify([...docDocIds]),
+      totalSourceItems,
+      totalDocItems,
+      matchedItemCount,
+      gapCount,
+      Math.round(coveragePct * 10) / 10,
+      JSON.stringify(gapResult.stats.byType),
+      JSON.stringify(gapResult.stats.bySeverity),
+      JSON.stringify({
+        matchedItems: matchResult.matchedItems,
+        unmatchedSourceApis: matchResult.unmatchedSourceApis.length,
+        unmatchedDocApis: matchResult.unmatchedDocApis.length,
+        unmatchedSourceTables: matchResult.unmatchedSourceTables.length,
+        unmatchedDocTables: matchResult.unmatchedDocTables.length,
+      }),
+      now,
+      resultId,
+    )
+    .run();
+
+  // Step 7: Emit factcheck.completed event
+  await env.QUEUE_PIPELINE.send({
+    eventId: crypto.randomUUID(),
+    occurredAt: now,
+    type: "factcheck.completed",
+    payload: {
+      resultId,
+      organizationId,
+      matchedItems: matchedItemCount,
+      gapCount,
+      coveragePct: Math.round(coveragePct * 10) / 10,
+    },
+  });
+
+  logger.info("Fact check completed", {
+    resultId,
+    organizationId,
+    matchedItems: matchedItemCount,
+    gapCount,
+    coveragePct: Math.round(coveragePct * 10) / 10,
+  });
+
+  return {
+    resultId,
+    matchedItems: matchedItemCount,
+    gapCount,
+    coveragePct: Math.round(coveragePct * 10) / 10,
+  };
 }
 
 /**

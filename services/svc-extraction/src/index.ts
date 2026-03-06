@@ -14,6 +14,7 @@ import type { Env } from "./env.js";
 import { handleExtract } from "./routes/extract.js";
 import { handleAnalysisRoutes } from "./routes/analysis.js";
 import { handleCompareRoutes } from "./routes/compare.js";
+import { handleFactcheckRoutes } from "./routes/factcheck.js";
 import { processQueueEvent } from "./queue/handler.js";
 
 export default {
@@ -160,6 +161,18 @@ export default {
           createdAt: row.created_at,
           updatedAt: row.updated_at,
         });
+      }
+
+      // /factcheck/* routes
+      if (path.startsWith("/factcheck")) {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const action = method === "GET" ? "read" : "execute";
+          const denied = await checkPermission(env, rbacCtx.role, "extraction", action);
+          if (denied) return denied;
+        }
+        const resp = await handleFactcheckRoutes(request, env, ctx, path, method, url);
+        if (resp) return resp;
       }
 
       return notFound("route");

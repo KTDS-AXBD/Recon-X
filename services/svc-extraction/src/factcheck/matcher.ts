@@ -64,6 +64,32 @@ export function structuralMatch(
     }
   }
 
+  // Step 1.5: Method-augmented exact match (path + methodName)
+  // Catches LPON pattern: source basePath="/onnuripay/v1.0/account" + methodName="accountList"
+  // → doc path="/onnuripay/1.0/account/accountList"
+  for (let si = 0; si < sourceSpec.apis.length; si++) {
+    const srcApi = sourceSpec.apis[si];
+    if (!srcApi || matchedSourceApiIdx.has(si)) continue;
+
+    const augmentedNorm = normalizePath(srcApi.path + "/" + srcApi.methodName);
+    const originalNorm = normalizePath(srcApi.path);
+    // Skip if methodName doesn't add a new segment
+    if (augmentedNorm === originalNorm) continue;
+
+    for (let di = 0; di < docSpec.apis.length; di++) {
+      const docApi = docSpec.apis[di];
+      if (!docApi || matchedDocApiIdx.has(di)) continue;
+
+      const docNorm = normalizePath(docApi.path);
+      if (augmentedNorm === docNorm) {
+        matchedItems.push(buildApiMatch(srcApi, docApi, 0.9, "exact"));
+        matchedSourceApiIdx.add(si);
+        matchedDocApiIdx.add(di);
+        break;
+      }
+    }
+  }
+
   // Step 2: Fuzzy match on unmatched APIs
   for (let si = 0; si < sourceSpec.apis.length; si++) {
     const srcApi = sourceSpec.apis[si];
@@ -176,7 +202,9 @@ export function structuralMatch(
 export function normalizePath(path: string): string {
   return path
     .toLowerCase()
+    .replace(/^https?:\/\/[^/]+/i, "") // strip http(s)://hostname
     .replace(/^\/+|\/+$/g, "")
+    .replace(/\/v(\d+\.\d+)(?=\/|$)/g, "/$1") // v1.0 → 1.0
     .replace(/\{[^}]+\}/g, ":param")
     .replace(/:[\w]+/g, ":param")
     .replace(/\/+/g, "/");

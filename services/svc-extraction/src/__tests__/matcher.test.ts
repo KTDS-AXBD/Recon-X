@@ -113,6 +113,33 @@ describe("normalizePath", () => {
   it("빈 경로 처리", () => {
     expect(normalizePath("/")).toBe("");
   });
+
+  it("버전 v1.0 → 1.0 정규화", () => {
+    expect(normalizePath("/onnuripay/v1.0/auth/login")).toBe("onnuripay/1.0/auth/login");
+  });
+
+  it("버전 v2.1 → 2.1 정규화", () => {
+    expect(normalizePath("/api/v2.1/users")).toBe("api/2.1/users");
+  });
+
+  it("dot 없는 버전 v2는 변환하지 않음", () => {
+    expect(normalizePath("/api/v2/voucher/issue")).toBe("api/v2/voucher/issue");
+  });
+
+  it("v1.0과 1.0이 동일하게 정규화", () => {
+    expect(normalizePath("/onnuripay/v1.0/account/accountList"))
+      .toBe(normalizePath("/onnuripay/1.0/account/accountList"));
+  });
+
+  it("full URL에서 hostname 제거", () => {
+    expect(normalizePath("https://app.e-onnurigiftcard.com/onnuripay/1.0/auth/login"))
+      .toBe("onnuripay/1.0/auth/login");
+  });
+
+  it("full URL과 relative path가 동일하게 정규화", () => {
+    expect(normalizePath("https://app.e-onnurigiftcard.com/onnuripay/1.0/auth/login"))
+      .toBe(normalizePath("/onnuripay/v1.0/auth/login"));
+  });
 });
 
 // ── tokenizePath ─────────────────────────────────────────────────
@@ -324,6 +351,71 @@ describe("structuralMatch", () => {
     expect(result.unmatchedSourceApis).toHaveLength(1);
     expect(result.unmatchedSourceApis[0]?.methodName).toBe("debug");
     expect(result.unmatchedDocApis).toHaveLength(0);
+  });
+
+  it("method-augmented match — basePath + methodName으로 매칭", () => {
+    // LPON 패턴: source path="/onnuripay/v1.0/account", method="accountList"
+    //            doc path="/onnuripay/1.0/account/accountList"
+    const src = makeSourceSpec([
+      makeSourceApi({
+        path: "/onnuripay/v1.0/account",
+        methodName: "accountList",
+      }),
+    ]);
+    const doc = makeDocSpec([
+      makeDocApi({ path: "/onnuripay/1.0/account/accountList" }),
+    ]);
+    const result = structuralMatch(src, doc);
+
+    expect(result.matchedItems).toHaveLength(1);
+    expect(result.matchedItems[0]?.matchScore).toBe(0.9);
+    expect(result.matchedItems[0]?.matchMethod).toBe("exact");
+    expect(result.unmatchedSourceApis).toHaveLength(0);
+  });
+
+  it("method-augmented match — methodName이 이미 path에 포함되면 스킵", () => {
+    const src = makeSourceSpec([
+      makeSourceApi({
+        path: "/api/v2/voucher/issue",
+        methodName: "issue",
+      }),
+    ]);
+    const doc = makeDocSpec([
+      makeDocApi({ path: "/api/v2/voucher/issue" }),
+    ]);
+    const result = structuralMatch(src, doc);
+
+    // Step 1 exact match에서 잡힘 (score 1.0)
+    expect(result.matchedItems).toHaveLength(1);
+    expect(result.matchedItems[0]?.matchScore).toBe(1.0);
+  });
+
+  it("version normalization — v1.0 vs 1.0 exact match", () => {
+    const src = makeSourceSpec([
+      makeSourceApi({ path: "/onnuripay/v1.0/auth/login" }),
+    ]);
+    const doc = makeDocSpec([
+      makeDocApi({ path: "/onnuripay/1.0/auth/login" }),
+    ]);
+    const result = structuralMatch(src, doc);
+
+    expect(result.matchedItems).toHaveLength(1);
+    expect(result.matchedItems[0]?.matchScore).toBe(1.0);
+    expect(result.matchedItems[0]?.matchMethod).toBe("exact");
+  });
+
+  it("full URL vs relative path — hostname 제거 후 매칭", () => {
+    const src = makeSourceSpec([
+      makeSourceApi({ path: "/onnuripay/v1.0/auth/login" }),
+    ]);
+    const doc = makeDocSpec([
+      makeDocApi({ path: "https://app.e-onnurigiftcard.com/onnuripay/1.0/auth/login" }),
+    ]);
+    const result = structuralMatch(src, doc);
+
+    expect(result.matchedItems).toHaveLength(1);
+    expect(result.matchedItems[0]?.matchScore).toBe(1.0);
+    expect(result.matchedItems[0]?.matchMethod).toBe("exact");
   });
 
   it("동일 경로 중복 — 먼저 매칭된 것이 우선", () => {

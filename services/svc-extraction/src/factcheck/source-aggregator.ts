@@ -246,15 +246,21 @@ export async function aggregateSourceSpec(
     }
   }
 
-  // 4. Deduplicate tables by tableName (merge columns from multiple sources)
+  // 4. Filter out view controllers with root-only path ("/" → not a REST API)
+  const filteredApis = allApis.filter((api) => {
+    const trimmed = api.path.replace(/^\/+|\/+$/g, "");
+    return trimmed.length > 0;
+  });
+
+  // 5. Deduplicate tables by tableName (merge columns from multiple sources)
   const deduplicatedTables = deduplicateTables(allTables);
 
   const spec: SourceSpec = {
-    apis: allApis,
+    apis: filteredApis,
     tables: deduplicatedTables,
     stats: {
       controllerCount,
-      endpointCount: allApis.length,
+      endpointCount: filteredApis.length,
       tableCount: deduplicatedTables.length,
       mapperCount,
     },

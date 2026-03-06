@@ -2,6 +2,19 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 111 — 2026-03-06
+**v0.7.4 Phase 2-B Session 3 — Gap Detection + API + D1 Migration**:
+- gap-detector.ts — 5종 Gap 분류 (SM/MC/PM/TM/MID), 컬럼·파라미터 비교
+- severity.ts — Severity 판정 (HIGH/MEDIUM/LOW) + Java↔SQL 타입 호환성 테이블
+- report.ts — Markdown Fact Check 리포트 생성
+- routes/factcheck.ts — API 엔드포인트 8개 (trigger, list, detail, gaps, report, review, llm-match, summary)
+- index.ts — factcheck 라우트 등록 + RBAC 연동
+- queue/handler.ts — factcheck.requested 이벤트 핸들러 + runFactCheck() 7단계 파이프라인
+- 0005_factcheck.sql — D1 migration (fact_check_results + fact_check_gaps, 6 indexes)
+- 테스트 62건 (severity 25 + gap-detector 17 + 기존 190 = 252 total)
+
+**검증**: typecheck 0 errors | lint 0 errors | 252 tests PASS (62 new)
+
 ## 세션 110 — 2026-03-06
 **LPON Skills Trust Score Backfill (533건)**:
 - ✅ content_depth: 이미 Queue handler에서 생성 시 계산 완료 (backfill 불필요)

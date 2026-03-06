@@ -282,7 +282,7 @@ function detectParamGaps(
     );
 
     if (!docMatch) {
-      gaps.push(buildGap({
+      const gap = buildGap({
         resultId,
         organizationId,
         gapType: "PM",
@@ -293,7 +293,15 @@ function detectParamGaps(
         description: `API '${srcApi.path}' 소스 파라미터 '${srcParam.name}'(${srcParam.required ? "필수" : "선택"})이 문서에 정의되지 않았습니다`,
         isRequired: srcParam.required,
         isExternalApi: !isInternalApi(srcApi),
-      }));
+      });
+
+      // @RequestBody VO/DTO params → LOW severity
+      // body 구조체는 개별 파라미터와 1:1 비교가 부적절하므로 다운그레이드
+      if (srcParam.annotation?.toLowerCase().includes("requestbody")) {
+        gap.severity = "LOW";
+      }
+
+      gaps.push(gap);
     }
   }
 

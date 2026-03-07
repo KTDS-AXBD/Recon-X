@@ -1,3 +1,14 @@
+---
+code: AIF-RPRT-008
+title: "Process-Diagnosis Executive Summary"
+version: "1.0"
+status: Active
+category: RPRT
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Process-Diagnosis Feature — Executive Summary
 
 **Status**: ✅ **Phase 2-E PDCA Complete** | 97% Design-Implementation Match

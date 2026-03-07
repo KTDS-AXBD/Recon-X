@@ -1,3 +1,14 @@
+---
+code: AIF-ANLS-013
+title: "v0.7.4 Phase 2-E Full Gap Analysis"
+version: "1.0"
+status: Active
+category: ANLS
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # v0.7.4 Pivot Phase 2-E Full Gap Analysis Report
 
 > **Analysis Type**: Full-Scope Design-Implementation Gap Analysis (Phase 2-A ~ 2-E)

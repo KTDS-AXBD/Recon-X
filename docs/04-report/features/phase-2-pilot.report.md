@@ -1,3 +1,14 @@
+---
+code: AIF-RPRT-001
+title: "Phase 2 Pilot 완료 보고서"
+version: "1.0"
+status: Active
+category: RPRT
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Phase 2 Pilot — 완료 보고서
 
 > **Summary**: Phase 2 Pilot 파일럿 기획(Plan) 및 설계(Design) 단계를 완료하고, 코드 변경(Do) 및 검증(Check)을 통해 실제 퇴직연금 문서 투입을 위한 파이프라인 강화 작업을 완수했다. 최종 설계-구현 일치율 97%, 711 tests 전체 통과, typecheck/lint 무결성 확인.

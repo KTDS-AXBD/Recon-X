@@ -1,3 +1,14 @@
+---
+code: AIF-DSGN-004
+title: "v0.7.4 Phase 2-A Source Code Parsing"
+version: "1.0"
+status: Active
+category: DSGN
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Phase 2-A Design: Source Code Parsing
 
 > **Summary**: Java Spring 소스코드를 업로드하여 API 엔드포인트, DTO/VO, DDL, 트랜잭션 서비스를 구조화된 JSON으로 추출한다. LLM 미사용, Regex 기반 정적 분석.

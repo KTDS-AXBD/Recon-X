@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-008
+title: "v0.7.4 Pivot Plan"
+version: "1.0"
+status: Active
+category: PLAN
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # v0.7.4 Pivot Plan — Source-Document Fact Check + Dev Spec Package
 
 > **Summary**: PRD v0.7.4 방향 전환에 따른 전체 로드맵. 기존 v0.6 Skill 파이프라인을 유지하면서, 소스코드-문서 팩트 체크 엔진과 개발 Spec 패키지 출력을 병행 구축한다. 1차 파일럿 대상: 온누리상품권(LPON).

@@ -1,3 +1,14 @@
+---
+code: AIF-ANLS-008
+title: "Comprehensive Gap Analysis"
+version: "1.0"
+status: Active
+category: ANLS
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # AI Foundry Comprehensive Gap Analysis Report
 
 > **Summary**: CLAUDE.md/SPEC.md 설계 대비 실제 구현의 전체 Gap 분석

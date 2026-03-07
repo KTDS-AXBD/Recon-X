@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-006
+title: "퇴직연금 일괄 분석"
+version: "1.0"
+status: Active
+category: PLAN
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Plan: retirement-pension-batch-analysis
 
 > 퇴직연금 프로젝트 전체 문서 일괄 분석 계획

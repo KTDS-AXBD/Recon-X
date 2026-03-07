@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-007
+title: "Phase 4 Sprint 2 HITL 대량 승인"
+version: "1.0"
+status: Active
+category: PLAN
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Phase 4 Sprint 2 — HITL 대량 승인 + Tier 2-3 문서 확대 투입
 
 > **Summary**: Sprint 1에서 생성된 491건 candidate policy를 HITL 배치 승인하여 Stage 5 Skill 자동 생성을 트리거하고, Tier 2(16건) + Tier 3 샘플(70건)을 추가 투입하여 도메인 커버리지를 확장한다. 퇴직연금 실문서 990건 완파를 향한 두 번째 스프린트.

@@ -1,3 +1,14 @@
+---
+code: AIF-ANLS-001
+title: "Full Project Gap Analysis"
+version: "1.0"
+status: Active
+category: ANLS
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # AI Foundry -- Full Project Gap Analysis Report
 
 > **Summary**: Comprehensive design-vs-implementation gap analysis for the AI Foundry platform.

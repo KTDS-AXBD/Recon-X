@@ -1,3 +1,14 @@
+---
+code: AIF-DSGN-006
+title: "v0.7.4 Phase 2-C Spec Export & KPI"
+version: "1.0"
+status: Active
+category: DSGN
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Phase 2-C Design: Spec Export & Relevance Classification + KPI
 
 > **Summary**: Fact Check 결과를 기반으로 PRD SS5.3 샘플 형식의 API/Table Spec JSON을 생성하고, R2에 패키지로 저장한다. PRD SS4.2 Option C 기준의 핵심/비핵심 선별(Relevance Classification)과, PRD SS8.2 기준 KPI 자동 측정 엔드포인트도 포함.

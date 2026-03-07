@@ -1,3 +1,14 @@
+---
+code: AIF-ANLS-014
+title: "v0.7.4 PRD vs Implementation Gap Analysis v2.0"
+version: "1.0"
+status: Active
+category: ANLS
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # v0.7.4 PRD vs Implementation — Gap Analysis Report (v2.0)
 
 > **Analysis Type**: PRD-Implementation Gap Analysis (Full Scope, Updated)

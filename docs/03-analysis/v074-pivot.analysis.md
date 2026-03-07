@@ -1,3 +1,14 @@
+---
+code: AIF-ANLS-009
+title: "v0.7.4 Phase 2-A Gap Analysis"
+version: "1.0"
+status: Active
+category: ANLS
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # v0.7.4 Pivot Phase 2-A: Source Code Parsing -- Gap Analysis Report
 
 > **Analysis Type**: Gap Analysis (Design vs Implementation)

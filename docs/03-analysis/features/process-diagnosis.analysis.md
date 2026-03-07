@@ -1,3 +1,14 @@
+---
+code: AIF-ANLS-004
+title: "Phase 2-E 프로세스 정밀분석 Gap Analysis"
+version: "1.0"
+status: Active
+category: ANLS
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Phase 2-E 퇴직연금 프로세스 정밀분석 -- Design-Implementation Gap Analysis Report
 
 > **Summary**: 설계 문서와 구현 코드의 6개 검증 항목에 대한 상세 일치도 분석

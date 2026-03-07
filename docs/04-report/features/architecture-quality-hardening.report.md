@@ -1,3 +1,14 @@
+---
+code: AIF-RPRT-004
+title: "Architecture Quality Hardening 보고서"
+version: "1.0"
+status: Active
+category: RPRT
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Architecture Quality Hardening Completion Report
 
 > **Status**: Complete

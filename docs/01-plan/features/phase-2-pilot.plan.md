@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-001
+title: "Phase 2 Pilot 실문서 파일럿"
+version: "1.0"
+status: Active
+category: PLAN
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Phase 2 Pilot — 실제 퇴직연금 문서 투입 파일럿
 
 > **Summary**: Phase 1에서 구축한 5-Stage 파이프라인에 실제 퇴직연금 도메인 문서를 투입하여, 문서→Skill 자산 변환의 End-to-End 품질을 검증하는 파일럿

@@ -1,3 +1,14 @@
+---
+code: AIF-DSGN-003
+title: "Phase 3 MCP/OpenAPI Design"
+version: "1.0"
+status: Active
+category: DSGN
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Phase 3 — MCP/OpenAPI 실사용 검증 Design Document
 
 > **Summary**: Skill evaluate 엔드포인트 + MCP Server Worker + Skill Marketplace의 상세 기술 설계

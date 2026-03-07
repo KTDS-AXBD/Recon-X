@@ -1,3 +1,14 @@
+---
+code: AIF-DSGN-001
+title: "Phase 2 Pilot Design"
+version: "1.0"
+status: Active
+category: DSGN
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Phase 2 Pilot — Design Document
 
 > **Summary**: Phase 1 파이프라인의 실제 문서 투입을 위한 코드 변경 상세 설계

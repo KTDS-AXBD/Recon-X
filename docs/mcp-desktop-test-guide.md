@@ -1,3 +1,14 @@
+---
+code: AIF-GUID-001
+title: "Claude Desktop MCP 연동 테스트 가이드"
+version: "1.0"
+status: Active
+category: GUID
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Claude Desktop MCP 연동 테스트 가이드
 
 > **작성일**: 2026-03-04 (세션 069)

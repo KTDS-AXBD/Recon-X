@@ -1,3 +1,14 @@
+---
+code: AIF-DSGN-005
+title: "v0.7.4 Phase 2-B Fact Check Engine"
+version: "1.0"
+status: Active
+category: DSGN
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Phase 2-B Design: Fact Check Engine + MyBatis XML Parser
 
 > **Summary**: 소스코드(Stage 1-B)와 문서(Stage 1-A)를 교차 비교하여 Gap을 탐지하는 Fact Check Engine. Phase 2-A의 Table Coverage 0% 문제를 해결하기 위해 MyBatis XML mapper 파서도 포함.

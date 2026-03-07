@@ -1,3 +1,14 @@
+---
+code: AIF-ANLS-006
+title: "Architecture Gap Analysis"
+version: "1.0"
+status: Active
+category: ANLS
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # AI Foundry Architecture Gap Analysis Report
 
 > **Analysis Type**: Full Architecture Gap Analysis (CLAUDE.md vs Implementation)

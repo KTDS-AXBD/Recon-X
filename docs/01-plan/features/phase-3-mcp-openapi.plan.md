@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-003
+title: "Phase 3 MCP/OpenAPI 검증"
+version: "1.0"
+status: Active
+category: PLAN
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Phase 3 — MCP/OpenAPI 실사용 검증
 
 > **Summary**: Phase 2에서 구현한 MCP adapter와 OpenAPI adapter를 실제 클라이언트(Claude Desktop, Postman 등)에서 테스트하고, Skill 패키지의 재사용성을 입증하는 검증 Phase

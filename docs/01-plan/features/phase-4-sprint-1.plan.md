@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-005
+title: "Phase 4 Sprint 1 문서 스케일업"
+version: "1.0"
+status: Active
+category: PLAN
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Phase 4 Sprint 1 — 퇴직연금 문서 스케일업
 
 > **Summary**: screen-design-parser 완성(테스트+배포) + Tier 1 문서 11건 배치 투입 + 추출 품질 검증. 퇴직연금 실문서 990건 완파를 위한 첫 스프린트.

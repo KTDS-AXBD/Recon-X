@@ -1,3 +1,14 @@
+---
+code: AIF-RPRT-002
+title: "Pipeline Hardening 완료 보고서"
+version: "1.0"
+status: Active
+category: RPRT
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # pipeline-hardening Completion Report
 
 > **Feature**: Pipeline Hardening (Phase 2-D Real Document Pilot)

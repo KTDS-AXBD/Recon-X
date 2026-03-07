@@ -1,3 +1,14 @@
+---
+code: AIF-DSGN-002
+title: "Pipeline Hardening Design"
+version: "1.0"
+status: Active
+category: DSGN
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Design: pipeline-hardening
 
 ## References

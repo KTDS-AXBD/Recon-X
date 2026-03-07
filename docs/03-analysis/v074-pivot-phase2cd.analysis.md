@@ -1,3 +1,14 @@
+---
+code: AIF-ANLS-012
+title: "v0.7.4 Phase 2-C/2-D Gap Analysis"
+version: "1.0"
+status: Active
+category: ANLS
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # v0.7.4 Phase 2-C/2-D Design vs Implementation Gap Analysis
 
 > **Summary**: Phase 2-C (Spec Export & Relevance Classification + KPI) 설계 문서와 Phase 2-D (Pilot Core UI) 구현의 일치율 분석. 13개 설계 섹션 + 프론트엔드 4개 범주 = 총 79개 항목 검증.

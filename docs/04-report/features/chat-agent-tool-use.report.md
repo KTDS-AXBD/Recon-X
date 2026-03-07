@@ -1,3 +1,14 @@
+---
+code: AIF-RPRT-005
+title: "AI Chat Agent Tool Use 전환 보고서"
+version: "1.0"
+status: Active
+category: RPRT
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # AI Chat Agent Tool Use 전환 완성 보고서
 
 > **Status**: Complete

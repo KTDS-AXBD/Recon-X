@@ -1,3 +1,14 @@
+---
+code: AIF-RPRT-007
+title: "v0.7.4 데모 시나리오"
+version: "1.0"
+status: Active
+category: RPRT
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # v0.7.4 LPON Fact Check + Spec Export 데모 시나리오
 
 > 작성일: 2026-03-06

@@ -1,3 +1,14 @@
+---
+code: AIF-ANLS-005
+title: "퇴직연금 실문서 구조 분석"
+version: "1.0"
+status: Active
+category: ANLS
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # 퇴직연금 실문서 구조 분석 보고서
 
 > 분석일: 2026-03-04

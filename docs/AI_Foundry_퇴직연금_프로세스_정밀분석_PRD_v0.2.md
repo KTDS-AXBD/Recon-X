@@ -1,3 +1,14 @@
+---
+code: AIF-SPEC-002
+title: "퇴직연금 프로세스 정밀분석 PRD v0.2"
+version: "1.0"
+status: Active
+category: SPEC
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # AI Foundry — 퇴직연금 도메인 프로세스 정밀 분석 시스템
 
 ## Product Requirements Document (PRD)

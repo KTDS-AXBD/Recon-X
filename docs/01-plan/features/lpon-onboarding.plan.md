@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-009
+title: "LPON 온누리상품권 온보딩"
+version: "1.0"
+status: Active
+category: PLAN
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # LPON 전자식 온누리상품권 — Org 생성 + 소스 업로드 계획
 
 > **Summary**: 새 도메인 "LPON 전자식 온누리상품권 플랫폼" SI 산출물을 AI Foundry에 온보딩한다. 새 Organization(LPON) 생성 후, 2-Wave 전략으로 Core 84건 → Archive 127건 순서로 배치 업로드 → 5-Stage 파이프라인 자동 실행.

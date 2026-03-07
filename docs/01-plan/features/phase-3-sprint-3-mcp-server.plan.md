@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-004
+title: "Phase 3 Sprint 3 MCP Server"
+version: "1.0"
+status: Active
+category: PLAN
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Phase 3 Sprint 3 — MCP Server Worker
 
 > **Summary**: Cloudflare Worker 기반 Streamable HTTP MCP Server 구현. Claude Desktop에서 퇴직연금 Skill을 tool로 직접 사용 가능하게 함.

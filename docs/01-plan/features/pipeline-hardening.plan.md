@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-002
+title: "Pipeline Hardening"
+version: "1.0"
+status: Active
+category: PLAN
+created: 2026-03-08
+updated: 2026-03-08
+author: Sinclair Seo
+---
+
 # Plan: pipeline-hardening
 
 ## Overview

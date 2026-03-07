@@ -14,6 +14,11 @@
 - Agent Teams (2 workers) 병렬 수정으로 효율화
 - ✅ `/ax-13-selfcheck` 실행: 6항목 점검 → C2 FAIL(`/ralph` 누락), C5 WARN(timeout 미설정) 해소
 - ✅ `.claude/settings.json`: hook timeout 4건 추가 (PreToolUse 5s, PostToolUse 60s/5s)
+- ✅ `/ax-08-ver tag`: 첫 git 태그 `v0.6.0` 생성 + push (372 커밋 기점)
+- ✅ `/ax-08-ver check`: 버전 일관성 검증 4/4 PASS
+- ✅ `/ax-09-doc check`: frontmatter 검증 0% → 40/40 PASS (100%)
+- ✅ GOV-001 문서 표준화: 40개 문서 YAML frontmatter 추가 (AIF-{TYPE}-{NNN} 체계)
+- ✅ `docs/INDEX.md` 신규 생성 (SPEC 2 + PLAN 9 + DSGN 6 + ANLS 14 + RPRT 8 + GUID 1)
 
 ## 세션 124 — 2026-03-06
 **Phase 2-E 데모 준비 — 전체 데모 리허설 + BUG 6건 수정**:

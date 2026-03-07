@@ -264,6 +264,7 @@ bun run typecheck && bun run lint
 | `/db-migrate` | D1 마이그레이션 생성→적용→검증 |
 | `/secrets-check` | 전 서비스 wrangler secrets 상태 환경별 검증 |
 | `/e2e-pipeline` | 5-Stage 파이프라인 E2E 테스트 실행+결과 요약 |
+| `/ralph` | 자율 태스크 루프 (PRD 추출 → 반복 구현 → 품질 검증 → 커밋) |
 
 ### 에이전트
 - `security-reviewer`

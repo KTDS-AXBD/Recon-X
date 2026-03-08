@@ -277,7 +277,7 @@ export const Sidebar: React.FC = () => {
                 <div
                   className="overflow-hidden transition-all duration-200"
                   style={{
-                    maxHeight: isOpen ? `${group.items.length * 40}px` : '0px',
+                    maxHeight: isOpen ? `${group.items.length * 52}px` : '0px',
                     opacity: isOpen ? 1 : 0,
                   }}
                 >

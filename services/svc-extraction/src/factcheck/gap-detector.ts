@@ -21,8 +21,16 @@ import type {
 } from "./types.js";
 import { classifySeverity, isTypeCompatible } from "./severity.js";
 import { matchColumnName } from "./matcher.js";
+import { isNoiseTable, isNoiseApi } from "./gap-categorizer.js";
 
 // ── Public types ────────────────────────────────────────────────
+
+export interface NoiseStats {
+  filteredTables: number;
+  filteredApis: number;
+  downgraded0ColTables: number;
+  reasons: Record<string, number>;
+}
 
 export interface GapDetectionResult {
   gaps: FactCheckGap[];
@@ -30,6 +38,7 @@ export interface GapDetectionResult {
     byType: Record<string, number>;
     bySeverity: Record<string, number>;
     total: number;
+    noise: NoiseStats;
   };
 }
 
@@ -46,9 +55,40 @@ export function detectGaps(
   organizationId: string,
 ): GapDetectionResult {
   const gaps: FactCheckGap[] = [];
+  const noiseStats: NoiseStats = {
+    filteredTables: 0,
+    filteredApis: 0,
+    downgraded0ColTables: 0,
+    reasons: {},
+  };
+
+  const trackNoise = (reason: string): void => {
+    noiseStats.reasons[reason] = (noiseStats.reasons[reason] ?? 0) + 1;
+  };
 
   // 1. MID gaps — source items not found in document
   for (const api of matchResult.unmatchedSourceApis) {
+    const noiseReason = isNoiseApi(api);
+    if (noiseReason) {
+      noiseStats.filteredApis++;
+      trackNoise(noiseReason);
+      // Still create the gap but auto-dismiss it
+      const gap = buildGap({
+        resultId,
+        organizationId,
+        gapType: "MID",
+        sourceItem: JSON.stringify({ path: api.path, method: api.httpMethods, controller: api.controllerClass, noiseReason }),
+        sourceDocumentId: api.documentId,
+        description: `소스 API '${api.path}' (${api.controllerClass}.${api.methodName})가 문서에 존재하지 않습니다`,
+        isPrimaryKey: false,
+        isExternalApi: false, // noise → LOW
+      });
+      gap.autoResolved = true;
+      gap.reviewStatus = "dismissed";
+      gaps.push(gap);
+      continue;
+    }
+
     gaps.push(buildGap({
       resultId,
       organizationId,
@@ -62,6 +102,32 @@ export function detectGaps(
   }
 
   for (const table of matchResult.unmatchedSourceTables) {
+    const noiseReason = isNoiseTable(table);
+    if (noiseReason) {
+      noiseStats.filteredTables++;
+      trackNoise(noiseReason);
+      const gap = buildGap({
+        resultId,
+        organizationId,
+        gapType: "MID",
+        sourceItem: JSON.stringify({ tableName: table.tableName, columns: table.columns.length, source: table.source, noiseReason }),
+        sourceDocumentId: table.documentId,
+        description: `소스 테이블 '${table.tableName}' (컬럼 ${table.columns.length}개)이 문서에 존재하지 않습니다`,
+        isPrimaryKey: false,
+        isExternalApi: false,
+      });
+      gap.autoResolved = true;
+      gap.reviewStatus = "dismissed";
+      gaps.push(gap);
+      continue;
+    }
+
+    // 0-column tables: downgrade to MEDIUM (incomplete schema info)
+    const is0Col = table.columns.length === 0;
+    if (is0Col) {
+      noiseStats.downgraded0ColTables++;
+    }
+
     gaps.push(buildGap({
       resultId,
       organizationId,
@@ -69,7 +135,7 @@ export function detectGaps(
       sourceItem: JSON.stringify({ tableName: table.tableName, columns: table.columns.length, source: table.source }),
       sourceDocumentId: table.documentId,
       description: `소스 테이블 '${table.tableName}' (컬럼 ${table.columns.length}개)이 문서에 존재하지 않습니다`,
-      isPrimaryKey: true, // core table missing → HIGH
+      isPrimaryKey: !is0Col, // 0-col → not primary key → not HIGH
       isExternalApi: false,
     }));
   }
@@ -142,6 +208,7 @@ export function detectGaps(
       byType,
       bySeverity,
       total: gaps.length,
+      noise: noiseStats,
     },
   };
 }

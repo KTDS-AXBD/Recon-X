@@ -413,7 +413,16 @@ async function handleGetReport(
 
   const gaps: FactCheckGap[] = gapRows.map(gapRowToApi);
 
-  const markdown = generateFactCheckReport({
+  // Extract noiseStats from match_result_json if available
+  let noiseStats: import("../factcheck/gap-detector.js").NoiseStats | undefined;
+  try {
+    const matchData = JSON.parse(resultRow.match_result_json ?? "{}") as Record<string, unknown>;
+    if (matchData["noiseStats"]) {
+      noiseStats = matchData["noiseStats"] as import("../factcheck/gap-detector.js").NoiseStats;
+    }
+  } catch { /* ignore parse errors */ }
+
+  const reportInput: import("../factcheck/report.js").ReportInput = {
     resultId,
     organizationId: resultRow.organization_id,
     totalSourceItems: resultRow.total_source_items,
@@ -424,7 +433,12 @@ async function handleGetReport(
     gapsByType: safeParseJsonRecord(resultRow.gaps_by_type),
     gapsBySeverity: safeParseJsonRecord(resultRow.gaps_by_severity),
     gaps,
-  });
+  };
+  if (noiseStats) {
+    reportInput.noiseStats = noiseStats;
+  }
+
+  const markdown = generateFactCheckReport(reportInput);
 
   return new Response(markdown, {
     status: 200,

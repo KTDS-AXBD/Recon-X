@@ -465,10 +465,23 @@ async function runFactCheck(
   const totalSourceItems = sourceSpec.apis.length + sourceSpec.tables.length;
   const totalDocItems = docSpec.apis.length + docSpec.tables.length;
   const matchedItemCount = matchResult.matchedItems.length;
-  const gapCount = gapResult.gaps.length;
-  const coveragePct = totalSourceItems > 0
-    ? (matchedItemCount / totalSourceItems) * 100
+  // Exclude noise-dismissed gaps from the active gap count
+  const realGaps = gapResult.gaps.filter((g) => !(g.autoResolved && g.reviewStatus === "dismissed"));
+  const gapCount = realGaps.length;
+  const noiseFiltered = gapResult.stats.noise.filteredTables + gapResult.stats.noise.filteredApis;
+  const adjustedSourceItems = totalSourceItems - noiseFiltered;
+  const coveragePct = adjustedSourceItems > 0
+    ? (matchedItemCount / adjustedSourceItems) * 100
     : 0;
+  logger.info("FactCheck stats", {
+    totalGaps: gapResult.gaps.length,
+    realGaps: gapCount,
+    noiseFiltered,
+    noiseStats: gapResult.stats.noise,
+    adjustedSourceItems,
+    matchedItemCount,
+    coveragePct: Math.round(coveragePct * 10) / 10,
+  });
 
   // Collect source/doc document IDs
   const sourceDocIds = new Set<string>();
@@ -491,7 +504,7 @@ async function runFactCheck(
          (gap_id, result_id, organization_id, gap_type, severity,
           source_item, source_document_id, document_item, document_id,
           description, evidence, auto_resolved, review_status, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
         .bind(
           gap.gapId,
@@ -506,6 +519,7 @@ async function runFactCheck(
           gap.description,
           gap.evidence ?? null,
           gap.autoResolved ? 1 : 0,
+          gap.reviewStatus,
           gap.createdAt,
         )
         .run();
@@ -547,6 +561,7 @@ async function runFactCheck(
         unmatchedDocApis: matchResult.unmatchedDocApis.length,
         unmatchedSourceTables: matchResult.unmatchedSourceTables.length,
         unmatchedDocTables: matchResult.unmatchedDocTables.length,
+        noiseStats: gapResult.stats.noise,
       }),
       now,
       resultId,

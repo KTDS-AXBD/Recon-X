@@ -2,6 +2,19 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 133 — 2026-03-08
+**TD-09 정책 목록·Reasoning 분석 org 필터 수정 + Production UI E2E 검증**:
+- Playwright MCP로 Production UI 대시보드 org 전환 E2E 검증 실행
+- `svc-policy/routes/policies.ts` `handleListPolicies()` — `X-Organization-Id` 기반 org 필터 추가
+- `svc-policy/routes/reasoning.ts` `handleGetReasoningAnalysis()` — 동일 org 필터 추가
+- 영향 범위: 대시보드 "검토 대기" KPI + HITL 검토 목록 + Trust Reasoning Engine
+- Production 배포 (`svc-policy-production`) 후 org 전환 재검증 완료
+- 배포 시 `--env production` 필수 발견 (Pages Function → `svc-policy-production` 라우팅)
+
+**검증 결과**:
+- ✅ typecheck 통과 / test 105 passed (svc-policy)
+- ✅ Playwright E2E: 미래에셋 검토대기 0건, LPON 162건 (org 격리 확인)
+
 ## 세션 132 — 2026-03-08
 **D106 실파일 파싱 테스트 + 파서 강건성 개선**:
 - D106 온누리상품권 정책정의서 실파일(11시트) 파싱 테스트 10케이스 추가

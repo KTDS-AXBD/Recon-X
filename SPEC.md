@@ -421,6 +421,7 @@
 | ~~TD-06~~ | `svc-skill/src/routes/skills.ts` | ✅ 5개 통계 쿼리 + INSERT org 필터 추가 | 해소 | 2026-03-08 |
 | ~~TD-07~~ | `svc-ontology/src/neo4j/client.ts` | ✅ Neo4j 6종 노드 organizationId SET 추가 | 해소 | 2026-03-08 |
 | ~~TD-08~~ | `svc-governance/src/agent/tools.ts` | ✅ "Miraeasset" 하드코딩 제거 → 동적 organizationId | 해소 | 2026-03-08 |
+| ~~TD-09~~ | `svc-policy/src/routes/policies.ts`, `reasoning.ts` | ✅ 정책 목록·Reasoning 분석 org 필터 추가 | 해소 | 2026-03-08 |
 
 ### 가정 (Assumptions)
 

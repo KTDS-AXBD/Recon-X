@@ -11,7 +11,7 @@
  * Part of AIF-REQ-010.
  */
 
-import { ok, badRequest } from "@ai-foundry/utils";
+import { ok, badRequest, createLogger } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
 import { aggregateSourceSpec } from "../factcheck/source-aggregator.js";
 import type { SourceSpec } from "../factcheck/types.js";
@@ -20,6 +20,7 @@ import type { TermMapping } from "../factcheck/term-matcher.js";
 
 // ── Cache ─────────────────────────────────────────────────────────
 
+const logger = createLogger("svc-extraction:gap-cache");
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 async function getCachedOverview(env: Env, orgId: string): Promise<GapOverview | null> {
@@ -43,21 +44,28 @@ async function getCachedOverview(env: Env, orgId: string): Promise<GapOverview |
 }
 
 async function cacheOverview(env: Env, orgId: string, overview: GapOverview): Promise<void> {
-  const expiresAt = new Date(Date.now() + CACHE_TTL_MS).toISOString();
-  await env.DB_EXTRACTION.prepare(
-    `INSERT OR REPLACE INTO gap_analysis_snapshots
-       (snapshot_id, organization_id, perspective_type, snapshot_json, source_stats_json, findings_json, created_at, expires_at)
-     VALUES (?, ?, 'all', ?, ?, ?, datetime('now'), ?)`,
-  )
-    .bind(
-      `gap-${orgId}-all`,
-      orgId,
-      JSON.stringify(overview),
-      JSON.stringify(overview.sourceStats),
-      JSON.stringify(overview.findings),
-      expiresAt,
+  try {
+    const expiresAt = new Date(Date.now() + CACHE_TTL_MS).toISOString();
+    const snapshotJson = JSON.stringify(overview);
+    logger.info("Writing cache", { orgId, bytes: snapshotJson.length });
+    await env.DB_EXTRACTION.prepare(
+      `INSERT OR REPLACE INTO gap_analysis_snapshots
+         (snapshot_id, organization_id, perspective_type, snapshot_json, source_stats_json, findings_json, created_at, expires_at)
+       VALUES (?, ?, 'all', ?, ?, ?, datetime('now'), ?)`,
     )
-    .run();
+      .bind(
+        `gap-${orgId}-all`,
+        orgId,
+        snapshotJson,
+        JSON.stringify(overview.sourceStats),
+        JSON.stringify(overview.findings),
+        expiresAt,
+      )
+      .run();
+    logger.info("Cache written", { orgId });
+  } catch (e) {
+    logger.error("Cache write failed", { orgId, error: String(e) });
+  }
 }
 
 async function handleCacheInvalidation(request: Request, env: Env): Promise<Response> {

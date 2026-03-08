@@ -2,6 +2,24 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 148 — 2026-03-09
+**ax 표준 체계 전수 검토 + 개선 (10건 수정)**:
+- ✅ 전수 검토: GOV 표준 15개 + ax 커맨드 13개 + 프로젝트 스킬 6개 + 에이전트 4개 + CLAUDE.md 3개
+- ✅ HIGH 3건 수정:
+  - R-1: ax-07-gov GOV-004 참조 `/s-start`→`/ax-01-start` 수정
+  - R-2: ax-08-ver `git push origin master`→동적 브랜치 감지
+  - D-6: Project CLAUDE.md Status 수치 갱신 (tests 1,095→1,586, LPON ontologies/terms 추가)
+- ✅ MEDIUM 7건 수정:
+  - R-6: risk-governance.md §6 SPEC.md §8 테이블 포맷 명시
+  - R-4: ax-02-end Pages 프로젝트명 하드코딩→동적 감지 (wrangler.toml→MEMORY→기본값)
+  - R-5: ax-09-doc author 하드코딩→git config user.name 동적화
+  - S-3: standards/INDEX.md "시행" 컬럼 추가 (표준↔커맨드 양방향 추적)
+  - S-2: ax-07-gov GOV-011~015 보충 표준 체크 추가
+  - E-5: check-version.sh system-version 범위 검증 추가 (GOV-002 §4 item 4)
+  - D-5: 요구사항 관리 3곳 분산→권위 소스 명확화 (Global+Project CLAUDE.md)
+- ✅ ax-13-selfcheck 7/7 PASS 확인
+**변경 파일**: CLAUDE.md (프로젝트) + 글로벌 표준 2건 (risk-governance, INDEX) + 스크립트 1건 (check-version.sh) + 커맨드 5건 (ax-01~02, 07~09) + CLAUDE.md (user scope)
+
 ## 세션 147 — 2026-03-08
 **요구사항 관리 체계화 + SPEC↔MEMORY 동기화 패턴 정립**:
 - ✅ SPEC §6 Execution Plan ↔ REQ 체크박스 동기화 (MCP REQ-005 `[x]`, SCDSA002 REQ-001 `[x] ~~REJECTED~~`, REQ-002/003/004 상태 주석)

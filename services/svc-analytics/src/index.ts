@@ -16,6 +16,7 @@
  *   GET  /reports/snapshots           — list snapshots for org
  *   GET  /reports/snapshots/:version  — get specific snapshot
  *   GET  /reports/export/markdown     — export as markdown document
+ *   GET  /reports/benchmark          — cross-org benchmark comparison
  */
 
 import { createLogger, unauthorized, verifyInternalSecret, errFromUnknown, notFound, extractRbacContext, checkPermission, logAudit } from "@ai-foundry/utils";
@@ -27,6 +28,7 @@ import {
   handleCreateSnapshot, handleListSnapshots, handleGetSnapshot,
   handleExportMarkdown,
 } from "./routes/reports.js";
+import { handleGetBenchmark } from "./routes/benchmark.js";
 import type { Env } from "./env.js";
 
 export default {
@@ -150,6 +152,10 @@ export default {
         // GET /reports/export/markdown
         if (method === "GET" && path === "/reports/export/markdown") {
           return handleExportMarkdown(request, env);
+        }
+        // GET /reports/benchmark
+        if (method === "GET" && path === "/reports/benchmark") {
+          return handleGetBenchmark(request, env);
         }
       }
 

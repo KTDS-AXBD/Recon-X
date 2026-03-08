@@ -107,6 +107,7 @@ const menuGroups: MenuGroup[] = [
     defaultOpen: false,
     items: [
       { icon: <Network className="w-4 h-4" />, label: '온톨로지', labelEn: 'Ontology', path: '/ontology' },
+      { icon: <BarChart3 className="w-4 h-4" />, label: '벤치마크 리포트', labelEn: 'Benchmark', path: '/benchmark' },
       { icon: <FileText className="w-4 h-4" />, label: '감사 로그', labelEn: 'Audit Log', path: '/audit' },
       { icon: <Settings className="w-4 h-4" />, label: '설정', labelEn: 'Settings', path: '/settings' },
     ],

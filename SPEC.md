@@ -63,6 +63,7 @@
 - **Phase 3 Sprint 1**: ✅ Skill Evaluate endpoint (POST+GET) + D1 마이그레이션 + 3환경 배포 + E2E 검증
 - **Phase 3 Sprint 2**: ✅ Skill 검색 API (q/tag/subdomain/sort + total) + 태그/통계 엔드포인트 + Marketplace UX + Skill Detail 페이지
 - **Phase 3 Sprint 3**: ✅ svc-mcp-server — MCP Server Worker (Streamable HTTP 2025-03-26 spec, @modelcontextprotocol/sdk, 12 tests, 3환경 배포)
+- **Gap Analysis Cache**: ✅ 0007 마이그레이션 3환경 적용 + overview 캐싱 (TTL 1h, refresh/invalidate 엔드포인트)
 - **Phase 4 Sprint 1**: ✅ Tier 1 문서 11건 투입 — 7/11 파싱 성공, SCDSA002 4건 encrypted 상태. Queue 전파 fix + SCDSA002 탐지 + 배치 자동화 완료
 - **Phase 3 Prep**: ✅ MCP 2024-11-05 protocol + OpenAPI 3.0 adapter (Staging 배포 완료)
 - **Quality Infra**: ✅ DB 마이그레이션 + API + 대시보드 배포 완료 (org별 메트릭 기록)

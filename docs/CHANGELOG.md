@@ -2,6 +2,20 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 152 — 2026-03-09
+**AIF-REQ-016 FactCheck Gap 분석 심화 — 노이즈 필터 + 도메인 분류 + 보고서 개선**:
+- ✅ gap-categorizer.ts (NEW, 256L): 테이블/API 노이즈 탐지 + 17개 도메인 자동 분류
+- ✅ gap-detector.ts: 노이즈 auto-dismiss (21건) + 0-컬럼 테이블 28건 HIGH→LOW 다운그레이드
+- ✅ report.ts: v0.8 Deep Analysis 보고서 (Raw/Adjusted, Noise Analysis, Domain Analysis)
+- ✅ handler.ts: gapCount 보정(noise 제외) + noiseStats D1 저장
+- ✅ LPON 실데이터 검증: 382 source → 361 real gaps (21 noise), 27.1% 보정 커버리지
+- ✅ gap-categorizer.test.ts (27 tests): isNoiseTable/isNoiseApi/categorizeGapDomain/buildDomainSummary
+
+**검증 결과**:
+- ✅ typecheck PASS
+- ✅ 358 tests (기존 331 + 신규 27), 19 test files
+- ✅ svc-extraction default env 배포 + LPON FactCheck 실행 검증
+
 ## 세션 151 — 2026-03-09
 **TD-10 해소: 전 서비스 production 서비스 바인딩 cross-env 오염 수정**:
 - ✅ 9개 서비스 wrangler.toml `[env.production]` 서비스 바인딩에 `-production` 접미사 추가 (33건)

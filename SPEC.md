@@ -80,8 +80,11 @@
   - 버그 수정: svc-skill queue handler INSERT에 organization_id 누락 → 수정
   - Wave 2 (Archive 127건): 미착수 (별도 세션)
 - **LPON FactCheck**: 🔧 소스코드↔문서 API 커버리지 분석 진행
-  - FactCheck 실행: resultId 3건 (v1/v2/v3), 총 1,128건 처리
-  - LLM Match: 98건 매칭, 1,030건 갭 확인 (소스 API 대비 문서 커버리지 ~8.7%)
+  - FactCheck 실행: resultId 10건 (반복 개선), 382 source / 109 doc items
+  - 구조적 매칭: 98건, 보정 커버리지 27.1% (노이즈 21건 auto-dismissed)
+  - 노이즈 필터: 테이블 7건 (dual/SQL alias/keyword) + API 14건 (test/utility/duplicate)
+  - 0-컬럼 테이블 28건 HIGH→LOW 다운그레이드 (MyBatis SELECT-only)
+  - 도메인별 분류: 회원(79), 충전(49), 선물(42), 거래(40), 메시지(38) 등 17개 도메인
   - Gap 패턴: /gift/*, /manual/*, /chargeDealing/*, /v2/messages/* 다수 미문서화
 - **Multi-Org 코드 점검**: ✅ TD-02~08 해소 (7/12 이슈 해결, 잔여 5건은 LOW/기존)
   - ~~HIGH 4건~~: skills org_id 추가, HITL 통계/품질트렌드/Trust 쿼리 org 필터 추가 — **모두 해소**
@@ -231,7 +234,7 @@
   - svc-ontology: 100 tests (100% stmts)
   - svc-security: 153 tests (97.14% stmts)
   - svc-queue-router: 43 tests (100% stmts)
-- **Test Coverage**: 1,586 tests, 12 services + utils (vitest, 93 test files) — svc-extraction 331, svc-ingestion 306, svc-skill 166, svc-security 153, svc-llm-router 134, svc-ontology 110, svc-policy 109, svc-governance 83, svc-analytics 53, svc-queue-router 43, svc-mcp-server 35, svc-notification 28, packages/utils 35
+- **Test Coverage**: 1,613 tests, 12 services + utils (vitest, 94 test files) — svc-extraction 358, svc-ingestion 306, svc-skill 166, svc-security 153, svc-llm-router 134, svc-ontology 110, svc-policy 109, svc-governance 83, svc-analytics 53, svc-queue-router 43, svc-mcp-server 35, svc-notification 28, packages/utils 35
 - **Batch Scripts**: `scripts/batch-upload.sh` (bulk upload + resume + dry-run), `scripts/batch-status.sh` (status query + CSV export + polling)
 - **Frontend**: https://ai-foundry-web.pages.dev (Cloudflare Pages) + https://ai-foundry.minu.best (커스텀 도메인)
   - 10/10 pages real API 연동 완료 (upload, analysis, hitl, audit, skill-catalog, dashboard, ontology, api-console, trust, settings)

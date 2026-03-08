@@ -430,4 +430,134 @@ describe("svc-mcp-server routes", () => {
       expect(res.status).toBe(405);
     });
   });
+
+  // ── Rate Limiting ──────────────────────────────────────────────
+
+  describe("Rate limiting", () => {
+    function mcpRequestWithIp(ip: string, id: number): Request {
+      return new Request("https://test.workers.dev/mcp/sk-route-test", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json, text/event-stream",
+          Authorization: "Bearer test-secret-routes",
+          "CF-Connecting-IP": ip,
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id,
+          method: "initialize",
+          params: {
+            protocolVersion: "2025-03-26",
+            capabilities: {},
+            clientInfo: { name: "rate-test", version: "1.0" },
+          },
+        }),
+      });
+    }
+
+    it("allows requests under the limit", async () => {
+      const req = mcpRequestWithIp("10.88.88.1", 1);
+      const res = await handler.fetch(req, env, ctx);
+      expect(res.status).toBe(200);
+    });
+
+    it("returns 429 when rate limit exceeded", async () => {
+      const uniqueIp = "10.99.99.99";
+      let lastRes: Response | undefined;
+
+      for (let i = 0; i < 65; i++) {
+        lastRes = await handler.fetch(mcpRequestWithIp(uniqueIp, i), env, ctx);
+      }
+
+      expect(lastRes?.status).toBe(429);
+      const body = (await lastRes?.json()) as {
+        jsonrpc: string;
+        error: { code: number; message: string };
+      };
+      expect(body.jsonrpc).toBe("2.0");
+      expect(body.error.message).toContain("Rate limit");
+    });
+
+    it("includes Retry-After header on 429 response", async () => {
+      const uniqueIp = "10.99.99.98";
+      let lastRes: Response | undefined;
+
+      for (let i = 0; i < 65; i++) {
+        lastRes = await handler.fetch(mcpRequestWithIp(uniqueIp, i), env, ctx);
+      }
+
+      expect(lastRes?.status).toBe(429);
+      const retryAfter = lastRes?.headers.get("Retry-After");
+      expect(retryAfter).toBeDefined();
+      expect(Number(retryAfter)).toBeGreaterThan(0);
+    });
+  });
+
+  // ── tools/call error scenarios ─────────────────────────────────
+
+  describe("tools/call error handling", () => {
+    it("returns error when evaluate fails", async () => {
+      const envFail = createMockEnv({
+        SVC_SKILL: {
+          fetch: vi.fn(async (input: RequestInfo) => {
+            const url = typeof input === "string" ? input : (input as Request).url;
+            if (url.includes("/mcp")) {
+              return Response.json(mcpAdapterResponse, { status: 200 });
+            }
+            if (url.includes("/evaluate")) {
+              return Response.json(
+                { success: false, error: { message: "LLM timeout" } },
+                { status: 200 },
+              );
+            }
+            return new Response("Not Found", { status: 404 });
+          }),
+        } as unknown as Fetcher,
+      });
+
+      const req = jsonRpcRequest(
+        "sk-route-test",
+        "tools/call",
+        {
+          name: "pol-test-001",
+          arguments: { context: "test context" },
+        },
+        5,
+      );
+      const res = await handler.fetch(req, envFail, ctx);
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as {
+        jsonrpc: string;
+        id: number;
+        result: { content: Array<{ type: string; text: string }>; isError?: boolean };
+      };
+      expect(body.result.content[0]?.text).toContain("평가 실패");
+      expect(body.result.isError).toBe(true);
+    });
+
+    it("returns error for invalid JSON parameters", async () => {
+      const req = jsonRpcRequest(
+        "sk-route-test",
+        "tools/call",
+        {
+          name: "pol-test-001",
+          arguments: {
+            context: "test context",
+            parameters: "not-valid-json{{{",
+          },
+        },
+        6,
+      );
+      const res = await handler.fetch(req, env, ctx);
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as {
+        jsonrpc: string;
+        id: number;
+        result: { content: Array<{ type: string; text: string }>; isError?: boolean };
+      };
+      expect(body.result.content[0]?.text).toContain("Error");
+      expect(body.result.isError).toBe(true);
+    });
+  });
 });

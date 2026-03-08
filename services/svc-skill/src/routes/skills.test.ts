@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { parseTags, rowToSummary, rowToDetail, type SkillRow } from "./skills.js";
+import { describe, it, expect, vi } from "vitest";
+import { parseTags, rowToSummary, rowToDetail, handleUpdateSkillStatus, handleBulkPublish, type SkillRow } from "./skills.js";
+import type { Env } from "../env.js";
 
 // ── Test fixture ───────────────────────────────────────────────────
 
@@ -126,5 +127,172 @@ describe("rowToDetail", () => {
     expect(result.trust.level).toBe("reviewed");
     expect(result.policyCount).toBe(3);
     expect(result.status).toBe("draft");
+  });
+});
+
+// ── Mock helpers ──────────────────────────────────────────────────────
+
+function mockDb(options?: { changes?: number }) {
+  return {
+    prepare: vi.fn().mockReturnValue({
+      bind: vi.fn().mockReturnValue({
+        run: vi.fn().mockResolvedValue({
+          success: true,
+          meta: { changes: options?.changes ?? 1 },
+        }),
+      }),
+    }),
+  } as unknown as D1Database;
+}
+
+function mockEnv(dbOverrides?: { changes?: number }): Env {
+  return {
+    DB_SKILL: mockDb(dbOverrides),
+    R2_SKILL_PACKAGES: {} as unknown as R2Bucket,
+    KV_SKILL_CACHE: { get: vi.fn(), put: vi.fn() } as unknown as KVNamespace,
+    QUEUE_PIPELINE: {} as unknown as Queue,
+    SECURITY: {} as unknown as Fetcher,
+    LLM_ROUTER: {} as unknown as Fetcher,
+    SVC_POLICY: {} as unknown as Fetcher,
+    SVC_ONTOLOGY: {} as unknown as Fetcher,
+    ENVIRONMENT: "test",
+    SERVICE_NAME: "svc-skill",
+    INTERNAL_API_SECRET: "test-secret",
+  };
+}
+
+function jsonRequest(body: unknown): Request {
+  return new Request("https://test.internal/skills/sk-001/status", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+// ── handleUpdateSkillStatus ──────────────────────────────────────────
+
+describe("handleUpdateSkillStatus", () => {
+  it("updates status to published and returns 200", async () => {
+    const env = mockEnv();
+    const req = jsonRequest({ status: "published" });
+    const res = await handleUpdateSkillStatus(req, env, "sk-001");
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { success: boolean; data: { skillId: string; status: string } };
+    expect(body.data.skillId).toBe("sk-001");
+    expect(body.data.status).toBe("published");
+  });
+
+  it("updates status to archived", async () => {
+    const env = mockEnv();
+    const req = jsonRequest({ status: "archived" });
+    const res = await handleUpdateSkillStatus(req, env, "sk-001");
+    expect(res.status).toBe(200);
+  });
+
+  it("returns 400 for invalid status value", async () => {
+    const env = mockEnv();
+    const req = jsonRequest({ status: "invalid" });
+    const res = await handleUpdateSkillStatus(req, env, "sk-001");
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 for missing status field", async () => {
+    const env = mockEnv();
+    const req = jsonRequest({});
+    const res = await handleUpdateSkillStatus(req, env, "sk-001");
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 404 when skill not found (0 rows changed)", async () => {
+    const env = mockEnv({ changes: 0 });
+    const req = jsonRequest({ status: "published" });
+    const res = await handleUpdateSkillStatus(req, env, "sk-nonexistent");
+    expect(res.status).toBe(404);
+  });
+
+  it("returns 400 for non-JSON body", async () => {
+    const env = mockEnv();
+    const req = new Request("https://test.internal/skills/sk-001/status", {
+      method: "PATCH",
+      body: "not-json",
+    });
+    const res = await handleUpdateSkillStatus(req, env, "sk-001");
+    expect(res.status).toBe(400);
+  });
+});
+
+// ── handleBulkPublish ────────────────────────────────────────────────
+
+describe("handleBulkPublish", () => {
+  it("publishes multiple skills and returns count", async () => {
+    const env = mockEnv({ changes: 3 });
+    const req = new Request("https://test.internal/admin/bulk-publish", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ skillIds: ["sk-001", "sk-002", "sk-003"] }),
+    });
+    const res = await handleBulkPublish(req, env);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { success: boolean; data: { requested: number; updated: number; status: string } };
+    expect(body.data.requested).toBe(3);
+    expect(body.data.status).toBe("published");
+  });
+
+  it("defaults to published status when not specified", async () => {
+    const env = mockEnv({ changes: 1 });
+    const req = new Request("https://test.internal/admin/bulk-publish", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ skillIds: ["sk-001"] }),
+    });
+    const res = await handleBulkPublish(req, env);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { success: boolean; data: { status: string } };
+    expect(body.data.status).toBe("published");
+  });
+
+  it("accepts explicit archived status", async () => {
+    const env = mockEnv({ changes: 2 });
+    const req = new Request("https://test.internal/admin/bulk-publish", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ skillIds: ["sk-001", "sk-002"], status: "archived" }),
+    });
+    const res = await handleBulkPublish(req, env);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { success: boolean; data: { status: string } };
+    expect(body.data.status).toBe("archived");
+  });
+
+  it("returns 400 for empty skillIds array", async () => {
+    const env = mockEnv();
+    const req = new Request("https://test.internal/admin/bulk-publish", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ skillIds: [] }),
+    });
+    const res = await handleBulkPublish(req, env);
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 for missing skillIds", async () => {
+    const env = mockEnv();
+    const req = new Request("https://test.internal/admin/bulk-publish", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    const res = await handleBulkPublish(req, env);
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 for non-JSON body", async () => {
+    const env = mockEnv();
+    const req = new Request("https://test.internal/admin/bulk-publish", {
+      method: "POST",
+      body: "not-json",
+    });
+    const res = await handleBulkPublish(req, env);
+    expect(res.status).toBe(400);
   });
 });

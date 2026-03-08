@@ -18,7 +18,7 @@ bucket_name = "ai-foundry-skill-packages"
 
 [[kv_namespaces]]
 binding = "KV_SKILL_CACHE"
-id = "TODO_CREATE_KV"
+id = "b8ca68ae4a6b4c8b8ddec9e5eed0c09e"
 
 # Service binding to svc-security for audit logging
 [[services]]
@@ -68,7 +68,7 @@ bucket_name = "ai-foundry-skill-packages-staging"
 
 [[env.staging.kv_namespaces]]
 binding = "KV_SKILL_CACHE"
-id = "TODO_CREATE_KV_STAGING"
+id = "97b63e0e61574cae8de56c54b6e0256b"
 
 [[env.staging.services]]
 binding = "SECURITY"
@@ -107,7 +107,7 @@ bucket_name = "ai-foundry-skill-packages"
 
 [[env.production.kv_namespaces]]
 binding = "KV_SKILL_CACHE"
-id = "TODO_CREATE_KV_PRODUCTION"
+id = "916333bca3914c959622fc5ff2adbc13"
 
 [[env.production.services]]
 binding = "SECURITY"

@@ -13,6 +13,13 @@ function mockDb(firstResult?: Record<string, unknown> | null) {
   } as unknown as D1Database;
 }
 
+function mockKv(getResult?: string | null) {
+  return {
+    get: vi.fn().mockResolvedValue(getResult ?? null),
+    put: vi.fn().mockResolvedValue(undefined),
+  } as unknown as KVNamespace;
+}
+
 const sampleSkillPackage = {
   $schema: "https://ai-foundry.ktds.com/schemas/skill/v1",
   skillId: "sk-001",
@@ -57,6 +64,7 @@ describe("handleGetMcpAdapter", () => {
     const env = {
       DB_SKILL: mockDb(null),
       R2_SKILL_PACKAGES: { get: vi.fn() },
+      KV_SKILL_CACHE: mockKv(),
     } as unknown as Env;
     const req = new Request("https://test.internal/skills/sk-999/mcp");
     const res = await handleGetMcpAdapter(req, env, "sk-999", mockCtx());
@@ -67,6 +75,7 @@ describe("handleGetMcpAdapter", () => {
     const env = {
       DB_SKILL: mockDb({ r2_key: "skill-packages/sk-001.skill.json" }),
       R2_SKILL_PACKAGES: { get: vi.fn().mockResolvedValue(null) },
+      KV_SKILL_CACHE: mockKv(),
     } as unknown as Env;
     const req = new Request("https://test.internal/skills/sk-001/mcp");
     const res = await handleGetMcpAdapter(req, env, "sk-001", mockCtx());
@@ -81,6 +90,7 @@ describe("handleGetMcpAdapter", () => {
           text: vi.fn().mockResolvedValue(JSON.stringify(sampleSkillPackage)),
         }),
       },
+      KV_SKILL_CACHE: mockKv(),
     } as unknown as Env;
 
     const req = new Request("https://test.internal/skills/sk-001/mcp");
@@ -113,10 +123,71 @@ describe("handleGetMcpAdapter", () => {
           text: vi.fn().mockResolvedValue("not-json"),
         }),
       },
+      KV_SKILL_CACHE: mockKv(),
     } as unknown as Env;
 
     const req = new Request("https://test.internal/skills/sk-001/mcp");
     const res = await handleGetMcpAdapter(req, env, "sk-001", mockCtx());
     expect(res.status).toBe(500);
+  });
+
+  // ── KV Cache Tests ──────────────────────────────────────────────
+
+  it("returns X-Cache: MISS on first request (no cache)", async () => {
+    const kvMock = mockKv(null);
+    const env = {
+      DB_SKILL: mockDb({ r2_key: "skill-packages/sk-001.skill.json" }),
+      R2_SKILL_PACKAGES: {
+        get: vi.fn().mockResolvedValue({
+          text: vi.fn().mockResolvedValue(JSON.stringify(sampleSkillPackage)),
+        }),
+      },
+      KV_SKILL_CACHE: kvMock,
+    } as unknown as Env;
+
+    const ctx = mockCtx();
+    const req = new Request("https://test.internal/skills/sk-001/mcp");
+    const res = await handleGetMcpAdapter(req, env, "sk-001", ctx);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("X-Cache")).toBe("MISS");
+    // Verify KV put was scheduled
+    expect(ctx.waitUntil).toHaveBeenCalled();
+  });
+
+  it("returns X-Cache: HIT when cached in KV", async () => {
+    const cachedAdapter = JSON.stringify({
+      protocolVersion: "2024-11-05",
+      serverInfo: { name: "cached-skill", version: "1.0.0" },
+      tools: [],
+    });
+    const kvMock = mockKv(cachedAdapter);
+    const env = {
+      DB_SKILL: mockDb(),
+      R2_SKILL_PACKAGES: { get: vi.fn() },
+      KV_SKILL_CACHE: kvMock,
+    } as unknown as Env;
+
+    const ctx = mockCtx();
+    const req = new Request("https://test.internal/skills/sk-001/mcp");
+    const res = await handleGetMcpAdapter(req, env, "sk-001", ctx);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("X-Cache")).toBe("HIT");
+    // R2 should NOT be called on cache hit
+    expect(env.R2_SKILL_PACKAGES.get).not.toHaveBeenCalled();
+  });
+
+  it("records download even on cache HIT", async () => {
+    const kvMock = mockKv(JSON.stringify({ tools: [] }));
+    const env = {
+      DB_SKILL: mockDb(),
+      R2_SKILL_PACKAGES: { get: vi.fn() },
+      KV_SKILL_CACHE: kvMock,
+    } as unknown as Env;
+
+    const ctx = mockCtx();
+    const req = new Request("https://test.internal/skills/sk-001/mcp");
+    await handleGetMcpAdapter(req, env, "sk-001", ctx);
+    // waitUntil should be called for download recording
+    expect(ctx.waitUntil).toHaveBeenCalled();
   });
 });

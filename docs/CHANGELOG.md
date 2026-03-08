@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 139 — 2026-03-08
+**Gap Analysis 6-point enhancement — Agent Teams 병렬 작업 (AIF-REQ-010)**:
+- ✅ `svc-extraction` aggregateSourceSpec + term-matcher 통합 (프로세스/아키텍처 양방향 매칭)
+- ✅ `svc-extraction` GET /gap-analysis/export (CSV BOM) + GET /gap-analysis/trace-matrix (매트릭스)
+- ✅ `svc-extraction` term-matcher.ts — fact_check match_result_json 기반 한국어↔영어 간접 매칭
+- ✅ `infra` 0007_gap_analysis_cache.sql 스냅샷 캐싱 테이블
+- ✅ `app-web` 필터(status/severity/source), 정렬 토글, CSV 내보내기, 소스 통계 배너
+- ✅ Agent Teams (W1: Frontend, W2: API 확장, W3: 매칭+캐싱) 병렬 실행 후 리더 통합
+
+**검증 결과**:
+- ✅ typecheck 17/17 통과, lint 14/14 통과, test 1,095+ 통과
+
 ## 세션 138 — 2026-03-08
 **Gap Analysis 4-perspective API + 프론트엔드 — AIF-REQ-010 착수**:
 - ✅ `svc-extraction` /gap-analysis/overview 엔드포인트 추가 (프로세스/아키텍처/API/테이블 4관점)

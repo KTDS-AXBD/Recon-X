@@ -9,8 +9,7 @@ import {
 import { toast } from "sonner";
 import { MetricCard } from "./MetricCard";
 import { SectionHeader, SourceFileInfo } from "./StatusReportWidgets";
-import { MiraeassetStatusReport } from "./MiraeassetStatusReport";
-import { LponStatusReport } from "./LponStatusReport";
+import { DynamicStatusReport } from "./DynamicStatusReport";
 import { fetchDocuments } from "@/api/ingestion";
 import { fetchPolicies } from "@/api/policy";
 import { fetchSkills } from "@/api/skill";
@@ -123,8 +122,6 @@ export function ProjectStatusTab() {
   const approvalRate = totalPolicies > 0 ? approvedPolicies / totalPolicies : 0;
 
   const sourceInfo = getSourceInfo(organizationId);
-  const isLpon = organizationId === "LPON";
-  const isMiraeasset = organizationId === "Miraeasset" || organizationId === "org-mirae-pension";
 
   return (
     <div className="space-y-8">
@@ -191,19 +188,8 @@ export function ProjectStatusTab() {
         </div>
       </section>
 
-      {/* ─── 조직별 보고서 콘텐츠 ─── */}
-      {isLpon && <LponStatusReport />}
-      {isMiraeasset && <MiraeassetStatusReport />}
-      {!isLpon && !isMiraeasset && (
-        <div className="py-12 text-center">
-          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            이 조직에 대한 상세 분석 보고서가 아직 준비되지 않았어요.
-          </p>
-          <p className="text-xs mt-2" style={{ color: "var(--text-secondary)" }}>
-            파이프라인 현황 데이터는 위에서 실시간으로 확인할 수 있어요.
-          </p>
-        </div>
-      )}
+      {/* ─── 조직별 보고서 콘텐츠 (API/DB 동적) ─── */}
+      <DynamicStatusReport organizationId={organizationId} />
     </div>
   );
 }

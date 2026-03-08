@@ -26,6 +26,7 @@
  *   /api/notifications/**  → svc-notification
  *   /api/kpi/**  → svc-analytics
  *   /api/dashboards/**  → svc-analytics
+ *   /api/reports/**  → svc-analytics
  */
 
 interface ProxyEnv {
@@ -60,6 +61,7 @@ const ROUTE_TABLE: Record<string, string> = {
   kpi: "svc-analytics",
   dashboards: "svc-analytics",
   quality: "svc-analytics",
+  reports: "svc-analytics",
 };
 
 const ACCOUNT_SUBDOMAIN = "sinclair-account";

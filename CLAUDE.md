@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Full product requirements and technical design are in `docs/AI_Foundry_PRD_TDS_v0.7.4.docx` (latest) and `docs/AI_Foundry_PRD_TDS_v0.6.docx`. This is the authoritative reference for all design decisions.
 
-> **Status**: Phase 4 Sprint 2 완료. 12 Workers + Pages 배포, 1,072 tests, staging/production 환경 분리. 퇴직연금 실문서 파일럿: 13/15 문서 파싱, policies 134+, terms 1,441, skills 171. 멀티 프로바이더 LLM (Anthropic/OpenAI/Google/Workers AI) fallback + MCP Server (Streamable HTTP) 완비.
+> **Status**: Phase 4 Sprint 2 완료. 12 Workers + Pages 배포, 1,095+ tests, staging/production 환경 분리. 퇴직연금 실문서 파일럿: 13/15 문서 파싱, policies 2,827, terms 1,441. LPON 온누리상품권: 85/88 파싱, policies 848, skills 859. Production: policies 3,675, skills 3,924 (2-org). 멀티 프로바이더 LLM (Anthropic/OpenAI/Google/Workers AI) fallback + MCP Server (Streamable HTTP) 완비.
 
 ---
 

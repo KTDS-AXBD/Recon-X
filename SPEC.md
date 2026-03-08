@@ -56,7 +56,7 @@
 - **Current Phase**: v0.7.4 Pivot Phase 2-E 완료 — Pilot Core 8/8 기능 구현 (97%), KPI 공식 PRD 정렬 완료 (API 95.4%, Table 100%)
 - **Production E2E**: ✅ 8/8 PASS (synthetic) + 7/7 PASS (real-doc) + Batch 3: 7/11 parsed (SCDSA002 4건 → encrypted 상태)
 - **Real Document Pilot**: ✅ 20/26 문서 파싱 완료 (Batch 1: 4건, Batch 2: 9/11건, Batch 3: 7/11건)
-- **Production Data**: policies 3,504 approved + 333 HITL candidate (총 3,837+), skills 3,580. Miraeasset + LPON 2-org. LPON 171개 신규 정책 추론 완료
+- **Production Data**: policies 3,675 approved (LPON 848 + Miraeasset 2,827), skills 3,924 (LPON 859 + Miraeasset 3,065). 2-org
 - **Batch 3 Extraction**: Gap분석서 28proc/27ent, DDD설계 11proc/9ent, 요구사항정의서 8proc/5ent
 - **Queue Fix**: default env consumer 충돌 해결 (wrangler.toml + DLQ). 수동: `wrangler delete --name svc-queue-router`
 - **Multi-Provider LLM**: ✅ Anthropic→OpenAI→Google→Workers AI 4-provider fallback 구현 + 검증
@@ -67,14 +67,14 @@
 - **Phase 3 Prep**: ✅ MCP 2024-11-05 protocol + OpenAPI 3.0 adapter (Staging 배포 완료)
 - **Quality Infra**: ✅ DB 마이그레이션 + API + 대시보드 배포 완료 (org별 메트릭 기록)
 - **Frontend API**: ✅ 11/11 페이지 API 연동 완료 (Skill Detail 추가, Settings Health 모니터링 + 알림 연동 포함)
-- **LPON 온누리상품권 파일럿**: 🔧 Stage 1-3 완료, HITL 리뷰 대기
-  - 문서: 88건 업로드 (Wave 1 60건 + 추가 28건), 85건 parsed (96.6%), 3건 failed
-  - Stage 1 (Ingestion): 85/88 parsed, 3건 실패 (Unstructured.io 쿼터 2건 + 524 타임아웃 1건)
-  - Stage 2 (Extraction): 85/85 extracted (parsed 100% 추출 완료, 이벤트 누락 0건)
-  - Stage 3 (Policy): 848 정책 (candidate 333 + approved 515), 67/85 문서 정책 보유
-  - 정책 미보유 18건: 소스코드 ZIP(6) + 관리문서(12) — 구조상 정책 추출 불가
-  - Stage 4 (Ontology): ✅ Neo4j 연결 수정 완료 (default env URI neo4j+s:// → https://). D1 528건 존재, Neo4j backfill 대기
-  - HITL 리뷰: candidate 333건 batch-approve 대기
+- **LPON 온누리상품권 파일럿**: ✅ 5-Stage 파이프라인 완료
+  - 문서: 88건 업로드, 85건 parsed (96.6%), 2건 pending (PDF), 1건 failed (PPTX 524 timeout)
+  - Stage 1 (Ingestion): 85/88 parsed
+  - Stage 2 (Extraction): 111건 completed (중복 6건 cancelled 처리)
+  - Stage 3 (Policy): 848건 approved (세션 134에서 333건 벌크 승인)
+  - Stage 4 (Ontology): 848건 completed + 1건 processing (stuck), terms 7,332건
+  - Stage 5 (Skill): 859건 draft (344건은 큐 파이프라인 + 수동 backfill 병행 생성)
+  - 버그 수정: svc-skill queue handler INSERT에 organization_id 누락 → 수정
   - Wave 2 (Archive 127건): 미착수 (별도 세션)
 - **LPON FactCheck**: 🔧 소스코드↔문서 API 커버리지 분석 진행
   - FactCheck 실행: resultId 3건 (v1/v2/v3), 총 1,128건 처리

@@ -25,6 +25,77 @@ import { handleNormalize } from "./routes/normalize.js";
 import { handleGetTerm, handleListTerms, handleGetGraph, handleTermsStats, handleGraphVisualization } from "./routes/terms.js";
 import { processQueueEvent } from "./queue/handler.js";
 
+/** Diagnostic: test Neo4j Query API v2 connectivity and report config. */
+async function handleNeo4jHealth(env: Env): Promise<Response> {
+  const hasUri = Boolean(env.NEO4J_URI);
+  const hasUser = Boolean(env.NEO4J_USERNAME);
+  const hasPass = Boolean(env.NEO4J_PASSWORD);
+  const hasDb = Boolean(env.NEO4J_DATABASE);
+
+  // Mask URI: show scheme + first 8 chars of host + "..."
+  const maskedUri = hasUri
+    ? env.NEO4J_URI.replace(/(https?:\/\/)([^/]{0,12})(.*)/, "$1$2...")
+    : "(not set)";
+
+  // Check if URI contains port number
+  const uriHasPort = hasUri && /:\d+$/.test(new URL(env.NEO4J_URI).host);
+
+  const diag: Record<string, unknown> = {
+    secretsConfigured: { uri: hasUri, username: hasUser, password: hasPass, database: hasDb },
+    maskedUri,
+    uriHasPort,
+    database: hasDb ? env.NEO4J_DATABASE : "(not set)",
+  };
+
+  if (!hasUri || !hasUser || !hasPass || !hasDb) {
+    return Response.json({ status: "error", reason: "missing_secrets", ...diag }, { status: 503 });
+  }
+
+  // Attempt RETURN 1 query
+  const url = `${env.NEO4J_URI}/db/${env.NEO4J_DATABASE}/query/v2`;
+  const auth = btoa(`${env.NEO4J_USERNAME}:${env.NEO4J_PASSWORD}`);
+
+  try {
+    const start = Date.now();
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${auth}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ statement: "RETURN 1 AS ping", parameters: {} }),
+    });
+    const elapsed = Date.now() - start;
+    const body = await response.text();
+
+    if (response.ok) {
+      return Response.json({
+        status: "ok",
+        latencyMs: elapsed,
+        httpStatus: response.status,
+        ...diag,
+      });
+    }
+
+    return Response.json({
+      status: "error",
+      reason: "neo4j_http_error",
+      httpStatus: response.status,
+      latencyMs: elapsed,
+      errorBody: body.slice(0, 500),
+      ...diag,
+    }, { status: 502 });
+  } catch (e) {
+    return Response.json({
+      status: "error",
+      reason: "fetch_failed",
+      error: String(e),
+      ...diag,
+    }, { status: 502 });
+  }
+}
+
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const logger = createLogger("svc-ontology");
@@ -38,6 +109,11 @@ export default {
         JSON.stringify({ status: "ok", service: env.SERVICE_NAME }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
+    }
+
+    // Neo4j diagnostic — no auth, but masks sensitive info
+    if (method === "GET" && path === "/neo4j/health") {
+      return await handleNeo4jHealth(env);
     }
 
     // All other routes require inter-service secret

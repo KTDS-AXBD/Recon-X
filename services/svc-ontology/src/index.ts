@@ -39,7 +39,12 @@ async function handleNeo4jHealth(env: Env): Promise<Response> {
     : "(not set)";
 
   // Check if URI contains port number
-  const uriHasPort = hasUri && /:\d+$/.test(new URL(env.NEO4J_URI).host);
+  let uriHasPort = false;
+  try {
+    uriHasPort = hasUri && /:\d+$/.test(new URL(env.NEO4J_URI).host);
+  } catch {
+    // invalid URL — leave false
+  }
 
   const diag: Record<string, unknown> = {
     secretsConfigured: { uri: hasUri, username: hasUser, password: hasPass, database: hasDb },

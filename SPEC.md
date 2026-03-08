@@ -56,7 +56,7 @@
 - **Current Phase**: v0.7.4 Pivot Phase 2-E 완료 — Pilot Core 8/8 기능 구현 (97%), KPI 공식 PRD 정렬 완료 (API 95.4%, Table 100%)
 - **Production E2E**: ✅ 8/8 PASS (synthetic) + 7/7 PASS (real-doc) + Batch 3: 7/11 parsed (SCDSA002 4건 → encrypted 상태)
 - **Real Document Pilot**: ✅ 20/26 문서 파싱 완료 (Batch 1: 4건, Batch 2: 9/11건, Batch 3: 7/11건)
-- **Production Data**: policies 3,504 approved + 18 HITL candidate, skills 3,580. Miraeasset + LPON 2-org. 1,143건 분석 완료
+- **Production Data**: policies 3,504 approved + 333 HITL candidate (총 3,837+), skills 3,580. Miraeasset + LPON 2-org. LPON 171개 신규 정책 추론 완료
 - **Batch 3 Extraction**: Gap분석서 28proc/27ent, DDD설계 11proc/9ent, 요구사항정의서 8proc/5ent
 - **Queue Fix**: default env consumer 충돌 해결 (wrangler.toml + DLQ). 수동: `wrangler delete --name svc-queue-router`
 - **Multi-Provider LLM**: ✅ Anthropic→OpenAI→Google→Workers AI 4-provider fallback 구현 + 검증
@@ -67,11 +67,14 @@
 - **Phase 3 Prep**: ✅ MCP 2024-11-05 protocol + OpenAPI 3.0 adapter (Staging 배포 완료)
 - **Quality Infra**: ✅ DB 마이그레이션 + API + 대시보드 배포 완료 (org별 메트릭 기록)
 - **Frontend API**: ✅ 11/11 페이지 API 연동 완료 (Skill Detail 추가, Settings Health 모니터링 + 알림 연동 포함)
-- **LPON 온누리상품권 파일럿**: 🔧 Wave 1 업로드 완료 (60/63건, 95.2%), 파이프라인 검증 대기
-  - 매니페스트: 84건 → 63건 (dedup 21건 제거, SCDSA002 2건 제외)
-  - 업로드: Group A(7) + B(10) + C(20) + D(2) + E(18) + F(3) = 60건 OK, 1건 FAIL (HTTP 000, Tier 3 임시문서)
-  - 핵심 문서: D106 정책정의서 + D221 요구사항 → Stage 3 Policy Inference 주 입력
-  - 파이프라인: Stage 1 투입 완료 / Stage 2~5 triage 미확인
+- **LPON 온누리상품권 파일럿**: 🔧 Stage 1-3 완료, HITL 리뷰 대기
+  - 문서: 88건 업로드 (Wave 1 60건 + 추가 28건), 85건 parsed (96.6%), 3건 failed
+  - Stage 1 (Ingestion): 85/88 parsed, 3건 실패 (Unstructured.io 쿼터 2건 + 524 타임아웃 1건)
+  - Stage 2 (Extraction): 85/85 extracted (parsed 100% 추출 완료, 이벤트 누락 0건)
+  - Stage 3 (Policy): 848 정책 (candidate 333 + approved 515), 67/85 문서 정책 보유
+  - 정책 미보유 18건: 소스코드 ZIP(6) + 관리문서(12) — 구조상 정책 추출 불가
+  - Stage 4 (Ontology): Neo4j Workers Fetch 프로토콜 제약 확인 필요
+  - HITL 리뷰: candidate 333건 batch-approve 대기
   - Wave 2 (Archive 127건): 미착수 (별도 세션)
 - **LPON FactCheck**: 🔧 소스코드↔문서 API 커버리지 분석 진행
   - FactCheck 실행: resultId 3건 (v1/v2/v3), 총 1,128건 처리
@@ -387,8 +390,8 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-007 | Feature | Pipeline | P0 | IN_PROGRESS | 온누리상품권 문서 인제스트 + 구조 추출 (Stage 1-2, Wave 1 60/63건 업로드 완료, triage 검증 대기) |
-| AIF-REQ-008 | Feature | Pipeline | P0 | IN_PROGRESS | 온누리상품권 정책 추론 + 온톨로지 구축 (Stage 3-4, D1 정책 DB + Neo4j 그래프) |
+| AIF-REQ-007 | Feature | Pipeline | P0 | DONE | 온누리상품권 Stage 1-2 triage 완료 (88건/85 parsed/85 extracted, 3건 failed: 쿼터+타임아웃) |
+| AIF-REQ-008 | Feature | Pipeline | P0 | IN_PROGRESS | 온누리상품권 정책 추론 완료 (+171, 677→848), HITL 333건 대기 + Neo4j 연결 확인 필요 |
 | AIF-REQ-009 | Feature | Pipeline | P1 | PLANNED | 온누리상품권 Skill 패키징 + MCP 어댑터 (Stage 5, .skill.json + Claude Desktop E2E) |
 | AIF-REQ-010 | Feature | Data | P1 | PLANNED | SI 산출물 재구성 + As-Is/To-Be Gap 분석 (프로세스/아키텍처/API/테이블 정의서) |
 | AIF-REQ-011 | Feature | Integration | P1 | PLANNED | 온누리상품권 분석 보고서 (내부 기술 보고서 + 고객 발표용 PPT + 벤치마크 비교) |

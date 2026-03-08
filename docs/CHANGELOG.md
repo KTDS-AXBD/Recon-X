@@ -2,6 +2,20 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 145 — 2026-03-08
+**AIF-REQ-009: KV 생성 + Skill Publish + MCP E2E 7/7 PASS**:
+- ✅ KV 네임스페이스 3환경 생성 (AI_FOUNDRY_SKILL_CACHE default/staging/production)
+- ✅ LPON 온누리상품권 515건 skill draft→published (trust_score > 0 기준)
+- ✅ svc-skill 3환경 재배포 (default/staging/production) — KV 바인딩 포함
+- ✅ svc-skill staging/production INTERNAL_API_SECRET 재설정
+- ✅ MCP E2E 테스트 스크립트 개선: X-Organization-Id 헤더, org_id 인자, auth 테스트 curl 플래그 수정
+- ✅ MCP E2E 7/7 PASS (production): health → discovery → adapter → initialize → tools/list → tools/call → auth rejection
+- ✅ `.env` INTERNAL_API_SECRET 추가, svc-queue-router/svc-mcp-server `.dev.vars` 생성
+- ✅ 운영 스크립트 커밋: test-mcp-e2e.sh, lpon-skill-domain-fix.sql, lpon-skill-publish.sql, claude-desktop-mcp-config.md, bulk-approve-lpon.sh, lpon-r2-domain-fix.ts
+
+**검증 결과**:
+- ✅ typecheck 17/17 (FULL TURBO), svc-skill 166/166 tests
+
 ## 세션 144 — 2026-03-08
 **AIF-REQ-009: MCP 어댑터 전체 리뷰 + 8개 이슈 개선 + 테스트 보강 + E2E 검증**:
 - ✅ `svc-mcp-server` MCP SDK ^1.12.1 → ^1.27.1 업그레이드

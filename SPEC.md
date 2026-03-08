@@ -63,7 +63,7 @@
 - **Phase 3 Sprint 1**: ✅ Skill Evaluate endpoint (POST+GET) + D1 마이그레이션 + 3환경 배포 + E2E 검증
 - **Phase 3 Sprint 2**: ✅ Skill 검색 API (q/tag/subdomain/sort + total) + 태그/통계 엔드포인트 + Marketplace UX + Skill Detail 페이지
 - **Phase 3 Sprint 3**: ✅ svc-mcp-server — MCP Server Worker (Streamable HTTP 2025-03-26 spec, @modelcontextprotocol/sdk 1.27.1, 35 tests, 3환경 배포)
-- **MCP 어댑터 개선**: ✅ AIF-REQ-009 — SDK 1.27.1 업그레이드, KV 캐시(TTL 1h), rate limiting(60/min/IP), benchmark 병렬화, publish API(PATCH+bulk), E2E 6/6 PASS(production)
+- **MCP 어댑터 개선**: ✅ AIF-REQ-009 — SDK 1.27.1, KV 캐시(3환경), rate limiting, publish API, LPON 515건 published, MCP E2E 7/7 PASS(production)
 - **Gap Analysis Cache**: ✅ 0007 마이그레이션 3환경 적용 + overview 캐싱 (TTL 1h, refresh/invalidate 엔드포인트)
 - **분석 보고서 동적화**: ✅ AIF-REQ-011 — 하드코딩 보고서→API/DB 동적 콘텐츠 + 버전별 스냅샷 + 마크다운 문서 자동 생성 (LPON 10 + Miraeasset 14 섹션)
 - **Phase 4 Sprint 1**: ✅ Tier 1 문서 11건 투입 — 7/11 파싱 성공, SCDSA002 4건 encrypted 상태. Queue 전파 fix + SCDSA002 탐지 + 배치 자동화 완료
@@ -231,7 +231,7 @@
   - svc-ontology: 100 tests (100% stmts)
   - svc-security: 153 tests (97.14% stmts)
   - svc-queue-router: 43 tests (100% stmts)
-- **Test Coverage**: 1,291 tests, 12 services + utils (vitest) — svc-ingestion 175, svc-security 153, svc-skill 151, svc-llm-router 134, svc-extraction 116, svc-ontology 100, svc-policy 92, svc-governance 83, svc-queue-router 43, svc-analytics 35, svc-mcp-server 31, svc-notification 26, packages/utils 35
+- **Test Coverage**: 1,586 tests, 12 services + utils (vitest, 93 test files) — svc-ingestion 175, svc-security 153, svc-skill 166, svc-llm-router 134, svc-extraction 116, svc-ontology 100, svc-policy 92, svc-governance 83, svc-queue-router 43, svc-mcp-server 35, svc-analytics 35, svc-notification 26, packages/utils 35
 - **Batch Scripts**: `scripts/batch-upload.sh` (bulk upload + resume + dry-run), `scripts/batch-status.sh` (status query + CSV export + polling)
 - **Frontend**: https://ai-foundry-web.pages.dev (Cloudflare Pages) + https://ai-foundry.minu.best (커스텀 도메인)
   - 10/10 pages real API 연동 완료 (upload, analysis, hitl, audit, skill-catalog, dashboard, ontology, api-console, trust, settings)

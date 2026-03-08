@@ -320,18 +320,21 @@ curl -s -X POST \
 
 ## 8. 테스트 결과 기록
 
-### 테스트 일시:
-### 테스트 환경: Claude Desktop (Windows) → svc-mcp-server (Staging)
+### 테스트 일시: 2026-03-08 (세션 126)
+### 테스트 환경: Claude Desktop v1.1.5368.0 (Windows) → mcp-remote 0.1.37 → svc-mcp-server (Staging)
 
 | 시나리오 | 결과 | 비고 |
 |---|---|---|
-| A: 주택구입 자격 | | |
-| B: 부적격 사유 | | |
-| C: 인출한도 | | |
-| D: 복합 질의 | | |
+| A: 주택구입 자격 | ✅ PASS | NOT_APPLICABLE (서류 미제출), 신뢰도 90%, gpt-4.1-mini |
+| B: 부적격 사유 | ✅ PASS | APPLICABLE (거절), 신뢰도 100%, 해외여행 → 법정 사유 아님 |
+| C: 인출한도 | ✅ PASS | APPLICABLE, 신뢰도 100%, 5,000만원의 50% = 2,500만원 한도 |
+| D: 복합 질의 | ✅ PASS | 2개 tool 순차 호출 성공, 자격 충족 + 4,000만원 전액 승인 |
 
 ### 발견된 이슈:
--
+- Claude Desktop `url` 키 미지원 → `npx mcp-remote` stdio 브릿지 필요
+- Windows에 Node.js 별도 설치 필요 (WSL Node.js와 별개)
+- 첫 tool 호출 시 도구명 오류 후 자동 재시도로 성공 (deferred tool search 경유)
 
-### 스크린샷:
-- (Claude Desktop tool 호출 화면 캡처)
+### 설정 참고 (claude_desktop_config.json):
+- `"command": "npx"` + `"args": ["-y", "mcp-remote", "<URL>", "--header", "Authorization: Bearer <TOKEN>"]`
+- Windows Node.js LTS 설치 필수 (`winget install OpenJS.NodeJS.LTS`)

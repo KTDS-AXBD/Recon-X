@@ -2,6 +2,15 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 126 — 2026-03-08
+**AIF-REQ-005 MCP E2E 테스트 — Claude Desktop 실클라이언트 검증 완료**:
+- ✅ Claude Desktop (Windows) → mcp-remote → svc-mcp-server (Staging) 전체 파이프라인 검증
+- ✅ 시나리오 A~D 4건 모두 PASS (주택구입 자격, 부적격 거절, 인출한도, 복합 질의)
+- ✅ 3개 MCP 서버 running: pension-withdrawal-reason, pension-withdrawal-limit, pension-housing-purchase
+- 발견: Claude Desktop `url` 미지원 → `npx mcp-remote` stdio 브릿지 + Windows Node.js 설치 필요
+- AIF-REQ-005: IN_PROGRESS → **DONE** (P1 완료)
+- 테스트 가이드 갱신: `docs/mcp-desktop-test-guide.md` §8 결과 기록
+
 ## 세션 125 — 2026-03-08
 **CLAUDE.md 품질 감사 + 현행화 — 6개 파일 검증, 4개 파일 9건 수정**:
 - CLAUDE.md 품질 감사: 6파일 평가, 평균 74점 (Grade B)

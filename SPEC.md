@@ -366,7 +366,7 @@
 | AIF-REQ-002 | Improvement | Pipeline | P3 | TRIAGED | Anthropic vs OpenAI extraction 품질 비교 (크레딧 충전 후) |
 | AIF-REQ-003 | Feature | Data | P2 | TRIAGED | 추가 문서 업로드 (764건 XLSX 중 선별) |
 | AIF-REQ-004 | Bug | Pipeline | P2 | TRIAGED | PDF 대용량 문서 파싱 Unstructured.io 524 timeout 해결 |
-| AIF-REQ-005 | Feature | Integration | P1 | TRIAGED | MCP adapter 실제 클라이언트(Claude Desktop) E2E 테스트 |
+| AIF-REQ-005 | Feature | Integration | P1 | DONE | MCP adapter 실제 클라이언트(Claude Desktop) E2E 테스트 |
 | AIF-REQ-006 | Feature | Integration | P2 | TRIAGED | OpenAPI adapter 외부 시스템 연동 검증 |
 
 ### 백로그 (신규 등록)

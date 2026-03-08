@@ -20,6 +20,50 @@ import type { Env } from "./env.js";
 
 const logger = createLogger("svc-mcp-server");
 
+// ── Rate Limiting ────────────────────────────────────────────────────
+
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 60; // per IP per minute
+
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(request: Request): Response | null {
+  const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
+  const now = Date.now();
+
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now >= entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return null;
+  }
+
+  entry.count++;
+  if (entry.count > RATE_LIMIT_MAX_REQUESTS) {
+    // Cleanup old entries periodically
+    if (rateLimitMap.size > 1000) {
+      for (const [key, val] of rateLimitMap) {
+        if (now >= val.resetAt) rateLimitMap.delete(key);
+      }
+    }
+    return Response.json(
+      {
+        jsonrpc: "2.0",
+        error: { code: -32000, message: "Rate limit exceeded. Try again later." },
+        id: null,
+      },
+      {
+        status: 429,
+        headers: {
+          ...corsHeaders(),
+          "Retry-After": String(Math.ceil((entry.resetAt - now) / 1000)),
+        },
+      },
+    );
+  }
+
+  return null;
+}
+
 // ── Types ───────────────────────────────────────────────────────────
 
 interface McpAdapterTool {
@@ -298,6 +342,10 @@ export default {
           { status: 401, headers: corsHeaders() },
         );
       }
+
+      // Rate limit check (after auth, before MCP processing)
+      const rateLimitResponse = checkRateLimit(request);
+      if (rateLimitResponse) return rateLimitResponse;
 
       // Handle DELETE (session termination — acknowledge but no-op for stateless)
       if (method === "DELETE") {

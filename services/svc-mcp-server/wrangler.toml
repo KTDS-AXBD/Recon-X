@@ -36,4 +36,4 @@ vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-mcp-server" }
 
 [[env.production.services]]
 binding = "SVC_SKILL"
-service = "svc-skill"
+service = "svc-skill-production"

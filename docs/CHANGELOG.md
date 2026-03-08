@@ -2,6 +2,16 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 138 — 2026-03-08
+**Gap Analysis 4-perspective API + 프론트엔드 — AIF-REQ-010 착수**:
+- ✅ `svc-extraction` /gap-analysis/overview 엔드포인트 추가 (프로세스/아키텍처/API/테이블 4관점)
+- ✅ `app-web` Gap Analysis 페이지 + 사이드바 메뉴 + API 클라이언트
+- ✅ 기존 fact_check_results/analyses/diagnosis_findings 데이터 집계
+- ✅ lint 에러 수정 (unused ctx, let→const, unused type)
+
+**검증 결과**:
+- ✅ typecheck 17/17 통과, lint 14/14 통과, test 1,095+ 통과
+
 ## 세션 137 — 2026-03-08
 **온누리상품권 분석 보고서 작성 — org별 리포트 분리 + LPON 현황 신규**:
 - ✅ `ProjectStatusTab.tsx` org-aware 리팩토링 (759줄 → 159줄)

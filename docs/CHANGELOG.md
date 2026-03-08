@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 143 — 2026-03-08
+**AIF-REQ-008 DONE 처리 + 미커밋 코드 정리 (svc-skill, svc-mcp-server)**:
+- ✅ AIF-REQ-008 상태 변경: IN_PROGRESS → DONE (policies 848 전량 approved, Neo4j 3,880건 synced)
+- ✅ `svc-skill` Skill 상태 관리 API (PATCH /skills/:id/status, POST /admin/bulk-publish)
+- ✅ `svc-skill` MCP 어댑터 KV 캐싱 (TTL 1h, X-Cache 헤더)
+- ✅ `svc-skill` 벤치마크 평가 병렬화 (sequential → Promise.all)
+- ✅ `svc-mcp-server` Rate Limiting (60 req/min/IP)
+- ✅ `svc-mcp-server` production 바인딩 수정 (svc-skill → svc-skill-production)
+
+**검증 결과**:
+- ✅ typecheck 17/17, lint 14/14 (FULL TURBO)
+
 ## 세션 142 — 2026-03-08
 **0003 마이그레이션 재검증 + typecheck/lint 확인**:
 - ✅ `db-analytics` 0003_report_system.sql 3환경 적용 확인 (staging 신규 생성, production 기존 존재)

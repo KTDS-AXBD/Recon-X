@@ -394,7 +394,7 @@
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
 | AIF-REQ-007 | Feature | Pipeline | P0 | DONE | 온누리상품권 Stage 1-2 triage 완료 (88건/85 parsed/85 extracted, 3건 failed: 쿼터+타임아웃) |
-| AIF-REQ-008 | Feature | Pipeline | P0 | IN_PROGRESS | 온누리상품권 정책 추론 완료 (+171, 677→848), HITL 333건 대기 + Neo4j 연결 확인 필요 |
+| AIF-REQ-008 | Feature | Pipeline | P0 | DONE | 온누리상품권 정책 추론 완료 — policies 848 전량 approved, Neo4j 3,880건 synced, HITL 전건 처리 |
 | AIF-REQ-009 | Feature | Pipeline | P1 | IN_PROGRESS | 온누리상품권 Skill 패키징 + MCP 어댑터 (Stage 5, .skill.json + Claude Desktop E2E) |
 | AIF-REQ-010 | Feature | Data | P1 | IN_PROGRESS | SI 산출물 재구성 + As-Is/To-Be Gap 분석 (프로세스/아키텍처/API/테이블 정의서) |
 | AIF-REQ-011 | Feature | UX | P1 | DONE | 분석 보고서 동적화 — 하드코딩→API/DB, 버전별 스냅샷, 마크다운 문서 자동 생성 (LPON+Miraeasset 동시) |

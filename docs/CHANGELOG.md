@@ -9,10 +9,12 @@
 - 관리 그룹 기본 접힘, 활성 라우트 그룹 자동 펼침, amber dot 표시
 - 태그라인 "Enterprise Platform" → "Knowledge Reverse Engineering"
 - /frontend-design 스킬 점검: 현행 디자인 시스템(Navy+Amber, Inter+IBM Plex) 유지, 구조만 개선
+- fix: 아코디언 maxHeight 40→52px — 그룹 마지막 아이템 영문 라벨 클리핑 해결
+- 다크모드 점검 완료
 - Cloudflare Pages 배포 완료 (https://ai-foundry.minu.best/)
 
 **검증 결과**:
-- ✅ typecheck (17/17 FULL TURBO) / build OK / 프로덕션 배포 확인
+- ✅ typecheck (17/17 FULL TURBO) / build OK / 프로덕션 배포 확인 / 로컬 UI 점검 완료
 
 ## 세션 126 — 2026-03-08
 **AIF-REQ-005 MCP E2E 테스트 — Claude Desktop 실클라이언트 검증 완료**:

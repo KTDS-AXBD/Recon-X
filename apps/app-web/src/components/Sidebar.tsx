@@ -251,6 +251,7 @@ export const Sidebar: React.FC = () => {
                   </span>
                   <div className="flex-1 text-left">
                     <span className="text-xs font-semibold tracking-wide">{group.label}</span>
+                    {' '}
                     <span
                       className="text-[10px] ml-1.5"
                       style={{ color: 'rgba(255, 255, 255, 0.4)' }}

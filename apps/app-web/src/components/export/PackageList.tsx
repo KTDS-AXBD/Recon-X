@@ -39,7 +39,7 @@ export function PackageList({
   if (packages.length === 0) {
     return (
       <div className="py-8 text-center text-sm" style={{ color: 'var(--text-secondary)' }}>
-        No export packages created yet.
+        아직 생성된 패키지가 없습니다.
       </div>
     );
   }

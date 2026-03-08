@@ -19,7 +19,7 @@ export function ExportForm({ onSubmit, creating }: ExportFormProps) {
   return (
     <Card className="shadow-sm">
       <CardHeader>
-        <CardTitle className="text-base">Spec Package Generation</CardTitle>
+        <CardTitle className="text-base">Spec 패키지 생성</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
@@ -30,14 +30,14 @@ export function ExportForm({ onSubmit, creating }: ExportFormProps) {
             className="w-full border rounded-lg p-3 text-sm"
             style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface, #fff)', color: 'var(--text-primary)' }}
             rows={3}
-            placeholder="Describe this export package..."
+            placeholder="패키지 설명을 입력하세요..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
         </div>
         <Button onClick={handleSubmit} disabled={creating} className="gap-2">
           <PackagePlus className="w-4 h-4" />
-          {creating ? 'Generating...' : 'Spec Package Generation'}
+          {creating ? '생성 중...' : 'Spec 패키지 생성'}
         </Button>
       </CardContent>
     </Card>

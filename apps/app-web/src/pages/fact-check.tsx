@@ -171,20 +171,20 @@ export default function FactCheckPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-            Fact Check Dashboard
+            팩트 체크 Fact Check Dashboard
           </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-            Source code vs Document gap analysis
+            소스코드 vs 문서 간 Gap 분석 Source code vs Document gap analysis
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => void loadResults()} disabled={loadingResults}>
             <RefreshCw className={`w-4 h-4 mr-1${loadingResults ? ' animate-spin' : ''}`} />
-            Refresh
+            새로고침
           </Button>
           <Button onClick={() => void handleTrigger()} disabled={triggering}>
             <PlayCircle className="w-4 h-4 mr-2" />
-            {triggering ? 'Running...' : 'Run Fact Check'}
+            {triggering ? '실행 중...' : '팩트 체크 실행'}
           </Button>
         </div>
       </div>
@@ -193,7 +193,7 @@ export default function FactCheckPage() {
       {summary && (
         <div className="grid grid-cols-4 gap-4">
           <CoverageCard
-            label="Average Coverage"
+            label="평균 커버리지 Average Coverage"
             labelEn="Avg Coverage"
             value={summary.overallCoveragePct}
             icon={<Target className="w-10 h-10" />}
@@ -202,7 +202,7 @@ export default function FactCheckPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Total Gaps</div>
+                  <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>총 Gap Total Gaps</div>
                   <div className="text-3xl font-bold mt-2" style={{ color: 'var(--text-primary)' }}>{summary.totalGaps}</div>
                 </div>
                 <AlertTriangle className="w-10 h-10" style={{ color: '#F59E0B', opacity: 0.2 }} />
@@ -213,7 +213,7 @@ export default function FactCheckPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>HIGH Gaps</div>
+                  <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>HIGH Gap HIGH Gaps</div>
                   <div className="text-3xl font-bold mt-2" style={{ color: '#DC2626' }}>
                     {results.reduce((sum, r) => sum + (r.gapsBySeverity["HIGH"] ?? 0), 0)}
                   </div>
@@ -226,7 +226,7 @@ export default function FactCheckPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Completed</div>
+                  <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>완료 Completed</div>
                   <div className="text-3xl font-bold mt-2" style={{ color: '#22C55E' }}>{summary.resultCount}</div>
                 </div>
                 <CheckCircle className="w-10 h-10" style={{ color: '#22C55E', opacity: 0.2 }} />
@@ -242,14 +242,14 @@ export default function FactCheckPage() {
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-sm">
-                Fact Check Results
+                팩트 체크 결과 Fact Check Results
                 <Badge variant="outline" className="ml-2 text-xs">{results.length}</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
               {results.length === 0 ? (
                 <p className="text-sm py-4 text-center" style={{ color: 'var(--text-secondary)' }}>
-                  No results yet. Run a fact check to start.
+                  결과가 없습니다. 팩트 체크를 실행하세요.
                 </p>
               ) : (
                 <div className="space-y-2 max-h-[500px] overflow-y-auto">
@@ -335,7 +335,7 @@ export default function FactCheckPage() {
               <CardContent className="p-12 text-center">
                 <AlertTriangle className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--text-secondary)', opacity: 0.3 }} />
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  Select a fact check result to view gaps.
+                  결과를 선택하면 Gap 상세를 볼 수 있습니다.
                 </p>
               </CardContent>
             </Card>

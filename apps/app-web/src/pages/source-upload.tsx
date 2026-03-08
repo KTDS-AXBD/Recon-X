@@ -141,10 +141,10 @@ export default function SourceUploadPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-          Source Code Upload
+          소스코드 업로드 Source Code Upload
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-          Java Spring source code (.zip) upload and parsing status
+          Java Spring 소스코드 (.zip) 업로드 및 파싱 현황
         </p>
       </div>
 
@@ -154,7 +154,7 @@ export default function SourceUploadPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Total Sources</div>
+                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>총 소스 Total Sources</div>
                 <div className="text-3xl font-bold mt-2" style={{ color: 'var(--text-primary)' }}>{sourceDocs.length}</div>
               </div>
               <Code className="w-10 h-10" style={{ color: '#3B82F6', opacity: 0.2 }} />
@@ -165,7 +165,7 @@ export default function SourceUploadPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Parsed</div>
+                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>파싱 완료 Parsed</div>
                 <div className="text-3xl font-bold mt-2" style={{ color: '#22C55E' }}>{parsedCount}</div>
               </div>
               <CheckCircle className="w-10 h-10" style={{ color: '#22C55E', opacity: 0.2 }} />
@@ -176,7 +176,7 @@ export default function SourceUploadPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Processing</div>
+                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>처리 중 Processing</div>
                 <div className="text-3xl font-bold mt-2" style={{ color: '#F59E0B' }}>{processingCount}</div>
               </div>
               <Clock className="w-10 h-10" style={{ color: '#F59E0B', opacity: 0.2 }} />
@@ -187,7 +187,7 @@ export default function SourceUploadPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Failed</div>
+                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>오류 Failed</div>
                 <div className="text-3xl font-bold mt-2" style={{ color: '#EF4444' }}>{failedCount}</div>
               </div>
               <AlertCircle className="w-10 h-10" style={{ color: '#EF4444', opacity: 0.2 }} />
@@ -213,14 +213,14 @@ export default function SourceUploadPage() {
               <FileCode className="w-8 h-8" style={{ color: '#3B82F6' }} />
             </div>
             <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
-              Drag & Drop ZIP File
+              ZIP 파일을 드래그하여 업로드
             </h3>
             <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-              Upload Java Spring source code as .zip archive
+              Java Spring 소스코드를 .zip 파일로 업로드하세요
             </p>
             <Button onClick={handleFileSelect} disabled={uploading}>
               <Upload className="w-4 h-4 mr-2" />
-              {uploading ? 'Uploading...' : 'Select File'}
+              {uploading ? '업로드 중...' : '파일 선택'}
             </Button>
             <input
               ref={fileInputRef}
@@ -241,19 +241,19 @@ export default function SourceUploadPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>
-              Uploaded Sources
+              업로드된 소스코드
               <Badge variant="outline" className="ml-2 text-xs">{sourceDocs.length}</Badge>
             </CardTitle>
             <Button variant="outline" size="sm" onClick={() => void loadDocuments()}>
               <RefreshCw className="w-4 h-4 mr-1" />
-              Refresh
+              새로고침
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           {sourceDocs.length === 0 ? (
             <p className="text-sm py-8 text-center" style={{ color: 'var(--text-secondary)' }}>
-              No source code uploaded yet.
+              아직 업로드된 소스코드가 없습니다.
             </p>
           ) : (
             <div className="space-y-3">

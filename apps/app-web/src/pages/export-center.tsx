@@ -229,15 +229,15 @@ export default function ExportCenterPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-            Export Center
+            Export 센터 Export Center
           </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-            Spec package generation, download, and PM approval
+            Spec 패키지 생성, 다운로드 및 PM 승인
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => void loadData()} disabled={loading}>
           <RefreshCw className={`w-4 h-4 mr-1${loading ? ' animate-spin' : ''}`} />
-          Refresh
+          새로고침
         </Button>
       </div>
 
@@ -298,7 +298,7 @@ export default function ExportCenterPage() {
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-base">
-                Spec Packages
+                Spec 패키지
                 <Badge variant="outline" className="ml-2 text-xs">{enrichedPackages.length}</Badge>
               </CardTitle>
             </CardHeader>
@@ -330,7 +330,7 @@ export default function ExportCenterPage() {
             <Card className="shadow-sm">
               <CardContent className="p-12 text-center">
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  Select a package to view approval status.
+                  패키지를 선택하면 승인 현황을 볼 수 있습니다.
                 </p>
               </CardContent>
             </Card>

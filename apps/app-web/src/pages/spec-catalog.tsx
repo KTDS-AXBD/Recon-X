@@ -104,20 +104,20 @@ export default function SpecCatalogPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-            Spec Catalog
+            Spec 카탈로그 Spec Catalog
           </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-            API Specs and Table Specs with classification and coverage
+            API Spec 및 Table Spec 분류 및 커버리지 확인
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => void loadData()} disabled={loading}>
             <RefreshCw className={`w-4 h-4 mr-1${loading ? ' animate-spin' : ''}`} />
-            Refresh
+            새로고침
           </Button>
           <Button onClick={() => void handleClassify()} disabled={classifying}>
             <Sparkles className="w-4 h-4 mr-2" />
-            {classifying ? 'Classifying...' : 'Classify Specs'}
+            {classifying ? '분류 중...' : 'Spec 분류 실행'}
           </Button>
         </div>
       </div>
@@ -173,7 +173,7 @@ export default function SpecCatalogPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
               <Input
-                placeholder="Search specs by name or endpoint..."
+                placeholder="이름 또는 엔드포인트로 검색..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -218,7 +218,7 @@ export default function SpecCatalogPage() {
           {filteredApiSpecs.length === 0 ? (
             <Card className="shadow-sm">
               <CardContent className="p-8 text-center">
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>No API specs found.</p>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>API Spec이 없습니다.</p>
               </CardContent>
             </Card>
           ) : (
@@ -239,7 +239,7 @@ export default function SpecCatalogPage() {
           {filteredTableSpecs.length === 0 ? (
             <Card className="shadow-sm">
               <CardContent className="p-8 text-center">
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>No table specs found.</p>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Table Spec이 없습니다.</p>
               </CardContent>
             </Card>
           ) : (

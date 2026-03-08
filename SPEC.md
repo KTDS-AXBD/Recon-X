@@ -402,7 +402,7 @@
 | AIF-REQ-009 | Feature | Pipeline | P1 | DONE | 온누리상품권 Skill 패키징 + MCP 어댑터 완료 — KV 3환경, 515건 published, MCP E2E 7/7 PASS, R2 domain 859건 갱신 완료 |
 | AIF-REQ-010 | Feature | Data | P1 | DONE | SI 산출물 재구성 + As-Is/To-Be Gap 분석 완료 — 4-perspective API, 캐싱(TTL 1h), CSV 내보내기, trace matrix |
 | AIF-REQ-011 | Feature | UX | P1 | DONE | 분석 보고서 동적화 — 하드코딩→API/DB, 버전별 스냅샷, 마크다운 문서 자동 생성 (LPON+Miraeasset 동시) |
-| AIF-REQ-012 | Feature | Integration | P2 | TRIAGED | 온누리상품권 고객 발표용 PPT + 벤치마크 비교 보고서 |
+| AIF-REQ-012 | Feature | UX | P2 | DONE | 3축 벤치마크 비교 보고서 페이지 — Cross-Domain + AI vs Manual + Stage Performance, 98% match rate (세션 153) |
 | AIF-REQ-013 | Feature | UX | P1 | DONE | Cross-Org Comparison 대시보드 — 조직 비교 + 4-Group 시각화, org별 보고서 분리 |
 
 ### Phase 4 실문서 파이프라인 (신규 등록)

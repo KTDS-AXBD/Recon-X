@@ -2,6 +2,20 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 153 — 2026-03-09
+**AIF-REQ-012 3축 벤치마크 비교 보고서 페이지 (DONE)**:
+- ✅ `svc-analytics/src/routes/benchmark.ts` (NEW, 260L): GET /reports/benchmark — 2-org 병렬 D1 쿼리 + AI vs Manual 비교 계산
+- ✅ `apps/app-web/src/pages/benchmark.tsx` (NEW, 800L): 3-Section 대시보드 (Cross-Domain, AI vs Manual, Stage Performance)
+- ✅ `apps/app-web/src/api/analytics.ts`: fetchBenchmark() + BenchmarkData/BenchmarkOrgData 타입 (89L)
+- ✅ 라우팅: app.tsx lazy route + Sidebar.tsx 관리 그룹 메뉴 추가
+- ✅ Gap Analysis 95→98%: C-1 timeReductionPercent 공식 수정 (AI 처리 시간 반영)
+- ✅ PDCA Report: AIF-RPRT-012 완성 보고서 작성
+
+**검증 결과**:
+- ✅ typecheck 17/17 PASS
+- ✅ build 15/15 PASS (benchmark-*.js 20.45 kB, gzip 4.27 kB)
+- ✅ Playwright UI 검증: 페이지 렌더링 + Sidebar active 상태 + Error handling 정상
+
 ## 세션 152 — 2026-03-09
 **AIF-REQ-016 FactCheck Gap 분석 심화 — 노이즈 필터 + 도메인 분류 + 보고서 개선**:
 - ✅ gap-categorizer.ts (NEW, 256L): 테이블/API 노이즈 탐지 + 17개 도메인 자동 분류

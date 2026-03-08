@@ -2,6 +2,19 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 136b — 2026-03-08
+**Neo4j backfill 실행 + Gap Analysis 캐시 검증**:
+- ✅ Neo4j backfill 완료: 3,752건 → 0건 NULL (100% synced, 3,880건 전량)
+  - UNWIND batch 최적화: HTTP 호출 80% 감소 (~36K→~7.5K)
+  - 2 round 실행, ~35분 소요, 실패 5건 자동 재시도 해소
+- ✅ svc-ontology staging 배포 + INTERNAL_API_SECRET 재설정
+- ✅ Gap Analysis 캐시 E2E 검증: LPON (66KB) + Miraeasset (28KB) 캐시 히트 확인
+- ✅ svc-extraction cache write 에러 로깅 추가 + 배포
+
+**검증 결과**:
+- ✅ D1 조회: ontologies null_count=0, synced_count=3,880
+- ✅ gap_analysis_snapshots: 2 rows (LPON + Miraeasset)
+
 ## 세션 140 — 2026-03-08
 **Gap Analysis 캐싱 구현 — AIF-REQ-010 잔여 작업 완료**:
 - ✅ `infra` 0007_gap_analysis_cache.sql 마이그레이션 3환경 적용 (local/staging/production)

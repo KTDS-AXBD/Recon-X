@@ -174,4 +174,51 @@ describe("toOpenApiSpec", () => {
     const op = spec.paths["/evaluate/pol-pension-wd-001"]?.post;
     expect(op?.security).toEqual([{ bearerAuth: [] }]);
   });
+
+  // ── Enhanced spec (servers, examples, externalDocs) ──────────────
+
+  it("includes servers when baseUrl is provided", () => {
+    const spec = toOpenApiSpec(makeSkillPackage(), {
+      baseUrl: "https://svc-skill.example.com",
+    });
+    expect(spec.servers).toHaveLength(1);
+    expect(spec.servers?.[0]?.url).toBe("https://svc-skill.example.com");
+  });
+
+  it("omits servers when no baseUrl", () => {
+    const spec = toOpenApiSpec(makeSkillPackage());
+    expect(spec.servers).toBeUndefined();
+  });
+
+  it("includes externalDocs", () => {
+    const spec = toOpenApiSpec(makeSkillPackage());
+    expect(spec.externalDocs).toBeDefined();
+    expect(spec.externalDocs?.url).toContain("ai-foundry");
+  });
+
+  it("includes contact url", () => {
+    const spec = toOpenApiSpec(makeSkillPackage());
+    expect(spec.info.contact.url).toBeDefined();
+  });
+
+  it("EvaluateRequest schema has example", () => {
+    const spec = toOpenApiSpec(makeSkillPackage());
+    const schema = spec.components.schemas["EvaluateRequest"];
+    expect(schema?.example).toBeDefined();
+    expect(schema?.example?.["context"]).toContain("가입 후 5년 경과");
+  });
+
+  it("EvaluateResponse schema has example", () => {
+    const spec = toOpenApiSpec(makeSkillPackage());
+    const schema = spec.components.schemas["EvaluateResponse"];
+    expect(schema?.example).toBeDefined();
+    expect(schema?.example?.["result"]).toBe("pass");
+    expect(schema?.example?.["confidence"]).toBe(0.85);
+  });
+
+  it("includes organization and trust in description", () => {
+    const spec = toOpenApiSpec(makeSkillPackage());
+    expect(spec.info.description).toContain("org-1");
+    expect(spec.info.description).toContain("reviewed");
+  });
 });

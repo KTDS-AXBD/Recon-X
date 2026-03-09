@@ -74,7 +74,7 @@ export const PERMISSIONS: Record<Role, Partial<Record<Resource, Action[]>>> = {
     skill: ["create", "read", "update", "delete", "download"],
     audit: ["create", "read"],
     governance: ["create", "read", "update"],
-    analytics: ["read"],
+    analytics: ["create", "read", "update", "delete"],
     notification: ["read", "update", "delete"],
     user: ["create", "read", "update", "delete"],
   },

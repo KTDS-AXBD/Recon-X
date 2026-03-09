@@ -12,6 +12,7 @@
 - ✅ 1,731 tests (98 files), svc-ingestion 340 tests (+34 신규)
 - 신규 파일 4개: pdf-splitter.ts, pptx-splitter.ts, pdf-splitter.test.ts, pptx-splitter.test.ts
 - AIF-REQ-004 상태: TRIAGED → IN_PROGRESS (배포 후 실문서 검증 필요)
+- AIF-REQ-017 상태: IN_PROGRESS → DONE (산출물 Export API 6종 완료, PDCA Match Rate 90.6%)
 
 **검증 결과**:
 - ✅ typecheck 17/17 PASS

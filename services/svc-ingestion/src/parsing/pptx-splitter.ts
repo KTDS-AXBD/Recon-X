@@ -11,6 +11,8 @@ const DEFAULT_SLIDES_PER_CHUNK = 8;
 const MIN_SLIDES_PER_CHUNK = 3;
 /** Split if file size exceeds 5MB */
 const SPLIT_SIZE_THRESHOLD_BYTES = 5 * 1024 * 1024;
+/** Skip split if file size exceeds 10MB — unzipSync memory limit in Workers */
+const MAX_SPLIT_SIZE_BYTES = 10 * 1024 * 1024;
 
 export type PptxSplitResult = {
   wasSplit: boolean;
@@ -37,6 +39,15 @@ export async function splitPptxIfNeeded(
   fileBytes: ArrayBuffer,
   slidesPerChunk: number = DEFAULT_SLIDES_PER_CHUNK,
 ): Promise<PptxSplitResult> {
+  // Guard: skip splitting for very large PPTX — unzipSync can exceed Worker memory
+  if (fileBytes.byteLength > MAX_SPLIT_SIZE_BYTES) {
+    logger.warn("PPTX too large for in-memory split, skipping", {
+      sizeMB: (fileBytes.byteLength / (1024 * 1024)).toFixed(1),
+      maxMB: (MAX_SPLIT_SIZE_BYTES / (1024 * 1024)).toFixed(0),
+    });
+    return { wasSplit: false, totalSlides: 0, chunks: [{ index: 0, startSlide: 1, endSlide: 0, bytes: fileBytes }] };
+  }
+
   const u8 = new Uint8Array(fileBytes);
   let entries: Record<string, Uint8Array>;
   try {
@@ -233,4 +244,4 @@ export function getSmallerPptxChunkSize(currentSize: number): number | null {
   return smaller;
 }
 
-export { SPLIT_SLIDE_THRESHOLD, SPLIT_SIZE_THRESHOLD_BYTES, DEFAULT_SLIDES_PER_CHUNK, MIN_SLIDES_PER_CHUNK };
+export { SPLIT_SLIDE_THRESHOLD, SPLIT_SIZE_THRESHOLD_BYTES, MAX_SPLIT_SIZE_BYTES, DEFAULT_SLIDES_PER_CHUNK, MIN_SLIDES_PER_CHUNK };

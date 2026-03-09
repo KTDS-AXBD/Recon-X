@@ -4,6 +4,7 @@ import {
   splitPptxIfNeeded,
   getSmallerPptxChunkSize,
   SPLIT_SLIDE_THRESHOLD,
+  MAX_SPLIT_SIZE_BYTES,
   MIN_SLIDES_PER_CHUNK,
 } from "../parsing/pptx-splitter.js";
 
@@ -167,6 +168,17 @@ describe("splitPptxIfNeeded", () => {
   it("throws on invalid ZIP data", async () => {
     const garbage = new Uint8Array([0x00, 0x01, 0x02, 0x03]).buffer as ArrayBuffer;
     await expect(splitPptxIfNeeded(garbage)).rejects.toThrow("Failed to unzip PPTX file");
+  });
+
+  it("skips split for very large PPTX (> MAX_SPLIT_SIZE_BYTES)", async () => {
+    // Create a buffer that exceeds MAX_SPLIT_SIZE_BYTES
+    const largeBuffer = new ArrayBuffer(MAX_SPLIT_SIZE_BYTES + 1);
+    const result = await splitPptxIfNeeded(largeBuffer);
+
+    expect(result.wasSplit).toBe(false);
+    expect(result.totalSlides).toBe(0);
+    expect(result.chunks).toHaveLength(1);
+    expect(result.chunks[0]!.bytes).toBe(largeBuffer);
   });
 });
 

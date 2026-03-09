@@ -1,13 +1,15 @@
 import { createLogger } from "@ai-foundry/utils";
 import { PipelineEventSchema } from "@ai-foundry/types";
 import type { Env } from "./env.js";
-import { parseDocument, type UnstructuredElement } from "./parsing/unstructured.js";
+import { parseDocument, isTimeoutError, type UnstructuredElement } from "./parsing/unstructured.js";
 import { parseXlsx, detectSiSubtype } from "./parsing/xlsx.js";
 import { parseScreenDesign } from "./parsing/screen-design.js";
 import { classifyDocument, classifyXlsxElements, classifySourceElements } from "./parsing/classifier.js";
 import { maskText } from "./parsing/masking.js";
 import { validateFileFormat, isScdsa002Encrypted, classifyParseError, type ErrorType } from "./parsing/validator.js";
 import { extractSourceFiles, parseSourceProject, parseSingleJavaFile, parseSingleSqlFile } from "./parsing/zip-extractor.js";
+import { splitPdfIfNeeded, getSmallerChunkSize } from "./parsing/pdf-splitter.js";
+import { splitPptxIfNeeded, getSmallerPptxChunkSize } from "./parsing/pptx-splitter.js";
 
 const MIME_MAP: Record<string, string> = {
   pdf: "application/pdf",
@@ -112,9 +114,11 @@ export async function processQueueEvent(body: unknown, env: Env, _ctx: Execution
       logger.info("Large file detected", { documentId, sizeMB: (fileBytes.byteLength / (1024 * 1024)).toFixed(1) });
     }
 
-    // 3. Parse: source code / xlsx / Unstructured.io
+    // 3. Parse: source code / xlsx / PDF (with split) / PPTX (with split) / other via Unstructured.io
     const isXlsx = fileType === "xlsx" || fileType === "xls";
     const isSourceCode = fileType === "java" || fileType === "sql" || fileType === "zip";
+    const isPdf = fileType === "pdf";
+    const isPptx = fileType === "pptx" || fileType === "ppt";
     let elements;
     if (isSourceCode) {
       elements = parseSourceCodeFiles(fileBytes, originalName, fileType);
@@ -123,6 +127,10 @@ export async function processQueueEvent(body: unknown, env: Env, _ctx: Execution
       elements = siSubtype === "화면설계"
         ? parseScreenDesign(fileBytes, originalName)
         : parseXlsx(fileBytes, originalName);
+    } else if (isPdf) {
+      elements = await parsePdfWithSplit(fileBytes, originalName, mimeType, env, documentId, logger);
+    } else if (isPptx) {
+      elements = await parsePptxWithSplit(fileBytes, originalName, mimeType, env, documentId, logger);
     } else {
       elements = await parseDocument(fileBytes, originalName, mimeType, env);
     }
@@ -222,6 +230,189 @@ export async function processQueueEvent(body: unknown, env: Env, _ctx: Execution
       headers: { "Content-Type": "application/json" },
     });
   }
+}
+
+/**
+ * Parse a PDF with automatic splitting for large files.
+ * If the PDF exceeds size/page thresholds, splits into chunks and parses each.
+ * On timeout, retries with smaller chunk sizes (adaptive splitting).
+ */
+async function parsePdfWithSplit(
+  fileBytes: ArrayBuffer,
+  originalName: string,
+  mimeType: string,
+  env: Env,
+  documentId: string,
+  logger: ReturnType<typeof createLogger>,
+): Promise<UnstructuredElement[]> {
+  let splitResult;
+  try {
+    splitResult = await splitPdfIfNeeded(fileBytes);
+  } catch (splitErr) {
+    logger.warn("PDF split failed, falling back to direct parse", {
+      documentId,
+      error: String(splitErr),
+    });
+    return parseDocument(fileBytes, originalName, mimeType, env);
+  }
+
+  if (!splitResult.wasSplit) {
+    return parseDocument(fileBytes, originalName, mimeType, env);
+  }
+
+  logger.info("Parsing large PDF in chunks", {
+    documentId,
+    totalPages: splitResult.totalPages,
+    chunkCount: splitResult.chunks.length,
+  });
+
+  const allElements: UnstructuredElement[] = [];
+
+  for (const chunk of splitResult.chunks) {
+    const chunkName = `${originalName}__pages_${chunk.startPage}-${chunk.endPage}`;
+    try {
+      const chunkElements = await parseDocument(chunk.bytes, chunkName, mimeType, env);
+      allElements.push(...chunkElements);
+      logger.info("Chunk parsed", {
+        documentId,
+        chunkIndex: chunk.index,
+        pages: `${chunk.startPage}-${chunk.endPage}`,
+        elementCount: chunkElements.length,
+      });
+    } catch (e) {
+      if (!(e instanceof Error) || !isTimeoutError(e)) throw e;
+
+      // Adaptive retry: split this chunk further
+      const smallerSize = getSmallerChunkSize(chunk.endPage - chunk.startPage + 1);
+      if (smallerSize === null) {
+        logger.warn("Chunk too small to split further, skipping", {
+          documentId,
+          pages: `${chunk.startPage}-${chunk.endPage}`,
+        });
+        continue;
+      }
+
+      logger.info("Chunk timed out, retrying with smaller split", {
+        documentId,
+        pages: `${chunk.startPage}-${chunk.endPage}`,
+        newPagesPerChunk: smallerSize,
+      });
+
+      const subSplit = await splitPdfIfNeeded(chunk.bytes, smallerSize);
+      for (const subChunk of subSplit.chunks) {
+        const subName = `${originalName}__pages_${chunk.startPage + subChunk.startPage - 1}-${chunk.startPage + subChunk.endPage - 1}`;
+        try {
+          const subElements = await parseDocument(subChunk.bytes, subName, mimeType, env);
+          allElements.push(...subElements);
+        } catch (subErr) {
+          logger.warn("Sub-chunk also failed, skipping", {
+            documentId,
+            subPages: `${subChunk.startPage}-${subChunk.endPage}`,
+            error: String(subErr),
+          });
+        }
+      }
+    }
+  }
+
+  logger.info("Large PDF parse complete", {
+    documentId,
+    totalPages: splitResult.totalPages,
+    totalElements: allElements.length,
+  });
+
+  return allElements;
+}
+
+/**
+ * Parse a PPTX with automatic splitting for large files.
+ * If the PPTX exceeds size/slide thresholds, splits into chunks and parses each.
+ * On timeout, retries with smaller chunk sizes (adaptive splitting).
+ */
+async function parsePptxWithSplit(
+  fileBytes: ArrayBuffer,
+  originalName: string,
+  mimeType: string,
+  env: Env,
+  documentId: string,
+  logger: ReturnType<typeof createLogger>,
+): Promise<UnstructuredElement[]> {
+  let splitResult;
+  try {
+    splitResult = await splitPptxIfNeeded(fileBytes);
+  } catch (splitErr) {
+    logger.warn("PPTX split failed, falling back to direct parse", {
+      documentId,
+      error: String(splitErr),
+    });
+    return parseDocument(fileBytes, originalName, mimeType, env);
+  }
+
+  if (!splitResult.wasSplit) {
+    return parseDocument(fileBytes, originalName, mimeType, env);
+  }
+
+  logger.info("Parsing large PPTX in chunks", {
+    documentId,
+    totalSlides: splitResult.totalSlides,
+    chunkCount: splitResult.chunks.length,
+  });
+
+  const allElements: UnstructuredElement[] = [];
+
+  for (const chunk of splitResult.chunks) {
+    const chunkName = `${originalName}__slides_${chunk.startSlide}-${chunk.endSlide}`;
+    try {
+      const chunkElements = await parseDocument(chunk.bytes, chunkName, mimeType, env);
+      allElements.push(...chunkElements);
+      logger.info("PPTX chunk parsed", {
+        documentId,
+        chunkIndex: chunk.index,
+        slides: `${chunk.startSlide}-${chunk.endSlide}`,
+        elementCount: chunkElements.length,
+      });
+    } catch (e) {
+      if (!(e instanceof Error) || !isTimeoutError(e)) throw e;
+
+      const smallerSize = getSmallerPptxChunkSize(chunk.endSlide - chunk.startSlide + 1);
+      if (smallerSize === null) {
+        logger.warn("PPTX chunk too small to split further, skipping", {
+          documentId,
+          slides: `${chunk.startSlide}-${chunk.endSlide}`,
+        });
+        continue;
+      }
+
+      logger.info("PPTX chunk timed out, retrying with smaller split", {
+        documentId,
+        slides: `${chunk.startSlide}-${chunk.endSlide}`,
+        newSlidesPerChunk: smallerSize,
+      });
+
+      const subSplit = await splitPptxIfNeeded(chunk.bytes, smallerSize);
+      for (const subChunk of subSplit.chunks) {
+        const subName = `${originalName}__slides_${chunk.startSlide + subChunk.startSlide - 1}-${chunk.startSlide + subChunk.endSlide - 1}`;
+        try {
+          const subElements = await parseDocument(subChunk.bytes, subName, mimeType, env);
+          allElements.push(...subElements);
+        } catch (subErr) {
+          logger.warn("PPTX sub-chunk also failed, skipping", {
+            documentId,
+            subSlides: `${subChunk.startSlide}-${subChunk.endSlide}`,
+            error: String(subErr),
+          });
+        }
+      }
+    }
+  }
+
+  logger.info("Large PPTX parse complete", {
+    documentId,
+    totalSlides: splitResult.totalSlides,
+    totalElements: allElements.length,
+  });
+
+  return allElements;
 }
 
 function parseSourceCodeFiles(

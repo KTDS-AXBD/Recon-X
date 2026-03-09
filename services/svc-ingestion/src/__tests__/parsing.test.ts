@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { classifyDocument, classifyXlsxElements } from "../parsing/classifier.js";
 import { maskText } from "../parsing/masking.js";
-import { parseDocument } from "../parsing/unstructured.js";
+import { parseDocument, isTimeoutError } from "../parsing/unstructured.js";
 import type { UnstructuredElement } from "../parsing/unstructured.js";
 import type { Env } from "../env.js";
 
@@ -375,5 +375,86 @@ describe("parseDocument", () => {
     } finally {
       globalThis.fetch = originalFetch;
     }
+  });
+
+  it("sends strategy parameter in form data", async () => {
+    const originalFetch = globalThis.fetch;
+    let capturedFormData: FormData | undefined;
+
+    globalThis.fetch = vi.fn().mockImplementation((_url: string, init: RequestInit) => {
+      capturedFormData = init.body as FormData;
+      return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }));
+    });
+
+    try {
+      const env = {
+        UNSTRUCTURED_API_URL: "https://api.unstructured.io",
+        UNSTRUCTURED_API_KEY: "test-key",
+      } as Env;
+
+      await parseDocument(new ArrayBuffer(10), "doc.pdf", "application/pdf", env, "hi_res");
+      expect(capturedFormData).toBeDefined();
+      expect(capturedFormData!.get("strategy")).toBe("hi_res");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("falls back to fast strategy on timeout", { timeout: 15_000 }, async () => {
+    const originalFetch = globalThis.fetch;
+    let callCount = 0;
+    const strategies: string[] = [];
+
+    globalThis.fetch = vi.fn().mockImplementation((_url: string, init: RequestInit) => {
+      callCount++;
+      const fd = init.body as FormData;
+      strategies.push(fd.get("strategy") as string);
+
+      // First 3 calls (auto + 2 retries) timeout, then fast succeeds
+      if (callCount <= 3) {
+        const err = new Error("AbortError: timeout");
+        err.name = "AbortError";
+        return Promise.reject(err);
+      }
+      return Promise.resolve(new Response(JSON.stringify([{ type: "Text", text: "fallback" }]), { status: 200 }));
+    });
+
+    try {
+      const env = {
+        UNSTRUCTURED_API_URL: "https://api.unstructured.io",
+        UNSTRUCTURED_API_KEY: "test-key",
+      } as Env;
+
+      const result = await parseDocument(new ArrayBuffer(10), "doc.pdf", "application/pdf", env);
+      // 3 auto attempts + 1 fast fallback = 4 total calls
+      expect(callCount).toBe(4);
+      expect(strategies[3]).toBe("fast");
+      expect(result).toHaveLength(1);
+      expect(result[0]?.text).toBe("fallback");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+});
+
+// ── isTimeoutError ────────────────────────────────────────────────
+
+describe("isTimeoutError", () => {
+  it("detects AbortError", () => {
+    const err = new Error("aborted");
+    err.name = "AbortError";
+    expect(isTimeoutError(err)).toBe(true);
+  });
+
+  it("detects timeout in message", () => {
+    expect(isTimeoutError(new Error("Request timeout after 30s"))).toBe(true);
+  });
+
+  it("detects 524 in message", () => {
+    expect(isTimeoutError(new Error("Cloudflare 524 error"))).toBe(true);
+  });
+
+  it("returns false for non-timeout errors", () => {
+    expect(isTimeoutError(new Error("Network error"))).toBe(false);
   });
 });

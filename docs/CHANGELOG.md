@@ -2,6 +2,22 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 159 — 2026-03-09
+**AIF-REQ-017 구현 완료 — 온누리상품권 분석 산출물 Export API (PDCA Full Cycle)**:
+- ✅ `/ax-10-req new` → AIF-REQ-017 등록 (P0, Feature/Data)
+- ✅ PDCA Plan → Design → Do(Agent Teams 3워커 병렬) → Check(75%) → Act(90.6%) → Report
+- ✅ svc-analytics `/deliverables/export/*` 6개 API 엔드포인트 신규 구현
+- ✅ 5종 SI 산출물 마크다운 렌더러: 인터페이스설계서, 업무규칙정의서, 용어사전, Gap보고서, As-Is/To-Be비교표
+- ✅ Service Binding 3개 추가 (SVC_POLICY, SVC_ONTOLOGY, SVC_EXTRACTION) × 3환경
+- ✅ 1,697 tests (97 files), typecheck 17/17 PASS, 신규 20 deliverable tests
+- 신규 코드 1,869줄 (렌더러 5 + 수집기 1 + 라우트 1 + 테스트 1)
+- PDCA 문서 4종: AIF-PLAN-018, AIF-DSGN-007, AIF-ANLS-019, AIF-RPRT-010
+
+**검증 결과**:
+- ✅ typecheck 17/17 PASS
+- ✅ 1,697 tests PASS (svc-analytics 53→73, +20 deliverable tests)
+- ✅ Gap Analysis Match Rate 90.6% (29/32)
+
 ## 세션 158 — 2026-03-09
 **AIF-REQ-006 DONE — OpenAPI adapter 외부 시스템 연동 검증 완료**:
 - ✅ Production skill.json 다운로드 → OpenAPI 3.0.3 변환 검증

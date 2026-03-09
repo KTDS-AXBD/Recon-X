@@ -9,7 +9,7 @@
 | AIF-SPEC-001 | 퇴직연금 프로세스 정밀분석 PRD v0.1 | 1.0 | Active | `AI_Foundry_퇴직연금_프로세스_정밀분석_PRD_v0.1.md` |
 | AIF-SPEC-002 | 퇴직연금 프로세스 정밀분석 PRD v0.2 | 1.0 | Active | `AI_Foundry_퇴직연금_프로세스_정밀분석_PRD_v0.2.md` |
 
-## PLAN (10)
+## PLAN (11)
 
 | 코드 | 제목 | 버전 | 상태 | 파일 |
 |------|------|:----:|:----:|------|
@@ -23,8 +23,9 @@
 | AIF-PLAN-008 | v0.7.4 Pivot Plan | 1.0 | Active | `01-plan/features/v074-pivot.plan.md` |
 | AIF-PLAN-009 | LPON 온누리상품권 온보딩 | 1.0 | Active | `01-plan/features/lpon-onboarding.plan.md` |
 | AIF-PLAN-017 | FactCheck API 커버리지 개선 로드맵 | 1.0 | Active | `01-plan/features/factcheck-coverage-roadmap.plan.md` |
+| AIF-PLAN-018 | 온누리상품권 분석 산출물 검증 및 문서화 | 0.1 | Draft | `01-plan/features/lpon-deliverable-validation.plan.md` |
 
-## DSGN (6)
+## DSGN (7)
 
 | 코드 | 제목 | 버전 | 상태 | 파일 |
 |------|------|:----:|:----:|------|
@@ -34,8 +35,9 @@
 | AIF-DSGN-004 | v0.7.4 Phase 2-A Source Code Parsing | 1.0 | Active | `02-design/features/v074-pivot-phase2a.design.md` |
 | AIF-DSGN-005 | v0.7.4 Phase 2-B Fact Check Engine | 1.0 | Active | `02-design/features/v074-pivot-phase2b.design.md` |
 | AIF-DSGN-006 | v0.7.4 Phase 2-C Spec Export & KPI | 1.0 | Active | `02-design/features/v074-pivot-phase2c.design.md` |
+| AIF-DSGN-007 | 온누리상품권 분석 산출물 검증 및 문서화 | 0.1 | Draft | `02-design/features/lpon-deliverable-validation.design.md` |
 
-## ANLS (17)
+## ANLS (18)
 
 | 코드 | 제목 | 버전 | 상태 | 파일 |
 |------|------|:----:|:----:|------|
@@ -56,8 +58,9 @@
 | AIF-ANLS-018 | LPON 미문서화 외부 API 보완 제안서 | 1.0 | Active | `03-analysis/AIF-ANLS-018_undocumented-api-remediation.md` |
 | AIF-ANLS-018-P1 | LPON P1 API 인터페이스 명세 (역공학) | 1.0 | Active | `03-analysis/AIF-ANLS-018_interface-spec-p1.md` |
 | AIF-ANLS-018-P2 | LPON P2/P3 API 인터페이스 명세 (역공학) | 1.0 | Active | `03-analysis/AIF-ANLS-018_interface-spec-p2.md` |
+| AIF-ANLS-019 | AIF-REQ-017 산출물 Export Design vs Implementation Gap | 0.1 | Draft | `03-analysis/lpon-deliverable-validation.analysis.md` |
 
-## RPRT (9)
+## RPRT (10)
 
 | 코드 | 제목 | 버전 | 상태 | 파일 |
 |------|------|:----:|:----:|------|
@@ -70,6 +73,7 @@
 | AIF-RPRT-007 | v0.7.4 데모 시나리오 | 1.0 | Active | `04-report/features/v074-demo-scenario.md` |
 | AIF-RPRT-008 | Process-Diagnosis Executive Summary | 1.0 | Active | `04-report/EXECUTIVE_SUMMARY.md` |
 | AIF-RPRT-009 | Production UI/UX 전체 점검 리포트 | 1.0 | Active | `04-report/features/production-ui-test.report.md` |
+| AIF-RPRT-010 | AIF-REQ-017 산출물 Export 완료 보고서 | 1.0 | Active | `04-report/features/lpon-deliverable-validation.report.md` |
 
 ## GUID (1)
 

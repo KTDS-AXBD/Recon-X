@@ -88,6 +88,8 @@
   - severity 재분류: HIGH 235 / MEDIUM 11 / LOW 136 (개선된 tokenizer 효과)
   - 도메인별 분류: 회원(79), 충전(49), 선물(42), 거래(40), 메시지(38) 등 17개 도메인
   - Gap 패턴: /gift/*, /manual/*, /chargeDealing/*, /v2/messages/* 다수 미문서화 (LLM confirmed)
+  - **내부/외부 API 분리 커버리지**: 외부(onnuripay) 83.7% (103/123), 내부 0% (107건, 설계서 대상 아님), 문서 역방향 90.4% (103/114)
+  - 미문서화 외부 API 16건: card(4), cashBack(3), ledger(2), parties(2), wallet(2), approval(1), account(1), front(1)
   - **커버리지 분석 시각화**: Recharts 기반 도메인별 갭 차트 + 커버리지 트렌드 + 문서 보완 제안서 (진행현황 탭)
   - API 3종: `GET /factcheck/domain-summary`, `/trend`, `/document-suggestions`
   - 개선 로드맵: AIF-PLAN-017 (매칭 고도화 → AST 분석 → 문서 보완 제안, 3단계)

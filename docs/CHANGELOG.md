@@ -2,6 +2,20 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 155 — 2026-03-09
+**AIF-REQ-016 LLM Match + 내부/외부 API 분리 커버리지 산출**:
+- ✅ Source-aggregator 개선: `buildAlternativePaths()` (4종 대안 경로) + `stripAppPrefix()` + 노이즈 토큰 필터
+- ✅ Matcher 개선: `tokenizePath()` 버전/노이즈 필터 + Step 1 & Step 2에서 `alternativePaths` 활용
+- ✅ `SourceApi.alternativePaths?: string[]` 타입 추가
+- ✅ LLM Semantic Match 전량 실행: 282건 → 17 new match + 265 confirmed gap + 2 에러
+- ✅ 커버리지: 27.1% → **30.1%** (115/382), 외부 API **83.7%** (103/123), 문서 역방향 **90.4%** (103/114)
+- ✅ 미문서화 외부 API 16건 식별: card(4), cashBack(3), ledger(2), parties(2), wallet(2) 등
+- ✅ Production svc-extraction 배포 (staging + production)
+- ✅ Gap analysis 캐시 무효화
+
+**검증 결과**:
+- ✅ typecheck PASS | tests 373 PASS (svc-extraction, +15 신규)
+
 ## 세션 154 — 2026-03-09
 **FactCheck 커버리지 분석 시각화 + 개선 로드맵**:
 - ✅ Backend: `GET /factcheck/domain-summary`, `/trend`, `/document-suggestions` API 3종 (svc-extraction)

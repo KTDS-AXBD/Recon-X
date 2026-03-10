@@ -426,7 +426,7 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-017 | Feature | Data | P0 | DONE | 온누리상품권 분석 산출물 Export API 완료 — `/deliverables/export/*` 6종 API, 마크다운 렌더러 5종(인터페이스설계서/업무규칙/용어사전/Gap보고서/비교표), Service Binding 3개×3환경, 1,869줄 신규, 20 tests, PDCA Full Cycle Match Rate 90.6% (세션 159) |
+| AIF-REQ-017 | Feature | Data | P0 | DONE | 온누리상품권 분석 산출물 Export API 완료 — `/deliverables/export/*` 6종 API, 마크다운 렌더러 5종(인터페이스설계서/업무규칙/용어사전/Gap보고서/비교표), Service Binding 3개×3환경, 1,869줄 신규, 20 tests, PDCA Full Cycle Match Rate 90.6% (세션 159). **UI 확장** (세션 164): Export Center에 SI 산출물 탭 + 마크다운 미리보기 + 테이블 렌더링, +545줄, Pages 배포 완료 |
 
 ### 진행 현황 리포트 개선 (신규 등록)
 

@@ -9,7 +9,7 @@
 | AIF-SPEC-001 | 퇴직연금 프로세스 정밀분석 PRD v0.1 | 1.0 | Active | `AI_Foundry_퇴직연금_프로세스_정밀분석_PRD_v0.1.md` |
 | AIF-SPEC-002 | 퇴직연금 프로세스 정밀분석 PRD v0.2 | 1.0 | Active | `AI_Foundry_퇴직연금_프로세스_정밀분석_PRD_v0.2.md` |
 
-## PLAN (11)
+## PLAN (12)
 
 | 코드 | 제목 | 버전 | 상태 | 파일 |
 |------|------|:----:|:----:|------|
@@ -24,8 +24,9 @@
 | AIF-PLAN-009 | LPON 온누리상품권 온보딩 | 1.0 | Active | `01-plan/features/lpon-onboarding.plan.md` |
 | AIF-PLAN-017 | FactCheck API 커버리지 개선 로드맵 | 1.0 | Active | `01-plan/features/factcheck-coverage-roadmap.plan.md` |
 | AIF-PLAN-018 | 온누리상품권 분석 산출물 검증 및 문서화 | 0.1 | Draft | `01-plan/features/lpon-deliverable-validation.plan.md` |
+| AIF-PLAN-019 | SI 산출물 Export UI | 0.1 | Draft | `01-plan/features/deliverable-export-ui.plan.md` |
 
-## DSGN (7)
+## DSGN (8)
 
 | 코드 | 제목 | 버전 | 상태 | 파일 |
 |------|------|:----:|:----:|------|
@@ -36,6 +37,7 @@
 | AIF-DSGN-005 | v0.7.4 Phase 2-B Fact Check Engine | 1.0 | Active | `02-design/features/v074-pivot-phase2b.design.md` |
 | AIF-DSGN-006 | v0.7.4 Phase 2-C Spec Export & KPI | 1.0 | Active | `02-design/features/v074-pivot-phase2c.design.md` |
 | AIF-DSGN-007 | 온누리상품권 분석 산출물 검증 및 문서화 | 0.1 | Draft | `02-design/features/lpon-deliverable-validation.design.md` |
+| AIF-DSGN-008 | SI 산출물 Export UI | 0.1 | Draft | `02-design/features/deliverable-export-ui.design.md` |
 
 ## ANLS (18)
 

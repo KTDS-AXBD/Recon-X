@@ -2,6 +2,22 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 164 — 2026-03-10
+
+**AIF-REQ-017 UI 확장 — SI 산출물 Export UI (PDCA Full Cycle)**:
+- ✅ Export Center 페이지에 Tabs UI 적용 (Spec Package / SI 산출물)
+- ✅ DeliverableTab 컴포넌트: 5종 카드(D1~D5) + 미리보기 + 다운로드 + 전체 다운로드
+- ✅ MarkdownContent 테이블 + blockquote 파싱·렌더링 확장 (MarkdownBlock union type)
+- ✅ API 클라이언트 (api/deliverables.ts) + Pages Function/Vite proxy 라우트 추가
+- ✅ PDCA Full Cycle: Plan(AIF-PLAN-019) → Design(AIF-DSGN-008) → Do → Check(97%) → Pages 배포
+
+**검증 결과**:
+- ✅ typecheck 17/17 PASS, build 성공 (export-center 21.47 kB)
+- ✅ Production 배포 + Playwright E2E 검증 (테이블 렌더링 확인)
+- ✅ Gap Analysis Match Rate 97% (55항목 중 49 Match + 2 DEVIATION + 4 Minor)
+
+---
+
 ## 세션 163 — 2026-03-10
 **AIF-REQ-018 구현 — 진행 현황 리포트 UX 개선 (3단계 구조 + 스코어카드 + accordion)**:
 - ✅ Executive Summary hero: 활용 준비도 게이지(91/100) + 신호등 바 + AI vs AI+전문가 비교 프레임

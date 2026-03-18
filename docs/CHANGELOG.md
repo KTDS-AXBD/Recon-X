@@ -2,6 +2,23 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 170 — 2026-03-18
+
+**프로덕션 Skill Rebundle — LPON 848정책 → 11개 기능 번들 (AIF-REQ-025)**:
+
+- ✅ classifier 재시도+fallback 로직 추가: 배치 누락 감지 → 10개 단위 재시도 → "other" fallback
+- ✅ rebundle-orchestrator: 정책 fetch 페이지네이션(100개씩) + X-Organization-Id 헤더 수정
+- ✅ 프로덕션 0003_policy_classifications 마이그레이션 적용
+- ✅ svc-skill 프로덕션 배포 (2회)
+- ✅ 로컬 rebundle 스크립트 작성 (Workers timeout 우회): `scripts/rebundle-production.ts`
+- ✅ 프로덕션 rebundle 실행: 848정책 → 856분류(100%) → 11번들(security 248, member 168, operation 134, notification 112, settlement 59, integration 55, payment 34, gift 17, other 14, account 12, charging 3)
+- ✅ 기존 859개 1:1 스킬 → superseded, 11개 bundled 스킬 신규 생성
+
+**검증 결과**:
+- ✅ 205 tests 전체 통과 (테스트 3건 추가)
+- ✅ typecheck 통과
+- ✅ D1 검증: LPON bundled 11, superseded 859, Miraeasset 영향 없음
+
 ## 세션 169 — 2026-03-18
 
 **Mock-up 사이트 통합 + 사이드바 메뉴 정리 (AIF-REQ-019)**:

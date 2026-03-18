@@ -473,7 +473,7 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-026 | Feature | Integration | P1 | OPEN | Foundry-X 통합 계획 — AI Foundry(역공학: SI 산출물→Skill 추출)와 Foundry-X(순공학: Spec↔Code↔Test 동기화+에이전트 협업)를 하나의 제품군으로 통합. (1) AI Foundry Skill 자산을 Foundry-X MCP/에이전트 도구로 연동, (2) 역공학↔순공학 양방향 포지셔닝 재정의, (3) 기술 스택 정합성 검토(Cloudflare Workers vs Node.js+Hono), (4) 공유 타입/패키지 통합, (5) 통합 로드맵 수립. 참조: [KTDS-AXBD/Foundry-X](https://github.com/KTDS-AXBD/Foundry-X) |
+| AIF-REQ-026 | Feature | Integration | P1 | IN_PROGRESS | Foundry-X 통합 계획 — AI Foundry(역공학: SI 산출물→Skill 추출)와 Foundry-X(순공학: Spec↔Code↔Test 동기화+에이전트 협업)를 하나의 제품군으로 통합. (1) AI Foundry Skill 자산을 Foundry-X MCP/에이전트 도구로 연동, (2) 역공학↔순공학 양방향 포지셔닝 재정의, (3) 기술 스택 정합성 검토(Cloudflare Workers vs Node.js+Hono), (4) 공유 타입/패키지 통합, (5) 통합 로드맵 수립. 참조: [KTDS-AXBD/Foundry-X](https://github.com/KTDS-AXBD/Foundry-X) |
 
 ---
 

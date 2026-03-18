@@ -38,8 +38,20 @@
 - ✅ Foundry-X 조사: v0.11.0 Phase 2 Sprint 11, NL→Spec + Agent 오케스트레이션
 - ✅ AXIS DS 조사: v1.1.2, workspace:* 프로토콜로 외부 설치 불가 → Radix UI 직접 사용
 
+**후속 작업 (같은 세션)**:
+- ✅ Cloudflare Pages 배포: ai-foundry-mockup.pages.dev — 6/6 Production API 연동 PASS
+- ✅ Playwright E2E 브라우저 테스트: 4/4 Demo 동작 확인 (스크린샷 7매)
+- ✅ API 버그 수정: data 래퍼 언래핑 + snake_case→camelCase 필드 정렬 (10파일)
+- ✅ 디자인 오버홀: Editorial Observatory 테마 (IBM Plex Sans KR, 도메인 색상 코딩, 카드 그림자)
+- ✅ 도메인 혼재 해결: 컨텍스트 바 + 색상 분리 (LPON=에메랄드, Miraeasset=인디고)
+- ✅ 용어 사전 에러 수정: pension 도메인 terms=0 → empty state 표시
+- ✅ URL 라우팅: app-web /mockup/* 프록시 → ai-foundry-mockup.pages.dev
+- ✅ Neo4j Aura Resume → 그래프 시각화 30 nodes/159 links 정상 확인
+
 **검증 결과**:
 - ✅ typecheck 18/18 패키지 통과
+- ✅ Playwright E2E 4/4 PASS (정책엔진+Skill호출+온톨로지+산출물)
+- ✅ Production API 6/6 PASS (policies, skills, terms, graph, deliverables, site)
 
 ---
 

@@ -8,6 +8,7 @@ import { useCallback, useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { MockupHeader } from "@/components/shared/MockupHeader";
 import { WidgetRenderer } from "@/components/shared/WidgetRenderer";
+import { AgentRunPanel } from "@/components/shared/AgentRunPanel";
 import { cn } from "@/lib/cn";
 import { extractThemeVariables } from "@/lib/widget-theme";
 import {
@@ -148,11 +149,14 @@ const VIZ_TYPES: Array<{ type: WidgetType; label: string; emoji: string }> = [
   { type: "markdown", label: "마크다운", emoji: "📝" },
 ];
 
+type DemoMode = "widget" | "agent";
+
 export function GenerativeDemo() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const themeVars = extractThemeVariables(isDark);
 
+  const [mode, setMode] = useState<DemoMode>("widget");
   const [selectedType, setSelectedType] = useState<WidgetType>("graph");
   const [query, setQuery] = useState("");
   const [actions, setActions] = useState<BridgeAction[]>([]);
@@ -207,9 +211,49 @@ export function GenerativeDemo() {
         <div>
           <h2 className="text-lg font-bold">Generative Visualization Demo</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Widget Renderer + Decision Matrix PoC — 정적 샘플 HTML로 시각화 타입별 렌더링 검증
+            Widget Renderer + Decision Matrix + AG-UI Agent Mode
           </p>
         </div>
+
+        {/* Mode Tabs */}
+        <div className="flex gap-1 rounded-lg bg-gray-100 dark:bg-gray-800 p-1">
+          <button
+            type="button"
+            onClick={() => setMode("widget")}
+            className={cn(
+              "rounded-md px-4 py-2 text-sm font-medium transition-all",
+              mode === "widget"
+                ? "bg-white dark:bg-gray-700 shadow-sm"
+                : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300",
+            )}
+          >
+            Widget Mode
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("agent")}
+            className={cn(
+              "rounded-md px-4 py-2 text-sm font-medium transition-all",
+              mode === "agent"
+                ? "bg-white dark:bg-gray-700 shadow-sm"
+                : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300",
+            )}
+          >
+            Agent Mode (AG-UI)
+          </button>
+        </div>
+
+        {/* Agent Mode */}
+        {mode === "agent" && (
+          <AgentRunPanel
+            organizationId="org-demo"
+            themeVariables={themeVars}
+            isDark={isDark}
+          />
+        )}
+
+        {/* Widget Mode */}
+        {mode === "widget" && <>
 
         {/* Query + Auto Detect */}
         <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
@@ -282,6 +326,8 @@ export function GenerativeDemo() {
             </div>
           </div>
         )}
+
+        </>}
       </main>
     </div>
   );

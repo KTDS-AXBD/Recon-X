@@ -17,6 +17,7 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 import { createLogger, timingSafeCompare } from "@ai-foundry/utils";
 import { z } from "zod";
 import type { Env } from "./env.js";
+import { handleAgentRun, handleAgentResume } from "./routes/agent.js";
 
 const logger = createLogger("svc-mcp-server");
 
@@ -321,6 +322,27 @@ export default {
           },
         },
       );
+    }
+
+    // AG-UI Agent endpoints
+    if (method === "POST" && path === "/agent/run") {
+      if (!authenticate(request, env)) {
+        return Response.json(
+          { success: false, error: { code: "UNAUTHORIZED", message: "Unauthorized" } },
+          { status: 401, headers: corsHeaders() },
+        );
+      }
+      return handleAgentRun(request);
+    }
+
+    if (method === "POST" && path === "/agent/resume") {
+      if (!authenticate(request, env)) {
+        return Response.json(
+          { success: false, error: { code: "UNAUTHORIZED", message: "Unauthorized" } },
+          { status: 401, headers: corsHeaders() },
+        );
+      }
+      return handleAgentResume(request);
     }
 
     // MCP endpoint: POST /mcp/:skillId

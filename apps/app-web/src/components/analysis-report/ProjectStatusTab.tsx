@@ -77,6 +77,77 @@ function getSourceInfo(orgId: string): OrgSourceInfo | null {
   }
 }
 
+/* ═══ Generate verdict based on score ═══ */
+function generateVerdict(score: number): { headline: string; detail: string } {
+  if (score >= 80) {
+    return {
+      headline: "이 분석 결과, 즉시 활용 가능",
+      detail: "SI 산출물에서 추출한 비즈니스 정책·용어·Skill은 즉시 활용 가능. 시스템 통합 설계는 전문가 보완 필요.",
+    };
+  }
+  if (score >= 50) {
+    return {
+      headline: "이 분석 결과, 조건부 활용 가능",
+      detail: "핵심 정책·용어는 활용 가능하나, 승인율이나 커버리지 보완이 필요. 전문가 검토 후 단계적 적용 권장.",
+    };
+  }
+  return {
+    headline: "이 분석 결과, 추가 작업 필요",
+    detail: "파이프라인 산출물의 품질 또는 커버리지가 부족. 추가 문서 투입 및 HITL 리뷰 후 재평가 필요.",
+  };
+}
+
+/* ═══ Compute readiness bar segments from pipeline data ═══ */
+function computeReadinessSegments(
+  approvalRate: number,
+  approvedPolicies: number,
+): { label: string; pct: number; color: string; icon: string }[] {
+  const readyPct = approvedPolicies > 0
+    ? Math.floor(approvalRate * 55)
+    : 0;
+  const remaining = 100 - readyPct;
+  const supplementPct = Math.floor(remaining * 2 / 3);
+  const limitPct = 100 - readyPct - supplementPct;
+
+  return [
+    { label: "즉시 활용", pct: readyPct, color: "#10b981", icon: "✅" },
+    { label: "보완 후 활용", pct: supplementPct, color: "#f59e0b", icon: "⚠️" },
+    { label: "AI 한계", pct: limitPct, color: "#ef4444", icon: "❌" },
+  ];
+}
+
+/* ═══ Generate comparison card items from approval rate ═══ */
+function computeComparisonItems(approvalRate: number, totalTerms: number): {
+  aiItems: string[];
+  aiSummary: string;
+  expertItems: string[];
+} {
+  const policyRange = approvalRate >= 0.9
+    ? "90~95%" : approvalRate >= 0.8
+      ? "80~90%" : "70~80%";
+  const termRange = totalTerms >= 5000
+    ? "90~95%" : totalTerms >= 1000
+      ? "85~90%" : "70~80%";
+  const skillRange = approvalRate >= 0.85
+    ? "85~90%" : "75~85%";
+
+  return {
+    aiItems: [
+      `비즈니스 정책 ${policyRange}`,
+      `용어 사전 ${termRange}`,
+      `Skill 패키지 ${skillRange}`,
+    ],
+    aiSummary: approvalRate >= 0.8
+      ? "정책·용어·Skill은 AI만으로 즉시 활용 가능"
+      : "정책·용어·Skill은 AI 추출 후 보완 필요",
+    expertItems: [
+      "소스코드 문서화 →60~70%↑",
+      "프로세스 흐름도 →60~70%↑",
+      "시스템 통합 →80~90%↑",
+    ],
+  };
+}
+
 /* ═══ Compute readiness score from pipeline data ═══ */
 function computeScore(counts: PipelineCounts): number {
   // Weighted scoring: pipeline completion metrics
@@ -150,6 +221,9 @@ export function ProjectStatusTab() {
   const totalSkills = counts?.totalSkills ?? 0;
   const approvalRate = totalPolicies > 0 ? approvedPolicies / totalPolicies : 0;
   const score = counts ? computeScore(counts) : 0;
+  const verdict = generateVerdict(score);
+  const readinessSegments = computeReadinessSegments(approvalRate, approvedPolicies);
+  const comparison = computeComparisonItems(approvalRate, totalTerms);
   const sourceInfo = getSourceInfo(organizationId);
 
   return (
@@ -168,12 +242,11 @@ export function ProjectStatusTab() {
         <div className="flex items-center gap-2 mb-1">
           <Target className="w-5 h-5" style={{ color: "var(--accent)" }} />
           <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
-            이 분석 결과, 쓸 수 있는가?
+            {verdict.headline}
           </h2>
         </div>
         <p className="text-sm mb-5" style={{ color: "var(--text-secondary)" }}>
-          SI 산출물에서 추출한 비즈니스 정책·용어·Skill은 <strong style={{ color: "var(--text-primary)" }}>즉시 활용 가능</strong>.
-          시스템 통합 설계는 전문가 보완 필요.
+          {verdict.detail}
         </p>
 
         {/* Score Gauge + Readiness Bar + Key Numbers */}
@@ -185,11 +258,7 @@ export function ProjectStatusTab() {
 
           {/* Right side: traffic light + key numbers */}
           <div className="space-y-4">
-            <ReadinessBar segments={[
-              { label: "즉시 활용", pct: 50, color: "#10b981", icon: "✅" },
-              { label: "보완 후 활용", pct: 33, color: "#f59e0b", icon: "⚠️" },
-              { label: "AI 한계", pct: 17, color: "#ef4444", icon: "❌" },
-            ]} />
+            <ReadinessBar segments={readinessSegments} />
 
             {/* Traffic light cards */}
             <div className="grid grid-cols-3 gap-2">
@@ -197,13 +266,17 @@ export function ProjectStatusTab() {
                 icon={CheckCircle2}
                 color="#10b981"
                 title="즉시 활용"
-                items={["정책 848건", "용어 사전", "Skill 859건"]}
+                items={[
+                  `정책 ${approvedPolicies.toLocaleString()}건`,
+                  `용어 ${totalTerms.toLocaleString()}건`,
+                  `Skill ${totalSkills.toLocaleString()}건`,
+                ]}
               />
               <TrafficCard
                 icon={AlertTriangle}
                 color="#f59e0b"
                 title="보완 후 활용"
-                items={["커버리지 31%", "프로세스 복원"]}
+                items={[`승인율 ${(approvalRate * 100).toFixed(0)}%`, "프로세스 복원"]}
               />
               <TrafficCard
                 icon={XCircle}
@@ -219,13 +292,13 @@ export function ProjectStatusTab() {
         <div className="mt-5 grid grid-cols-2 gap-3">
           <ComparisonCard
             label="AI만 사용"
-            items={["비즈니스 정책 80~90%", "용어 사전 90~95%", "Skill 패키지 85~90%"]}
-            summary="정책·용어·Skill은 AI만으로 즉시 활용 가능"
+            items={comparison.aiItems}
+            summary={comparison.aiSummary}
             color="#10b981"
           />
           <ComparisonCard
             label="AI + 전문가"
-            items={["소스코드 문서화 →60~70%↑", "프로세스 흐름도 →60~70%↑", "시스템 통합 →80~90%↑"]}
+            items={comparison.expertItems}
             summary="문서 보완·설계는 전문가 협업으로 품질 향상"
             color="#3b82f6"
           />

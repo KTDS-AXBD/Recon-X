@@ -322,6 +322,52 @@ function renderSectionContent(section: ReportSection) {
   }
 }
 
+/* ─── Section filters ─── */
+
+/** FactCheck/종합판정 sections — already rendered by ProjectStatusTab Level 2 */
+const SKIP_SECTION_KEYS = ["fact_check", "factcheck", "comprehensive_verdict"];
+
+/** Sections that should render collapsed by default (향후과제/로드맵) */
+const COLLAPSIBLE_SECTION_KEYS = ["next_steps", "roadmap", "future_tasks"];
+
+function isSectionSkipped(sectionKey: string): boolean {
+  const lower = sectionKey.toLowerCase();
+  return SKIP_SECTION_KEYS.some((key) => lower.includes(key));
+}
+
+function isSectionCollapsible(sectionKey: string): boolean {
+  const lower = sectionKey.toLowerCase();
+  return COLLAPSIBLE_SECTION_KEYS.some((key) => lower.includes(key));
+}
+
+/* ─── Collapsible section wrapper ─── */
+
+function CollapsibleSectionContent({
+  section,
+}: {
+  section: ReportSection;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        type="button"
+        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border transition-colors mb-3"
+        style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <ChevronDown
+          className="w-3.5 h-3.5 transition-transform duration-200"
+          style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+        />
+        {open ? "접기" : "펼치기"}
+      </button>
+      {open && renderSectionContent(section)}
+    </>
+  );
+}
+
 /* ─── Main Component ─── */
 
 interface DynamicStatusReportProps {
@@ -553,17 +599,23 @@ export function DynamicStatusReport({ organizationId }: DynamicStatusReportProps
         </button>
       </div>
 
-      {/* ─── Report sections ─── */}
-      {sections.map((section) => (
-        <section key={section.sectionId || section.sectionKey} className="mb-8">
-          <SectionHeader
-            icon={resolveIcon(section.iconName)}
-            title={section.title}
-            subtitle={section.subtitle ?? ""}
-          />
-          {renderSectionContent(section)}
-        </section>
-      ))}
+      {/* ─── Report sections (FR-03: skip FactCheck/종합판정, FR-05: collapsible 향후과제) ─── */}
+      {sections
+        .filter((s) => !isSectionSkipped(s.sectionKey))
+        .map((section) => (
+          <section key={section.sectionId || section.sectionKey} className="mb-8">
+            <SectionHeader
+              icon={resolveIcon(section.iconName)}
+              title={section.title}
+              subtitle={section.subtitle ?? ""}
+            />
+            {isSectionCollapsible(section.sectionKey) ? (
+              <CollapsibleSectionContent section={section} />
+            ) : (
+              renderSectionContent(section)
+            )}
+          </section>
+        ))}
     </>
   );
 }

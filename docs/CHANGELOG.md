@@ -2,6 +2,15 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 165 — 2026-03-18
+
+**ax plugin 자율점검 + CLAUDE.md 정비**:
+- ✅ `/ax-13-selfcheck` 8개 항목 점검 (6 PASS, 1 FAIL, 1 WARN)
+- ✅ C2 FAIL 해소: CLAUDE.md 스킬 테이블 drift 수정 (ax-04-lint→ax-04-verify, ax-15-statusline 추가)
+- ✅ C8 WARN 해소: Zone.Identifier WSL 아티팩트 7건 삭제 (tracked 4 + untracked 3)
+
+---
+
 ## 세션 164 — 2026-03-10
 
 **AIF-REQ-017 UI 확장 — SI 산출물 Export UI (PDCA Full Cycle)**:

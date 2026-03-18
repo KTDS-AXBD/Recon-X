@@ -62,12 +62,15 @@ const CATEGORIES: Record<string, { label: string; keywords: string[] }> = {
   gift: { label: "상품권 관리", keywords: ["발행", "교환", "환불", "유효기간", "상품권", "권종"] },
   notification: { label: "알림/메시지", keywords: ["SMS", "푸시", "이메일", "알림", "메시지", "발송"] },
   security: { label: "보안/감사", keywords: ["접근제어", "암호화", "감사", "로그", "권한", "보안"] },
-  operation: { label: "운영 관리", keywords: ["배치", "모니터링", "시스템", "설정", "관리자", "운영"] },
+  operation: { label: "운영 관리", keywords: ["배치", "모니터링", "시스템", "설정", "관리자", "운영", "운용지시", "만기도래", "송수신"] },
   settlement: { label: "정산/수수료", keywords: ["정산", "수수료", "매출", "대사", "입금", "출금"] },
   integration: { label: "API/연동", keywords: ["외부", "API", "연동", "오류", "응답", "인터페이스"] },
   withdrawal: { label: "인출/지급", keywords: ["중도인출", "지급", "환급", "인출", "해지", "이전", "청구", "수급"] },
-  tax: { label: "세금/공제", keywords: ["세금", "세액공제", "과세", "원천징수", "퇴직소득", "연말정산", "비과세"] },
-  product: { label: "상품 관리", keywords: ["상품", "원리금보장", "수익증권", "펀드", "상품코드", "운용", "수익률"] },
+  tax: { label: "세금/공제", keywords: ["세금", "세액공제", "과세", "원천징수", "퇴직소득", "연말정산", "비과세", "과세소득", "분개"] },
+  product: { label: "상품 관리", keywords: ["상품", "원리금보장", "수익증권", "펀드", "상품코드", "운용", "수익률", "상품그룹", "상품등록", "리스크정보"] },
+  education: { label: "가입자 교육", keywords: ["교육", "가입자교육", "교육대상", "교육년도", "교육이메일", "교육통보"] },
+  reserve: { label: "적립금 관리", keywords: ["적립금", "부담금", "납입내역", "미납", "입금", "예수금", "가상계좌"] },
+  annuity: { label: "연금 수령", keywords: ["분할연금", "연금수령", "생존조사", "연금생존", "연금납입", "IRP"] },
   other: { label: "기타", keywords: [] },
 };
 const CATEGORY_IDS = Object.keys(CATEGORIES);
@@ -452,7 +455,7 @@ async function saveResults(
 
     // Upload to R2 via wrangler
     const proc = Bun.spawn(
-      ["npx", "wrangler", "r2", "object", "put", `ai-foundry-skill-packages/${r2Key}`, "--file", tmpPath],
+      ["npx", "wrangler", "r2", "object", "put", `ai-foundry-skill-packages/${r2Key}`, "--file", tmpPath, "--env", "production"],
       {
         cwd: "/home/sinclair/work/axbd/res-ai-foundry/services/svc-skill",
         env: { ...process.env, CLOUDFLARE_API_TOKEN: CF_TOKEN },

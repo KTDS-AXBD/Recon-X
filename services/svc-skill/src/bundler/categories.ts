@@ -41,7 +41,7 @@ export const SKILL_CATEGORIES = {
   operation: {
     id: "operation",
     label: "운영 관리",
-    keywords: ["배치", "모니터링", "시스템", "설정", "관리자", "운영"],
+    keywords: ["배치", "모니터링", "시스템", "설정", "관리자", "운영", "운용지시", "만기도래", "송수신"],
   },
   settlement: {
     id: "settlement",
@@ -61,12 +61,27 @@ export const SKILL_CATEGORIES = {
   tax: {
     id: "tax",
     label: "세금/공제",
-    keywords: ["세금", "세액공제", "과세", "원천징수", "퇴직소득", "연말정산", "비과세"],
+    keywords: ["세금", "세액공제", "과세", "원천징수", "퇴직소득", "연말정산", "비과세", "과세소득", "분개"],
   },
   product: {
     id: "product",
     label: "상품 관리",
-    keywords: ["상품", "원리금보장", "수익증권", "펀드", "상품코드", "운용", "수익률"],
+    keywords: ["상품", "원리금보장", "수익증권", "펀드", "상품코드", "운용", "수익률", "상품그룹", "상품등록", "리스크정보"],
+  },
+  education: {
+    id: "education",
+    label: "가입자 교육",
+    keywords: ["교육", "가입자교육", "교육대상", "교육년도", "교육이메일", "교육통보"],
+  },
+  reserve: {
+    id: "reserve",
+    label: "적립금 관리",
+    keywords: ["적립금", "부담금", "납입내역", "미납", "입금", "예수금", "가상계좌"],
+  },
+  annuity: {
+    id: "annuity",
+    label: "연금 수령",
+    keywords: ["분할연금", "연금수령", "생존조사", "연금생존", "연금납입", "IRP"],
   },
   other: {
     id: "other",

@@ -13,6 +13,7 @@ const SERVICE_MAP: Record<string, { service: string; port: number }> = {
   graph: { service: "svc-ontology", port: 8704 },
   deliverables: { service: "svc-analytics", port: 8710 },
   mcp: { service: "svc-mcp-server", port: 8711 },
+  "pipeline-evaluations": { service: "svc-governance", port: 8708 },
 };
 
 function buildProxy(mode: string) {

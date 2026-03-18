@@ -43,6 +43,10 @@ service = "svc-notification"
 binding = "SVC_ANALYTICS"
 service = "svc-analytics"
 
+[[services]]
+binding = "SVC_GOVERNANCE"
+service = "svc-governance"
+
 [vars]
 ENVIRONMENT = "development"
 SERVICE_NAME = "svc-queue-router"
@@ -90,6 +94,10 @@ service = "svc-notification-staging"
 binding = "SVC_ANALYTICS"
 service = "svc-analytics-staging"
 
+[[env.staging.services]]
+binding = "SVC_GOVERNANCE"
+service = "svc-governance-staging"
+
 # ---------------------------------------------------------------------------
 # Production environment
 # ---------------------------------------------------------------------------
@@ -130,3 +138,7 @@ service = "svc-notification-production"
 [[env.production.services]]
 binding = "SVC_ANALYTICS"
 service = "svc-analytics-production"
+
+[[env.production.services]]
+binding = "SVC_GOVERNANCE"
+service = "svc-governance-production"

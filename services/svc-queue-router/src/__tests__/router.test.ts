@@ -12,6 +12,7 @@ interface Env {
   SVC_SKILL: Fetcher;
   SVC_NOTIFICATION: Fetcher;
   SVC_ANALYTICS: Fetcher;
+  SVC_GOVERNANCE: Fetcher;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -33,6 +34,7 @@ function mockEnv(): Env {
     SVC_SKILL: mockFetcher(),
     SVC_NOTIFICATION: mockFetcher(),
     SVC_ANALYTICS: mockFetcher(),
+    SVC_GOVERNANCE: mockFetcher(),
   };
 }
 

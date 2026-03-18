@@ -11,7 +11,10 @@ import { handleGetCost } from "./routes/cost.js";
 import { handleGetTrust, handleCreateTrustEvaluation } from "./routes/trust.js";
 import { handleGetGoldenTests } from "./routes/golden-tests.js";
 import { handleCreateQualityEvaluation, handleListQualityEvaluations, handleQualityEvaluationsSummary } from "./routes/quality-evaluations.js";
+import { handleAutoEvaluate, handleListPipelineEvaluations, handlePipelineEvaluationsSummary } from "./routes/pipeline-evaluations.js";
 import { handleChat } from "./routes/chat.js";
+import { PipelineEventSchema, SkillPackageSchema } from "@ai-foundry/types";
+import { runAutoEvaluate } from "./evaluators/index.js";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -143,6 +146,102 @@ export default {
           }));
         }
         return await handleCreateQualityEvaluation(request, env);
+      }
+
+      // Pipeline Evaluations (3-Stage Auto Eval)
+      if (method === "POST" && path === "/pipeline-evaluations/auto") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "governance", "create");
+          if (denied) return denied;
+          ctx.waitUntil(logAudit(env, {
+            userId: rbacCtx.userId,
+            organizationId: rbacCtx.organizationId,
+            action: "create",
+            resource: "governance",
+          }));
+        }
+        return await handleAutoEvaluate(request, env, ctx);
+      }
+      if (method === "GET" && path === "/pipeline-evaluations/summary") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "governance", "read");
+          if (denied) return denied;
+        }
+        return await handlePipelineEvaluationsSummary(request, env);
+      }
+      if (method === "GET" && path === "/pipeline-evaluations") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "governance", "read");
+          if (denied) return denied;
+        }
+        return await handleListPipelineEvaluations(request, env);
+      }
+
+      // Internal queue event handler (from svc-queue-router)
+      if (method === "POST" && path === "/internal/queue-event") {
+        let body: unknown;
+        try {
+          body = await request.json();
+        } catch {
+          return new Response("Invalid JSON", { status: 400 });
+        }
+        const parsed = PipelineEventSchema.safeParse(body);
+        if (!parsed.success) {
+          logger.warn("Invalid queue event", { error: parsed.error.message });
+          return new Response(JSON.stringify({ success: true, skipped: true }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        const event = parsed.data;
+        if (event.type === "skill.packaged") {
+          const { skillId, organizationId } = event.payload;
+          logger.info("Auto-evaluate triggered by skill.packaged", { skillId, organizationId });
+          // Fetch skill package from SVC_SKILL
+          try {
+            const resp = await env.SVC_SKILL.fetch(
+              `https://svc-skill.internal/skills/${skillId}`,
+              {
+                headers: {
+                  "X-Internal-Secret": env.INTERNAL_API_SECRET,
+                  "X-Organization-Id": organizationId,
+                },
+              },
+            );
+            if (resp.ok) {
+              const skillResp = (await resp.json()) as { data?: unknown };
+              const pkgParsed = SkillPackageSchema.safeParse(skillResp.data);
+              if (pkgParsed.success) {
+                ctx.waitUntil(
+                  runAutoEvaluate(pkgParsed.data, skillId, organizationId, env, ctx)
+                    .then((result) => {
+                      logger.info("Auto-evaluate from queue complete", {
+                        skillId,
+                        finalVerdict: result.finalVerdict,
+                        finalScore: result.finalScore,
+                      });
+                    })
+                    .catch((e) => {
+                      logger.error("Auto-evaluate from queue failed", { skillId, error: String(e) });
+                    }),
+                );
+              } else {
+                logger.warn("Skill package parse failed", { skillId });
+              }
+            } else {
+              logger.warn("Failed to fetch skill for auto-eval", { skillId, status: resp.status });
+            }
+          } catch (e) {
+            logger.error("Queue event skill fetch error", { skillId, error: String(e) });
+          }
+        }
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
       // AI Chat Agent (guide assistant)

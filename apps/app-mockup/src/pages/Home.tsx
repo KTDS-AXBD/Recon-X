@@ -4,6 +4,7 @@ import { PolicyEngineDemo } from "@/components/demo/policy/PolicyEngineDemo";
 import { SkillInvokerDemo } from "@/components/demo/skill/SkillInvokerDemo";
 import { OntologyExplorerDemo } from "@/components/demo/ontology/OntologyExplorerDemo";
 import { DeliverablePreviewDemo } from "@/components/demo/deliverable/DeliverablePreviewDemo";
+import { SkillExportDemo } from "@/components/demo/export/SkillExportDemo";
 import { useDomain } from "@/contexts/DomainContext";
 import { cn } from "@/lib/cn";
 
@@ -12,6 +13,7 @@ const TABS = [
   { id: "skill", label: "Skill 호출", emoji: "🔧" },
   { id: "ontology", label: "온톨로지", emoji: "🌐" },
   { id: "deliverable", label: "산출물", emoji: "📄" },
+  { id: "export", label: "Skill Export", emoji: "📦" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -112,6 +114,11 @@ export function Home() {
           {activeTab === "deliverable" && (
             <div id="demo-deliverable">
               <DeliverablePreviewDemo />
+            </div>
+          )}
+          {activeTab === "export" && (
+            <div id="demo-export">
+              <SkillExportDemo />
             </div>
           )}
         </div>

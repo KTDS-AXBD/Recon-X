@@ -22,6 +22,7 @@ interface Env {
   SVC_SKILL: Fetcher;
   SVC_NOTIFICATION: Fetcher;
   SVC_ANALYTICS: Fetcher;
+  SVC_GOVERNANCE: Fetcher;
 }
 
 type EventType =
@@ -37,7 +38,8 @@ type EventType =
   | "diagnosis.completed"
   | "diagnosis.review_completed"
   | "factcheck.requested"
-  | "factcheck.completed";
+  | "factcheck.completed"
+  | "evaluation.completed";
 
 /** Named target: service name + Fetcher binding for better observability */
 interface NamedTarget {
@@ -62,7 +64,7 @@ function getTargets(type: EventType, env: Env): NamedTarget[] {
       case "ontology.normalized":
         return [{ name: "svc-skill", fetcher: env.SVC_SKILL }];
       case "skill.packaged":
-        return [{ name: "svc-notification", fetcher: env.SVC_NOTIFICATION }];
+        return [{ name: "svc-notification", fetcher: env.SVC_NOTIFICATION }, { name: "svc-governance", fetcher: env.SVC_GOVERNANCE }];
       case "analysis.requested":
         return [{ name: "svc-extraction", fetcher: env.SVC_EXTRACTION }];
       case "analysis.completed":
@@ -74,6 +76,8 @@ function getTargets(type: EventType, env: Env): NamedTarget[] {
       case "factcheck.requested":
       case "factcheck.completed":
         return [{ name: "svc-extraction", fetcher: env.SVC_EXTRACTION }];
+      case "evaluation.completed":
+        return [{ name: "svc-notification", fetcher: env.SVC_NOTIFICATION }];
     }
   })();
   // All events also go to analytics for metric aggregation

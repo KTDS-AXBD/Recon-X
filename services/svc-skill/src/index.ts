@@ -34,6 +34,7 @@ import {
   handleBulkPublish,
 } from "./routes/skills.js";
 import { handleGetMcpAdapter } from "./routes/mcp.js";
+import { handleExportCc } from "./routes/export-cc.js";
 import { handleGetOpenApiAdapter } from "./routes/openapi.js";
 import { handleEvaluateSkill, handleListEvaluations } from "./routes/evaluate.js";
 import { handleBackfillDepth, handleBackfillTrust, handleRebundle } from "./routes/admin.js";
@@ -161,6 +162,26 @@ export default {
             );
           }
           return await handleDownloadSkill(request, env, skillId, ctx);
+        }
+
+        // GET /skills/:id/export-cc — CC Skill ZIP export
+        if (method === "GET" && subpath === "export-cc") {
+          const rbacCtx = extractRbacContext(request);
+          if (rbacCtx) {
+            const denied = await checkPermission(env, rbacCtx.role, "skill", "download");
+            if (denied) return denied;
+            ctx.waitUntil(
+              logAudit(env, {
+                userId: rbacCtx.userId,
+                organizationId: rbacCtx.organizationId,
+                action: "download",
+                resource: "skill",
+                resourceId: skillId,
+                details: { adapter_type: "cc-skill" },
+              }),
+            );
+          }
+          return await handleExportCc(request, env, skillId, ctx);
         }
 
         // POST /skills/:id/evaluate — policy evaluation

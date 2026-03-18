@@ -172,6 +172,19 @@ export const FactCheckCompletedEventSchema = BaseEventSchema.extend({
   }),
 });
 
+// Evaluation completed (auto-evaluate pipeline result)
+export const EvaluationCompletedEventSchema = BaseEventSchema.extend({
+  type: z.literal("evaluation.completed"),
+  payload: z.object({
+    targetType: z.enum(["policy", "skill", "document"]),
+    targetId: z.string(),
+    organizationId: z.string(),
+    stage: z.string(),
+    verdict: z.string(),
+    score: z.number().min(0).max(1),
+  }),
+});
+
 export const PipelineEventSchema = z.discriminatedUnion("type", [
   DocumentUploadedEventSchema,
   IngestionCompletedEventSchema,
@@ -186,6 +199,7 @@ export const PipelineEventSchema = z.discriminatedUnion("type", [
   DiagnosisReviewCompletedEventSchema,
   FactCheckRequestedEventSchema,
   FactCheckCompletedEventSchema,
+  EvaluationCompletedEventSchema,
 ]);
 
 export type DocumentUploadedEvent = z.infer<typeof DocumentUploadedEventSchema>;
@@ -201,4 +215,5 @@ export type DiagnosisCompletedEvent = z.infer<typeof DiagnosisCompletedEventSche
 export type DiagnosisReviewCompletedEvent = z.infer<typeof DiagnosisReviewCompletedEventSchema>;
 export type FactCheckRequestedEvent = z.infer<typeof FactCheckRequestedEventSchema>;
 export type FactCheckCompletedEvent = z.infer<typeof FactCheckCompletedEventSchema>;
+export type EvaluationCompletedEvent = z.infer<typeof EvaluationCompletedEventSchema>;
 export type PipelineEvent = z.infer<typeof PipelineEventSchema>;

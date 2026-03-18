@@ -3,6 +3,7 @@ import { useDomain } from "@/contexts/DomainContext";
 import { fetchSkills, type SkillSummary } from "@/lib/api/skill";
 import { SkillCard } from "./SkillCard";
 import { EvaluationPanel } from "./EvaluationPanel";
+import { AutoEvalPanel } from "./AutoEvalPanel";
 
 export function SkillInvokerDemo() {
   const { domain } = useDomain();
@@ -91,8 +92,14 @@ export function SkillInvokerDemo() {
       </div>
 
       {/* Right panel: Evaluation */}
-      <div className="col-span-8">
+      <div className="col-span-8 space-y-4">
         <EvaluationPanel skill={selected} />
+        {selected && (
+          <AutoEvalPanel
+            skillId={selected.skillId}
+            organizationId={domain.organizationId}
+          />
+        )}
       </div>
     </div>
   );

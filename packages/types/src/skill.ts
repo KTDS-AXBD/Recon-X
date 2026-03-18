@@ -135,3 +135,20 @@ export const EvaluateBenchmarkResultSchema = z.object({
 });
 
 export type EvaluateBenchmarkResult = z.infer<typeof EvaluateBenchmarkResultSchema>;
+
+// ── CC Skill Export (REQ-025) ─────────────────────────────────────────
+
+export const ExportCcRequestSchema = z.object({
+  format: z.literal("cc-skill").default("cc-skill"),
+});
+
+export type ExportCcRequest = z.infer<typeof ExportCcRequestSchema>;
+
+/** Metadata returned alongside the ZIP binary */
+export interface ExportCcMeta {
+  skillId: string;
+  skillName: string;
+  policyCount: number;
+  zipSizeBytes: number;
+  generatedAt: string;
+}

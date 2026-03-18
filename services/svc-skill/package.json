@@ -17,6 +17,7 @@
   "dependencies": {
     "@ai-foundry/types": "workspace:*",
     "@ai-foundry/utils": "workspace:*",
+    "fflate": "^0.8.2",
     "zod": "^3.24.1"
   },
   "devDependencies": {

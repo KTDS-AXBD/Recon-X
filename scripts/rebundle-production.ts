@@ -6,7 +6,8 @@
  * 프로덕션 API를 직접 호출해서 분류 → 번들링 → 저장까지 처리.
  *
  * Usage:
- *   CLOUDFLARE_API_TOKEN=xxx bun run scripts/rebundle-production.ts
+ *   CLOUDFLARE_API_TOKEN=xxx ORG_ID=LPON DOMAIN=giftvoucher bun run scripts/rebundle-production.ts
+ *   CLOUDFLARE_API_TOKEN=xxx ORG_ID=Miraeasset DOMAIN=pension bun run scripts/rebundle-production.ts
  */
 
 const POLICY_API = "https://svc-policy-production.sinclair-account.workers.dev";
@@ -14,8 +15,8 @@ const LLM_API = "https://svc-llm-router-production.sinclair-account.workers.dev"
 const SKILL_API = "https://svc-skill-production.sinclair-account.workers.dev";
 const SECRET = "e2e-test-secret-2026";
 const CF_TOKEN = process.env["CLOUDFLARE_API_TOKEN"] ?? "";
-const ORG_ID = "LPON";
-const DOMAIN = "giftvoucher";
+const ORG_ID = process.env["ORG_ID"] ?? "LPON";
+const DOMAIN = process.env["DOMAIN"] ?? "giftvoucher";
 
 if (!CF_TOKEN) {
   console.error("❌ CLOUDFLARE_API_TOKEN 환경변수 필요");

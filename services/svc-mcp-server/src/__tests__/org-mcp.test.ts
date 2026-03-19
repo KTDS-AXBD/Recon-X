@@ -62,10 +62,31 @@ const evaluateResponse = {
   },
 };
 
+const skillQueryResponse = {
+  success: true,
+  data: {
+    skills: [
+      { skillId: "sk-lpon-001", metadata: { domain: "giftvoucher", subdomain: "charging", tags: ["충전", "자동충전"] }, trust: { level: "reviewed", score: 0 }, policyCount: 5, status: "bundled" },
+      { skillId: "sk-lpon-002", metadata: { domain: "giftvoucher", subdomain: "payment", tags: ["결제"] }, trust: { level: "reviewed", score: 0 }, policyCount: 3, status: "bundled" },
+    ],
+    total: 2,
+  },
+};
+
+const ontologyLookupResponse = {
+  success: true,
+  data: {
+    terms: [
+      { termId: "t-001", label: "온누리상품권", definition: "소상공인 지원 상품권", skosUri: "urn:aif:term:onnuri-voucher", termType: "concept" },
+      { termId: "t-002", label: "충전한도", definition: "1회 최대 충전 가능 금액", skosUri: "urn:aif:term:charge-limit", termType: "attribute" },
+    ],
+  },
+};
+
 // ── Mock helpers ────────────────────────────────────────────────────
 
 function createMockEnv(overrides?: Partial<Env>): Env {
-  const mockFetch = vi.fn(async (input: RequestInfo) => {
+  const mockSkillFetch = vi.fn(async (input: RequestInfo) => {
     const url = typeof input === "string" ? input : (input as Request).url;
 
     if (url.includes("/skills/org/")) {
@@ -74,11 +95,24 @@ function createMockEnv(overrides?: Partial<Env>): Env {
     if (url.includes("/evaluate")) {
       return Response.json(evaluateResponse, { status: 200 });
     }
+    if (url.includes("/skills?")) {
+      return Response.json(skillQueryResponse, { status: 200 });
+    }
+    return new Response("Not Found", { status: 404 });
+  });
+
+  const mockOntologyFetch = vi.fn(async (input: RequestInfo) => {
+    const url = typeof input === "string" ? input : (input as Request).url;
+
+    if (url.includes("/terms?")) {
+      return Response.json(ontologyLookupResponse, { status: 200 });
+    }
     return new Response("Not Found", { status: 404 });
   });
 
   return {
-    SVC_SKILL: { fetch: mockFetch } as unknown as Fetcher,
+    SVC_SKILL: { fetch: mockSkillFetch } as unknown as Fetcher,
+    SVC_ONTOLOGY: { fetch: mockOntologyFetch } as unknown as Fetcher,
     INTERNAL_API_SECRET: "test-secret-123",
     ENVIRONMENT: "test",
     SERVICE_NAME: "svc-mcp-server",
@@ -147,7 +181,7 @@ describe("svc-mcp-server org endpoint", () => {
     expect(body.result.serverInfo.name).toBe("ai-foundry-org-LPON");
   });
 
-  it("POST /mcp/org/LPON tools/list returns aggregated tools", async () => {
+  it("POST /mcp/org/LPON tools/list returns meta-tools + policy tools", async () => {
     const req = orgJsonRpcRequest("LPON", "tools/list", {}, 2);
     const res = await handler.fetch(req, env, ctx);
     expect(res.status).toBe(200);
@@ -161,9 +195,15 @@ describe("svc-mcp-server org endpoint", () => {
     };
     expect(body.jsonrpc).toBe("2.0");
     expect(body.id).toBe(2);
-    expect(body.result.tools).toHaveLength(2);
-    expect(body.result.tools[0]?.name).toBe("pol-gift-charge-001");
-    expect(body.result.tools[1]?.name).toBe("pol-gift-pay-001");
+    // 3 meta-tools + 2 policy tools = 5
+    expect(body.result.tools).toHaveLength(5);
+    // Meta-tools first
+    expect(body.result.tools[0]?.name).toBe("foundry_policy_eval");
+    expect(body.result.tools[1]?.name).toBe("foundry_skill_query");
+    expect(body.result.tools[2]?.name).toBe("foundry_ontology_lookup");
+    // Then policy tools
+    expect(body.result.tools[3]?.name).toBe("pol-gift-charge-001");
+    expect(body.result.tools[4]?.name).toBe("pol-gift-pay-001");
   });
 
   it("POST /mcp/org/LPON tools/call returns evaluation result", async () => {
@@ -214,5 +254,101 @@ describe("svc-mcp-server org endpoint", () => {
     expect(res.status).toBe(404);
     const body = (await res.json()) as { jsonrpc: string; error: { code: number; message: string } };
     expect(body.error.message).toContain("Organization not found");
+  });
+
+  // ── Meta-tool tests ──────────────────────────────────────────────
+
+  it("foundry_skill_query calls SVC_SKILL and returns formatted result", async () => {
+    const req = orgJsonRpcRequest("LPON", "tools/call", {
+      name: "foundry_skill_query",
+      arguments: { query: "충전" },
+    }, 10);
+    const res = await handler.fetch(req, env, ctx);
+    expect(res.status).toBe(200);
+
+    const body = (await res.json()) as {
+      jsonrpc: string;
+      id: number;
+      result: { content: Array<{ type: string; text: string }> };
+    };
+    expect(body.id).toBe(10);
+    expect(body.result.content).toHaveLength(1);
+    const text = body.result.content[0]?.text ?? "";
+    expect(text).toContain("스킬 검색 결과 (2건)");
+    expect(text).toContain("giftvoucher/charging");
+    expect(text).toContain("sk-lpon-001");
+
+    // Verify SVC_SKILL.fetch was called with skills query + X-Organization-Id header
+    const skillFetch = (env.SVC_SKILL as unknown as { fetch: ReturnType<typeof vi.fn> }).fetch;
+    const calls = skillFetch.mock.calls as Array<[string, { headers: Record<string, string> }]>;
+    expect(calls.some(([url, opts]) => url.includes("/skills?") && url.includes("q=") && opts.headers["X-Organization-Id"] === "LPON")).toBe(true);
+  });
+
+  it("foundry_ontology_lookup calls SVC_ONTOLOGY and returns formatted result", async () => {
+    const req = orgJsonRpcRequest("LPON", "tools/call", {
+      name: "foundry_ontology_lookup",
+      arguments: { term: "온누리상품권" },
+    }, 11);
+    const res = await handler.fetch(req, env, ctx);
+    expect(res.status).toBe(200);
+
+    const body = (await res.json()) as {
+      jsonrpc: string;
+      id: number;
+      result: { content: Array<{ type: string; text: string }> };
+    };
+    expect(body.id).toBe(11);
+    expect(body.result.content).toHaveLength(1);
+    const text = body.result.content[0]?.text ?? "";
+    expect(text).toContain("용어 조회 결과 (2건)");
+    expect(text).toContain("온누리상품권");
+    expect(text).toContain("온누리상품권");
+    expect(text).toContain("urn:aif:term:onnuri-voucher");
+
+    // Verify SVC_ONTOLOGY.fetch was called with X-Organization-Id header
+    const ontologyFetch = (env.SVC_ONTOLOGY as unknown as { fetch: ReturnType<typeof vi.fn> }).fetch;
+    const calls = ontologyFetch.mock.calls as Array<[string, { headers: Record<string, string> }]>;
+    expect(calls.some(([url, opts]) => url.includes("/terms?") && opts.headers["X-Organization-Id"] === "LPON")).toBe(true);
+  });
+
+  it("foundry_policy_eval calls evaluatePolicy and returns result", async () => {
+    const req = orgJsonRpcRequest("LPON", "tools/call", {
+      name: "foundry_policy_eval",
+      arguments: { context: "사용자가 5만원 충전 요청", policyCode: "pol-gift-charge-001" },
+    }, 12);
+    const res = await handler.fetch(req, env, ctx);
+    expect(res.status).toBe(200);
+
+    const body = (await res.json()) as {
+      jsonrpc: string;
+      id: number;
+      result: { content: Array<{ type: string; text: string }> };
+    };
+    expect(body.id).toBe(12);
+    const text = body.result.content[0]?.text ?? "";
+    expect(text).toContain("APPLICABLE");
+    expect(text).toContain("0.88");
+
+    // Verify SVC_SKILL.fetch was called with evaluate endpoint
+    const skillFetch = (env.SVC_SKILL as unknown as { fetch: ReturnType<typeof vi.fn> }).fetch;
+    const calls = skillFetch.mock.calls.map((c: unknown[]) => String(c[0]));
+    expect(calls.some((u: string) => u.includes("/evaluate"))).toBe(true);
+  });
+
+  it("existing policy tool (pol-gift-charge-001) still works after meta-tool addition", async () => {
+    const req = orgJsonRpcRequest("LPON", "tools/call", {
+      name: "pol-gift-charge-001",
+      arguments: { context: "사용자 A가 온누리상품권 5만원 충전 요청" },
+    }, 13);
+    const res = await handler.fetch(req, env, ctx);
+    expect(res.status).toBe(200);
+
+    const body = (await res.json()) as {
+      jsonrpc: string;
+      id: number;
+      result: { content: Array<{ type: string; text: string }> };
+    };
+    expect(body.id).toBe(13);
+    expect(body.result.content[0]?.text).toContain("APPLICABLE");
   });
 });

@@ -14,7 +14,7 @@
 - **Positioning**: 역공학(기존 산출물 분석) → 순공학(새 프로젝트 부트스트래핑) 양방향 엔진. Foundry-X(에이전트 협업 플랫폼)와 결합하여 완전한 소프트웨어 개발 파이프라인 구성
 - **Domain Pilot**: 퇴직연금 + 온누리상품권
 - **Current Phase**: Phase 4 Sprint 2 완료 (2-org 파일럿)
-- **Foundry-X 연동**: AIF-REQ-026 (P1, OPEN) — [KTDS-AXBD/Foundry-X](https://github.com/KTDS-AXBD/Foundry-X)
+- **Foundry-X 연동**: AIF-REQ-026 (P1, IN_PROGRESS) — [KTDS-AXBD/Foundry-X](https://github.com/KTDS-AXBD/Foundry-X)
 
 ---
 

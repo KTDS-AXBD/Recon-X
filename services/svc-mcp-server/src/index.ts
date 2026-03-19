@@ -107,6 +107,53 @@ interface OrgMcpAdapterResponse {
   _toolSkillMap: Record<string, string>; // toolName → skillId
 }
 
+// ── Meta-tools (foundry_* prefix) ─────────────────────────────────
+
+const META_TOOLS: McpAdapterTool[] = [
+  {
+    name: "foundry_policy_eval",
+    description: "AI Foundry 정책 평가 — condition-criteria-outcome 트리플에 대해 비즈니스 컨텍스트를 평가하고 준수 여부를 판정합니다.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        policyCode: { type: "string", description: "평가할 정책 코드 (예: POL-GV-CHARGE-001). 생략 시 context 기반 자동 매칭" },
+        context: { type: "string", description: "평가 대상 비즈니스 상황 설명" },
+        parameters: { type: "string", description: "추가 파라미터 JSON (선택)" },
+      },
+      required: ["context"],
+    },
+    annotations: { title: "정책 평가", readOnlyHint: true, openWorldHint: true },
+  },
+  {
+    name: "foundry_skill_query",
+    description: "AI Foundry 스킬 검색 — 역공학으로 추출된 도메인 스킬을 키워드, 태그, 서브도메인으로 검색합니다.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "검색 키워드 (예: '충전', '선물하기')" },
+        tags: { type: "string", description: "태그 필터 (쉼표 구분)" },
+        subdomain: { type: "string", description: "서브도메인 필터" },
+        limit: { type: "string", description: "결과 수 (기본 10)" },
+      },
+      required: ["query"],
+    },
+    annotations: { title: "스킬 검색", readOnlyHint: true, openWorldHint: true },
+  },
+  {
+    name: "foundry_ontology_lookup",
+    description: "AI Foundry 용어 조회 — SKOS/JSON-LD 기반 도메인 용어사전에서 용어를 검색합니다. 정의, 동의어, SKOS URI를 반환합니다.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        term: { type: "string", description: "검색할 용어 (예: '온누리상품권', '충전한도')" },
+        includeRelated: { type: "string", description: "관련 용어 포함 여부 (true/false, 기본 true)" },
+      },
+      required: ["term"],
+    },
+    annotations: { title: "용어 조회", readOnlyHint: true, openWorldHint: true },
+  },
+];
+
 interface EvaluateApiResponse {
   success: boolean;
   data: {
@@ -289,6 +336,182 @@ function createSkillMcpServer(
   return server;
 }
 
+// ── JSON-RPC response helpers ─────────────────────────────────────
+
+function jsonRpcSuccess(id: unknown, text: string): Response {
+  return Response.json({
+    jsonrpc: "2.0",
+    result: { content: [{ type: "text", text }] },
+    id,
+  }, { headers: { ...corsHeaders(), "Content-Type": "application/json" } });
+}
+
+function jsonRpcError(id: unknown, message: string): Response {
+  return Response.json({
+    jsonrpc: "2.0",
+    result: { content: [{ type: "text", text: `Error: ${message}` }], isError: true },
+    id,
+  }, { headers: { ...corsHeaders(), "Content-Type": "application/json" } });
+}
+
+// ── Meta-tool handlers ───────────────────────────────────────────
+
+type ToolCallParams = { name: string; arguments?: Record<string, string> } | undefined;
+type JsonRpcBody = { jsonrpc: string; method: string; params?: Record<string, unknown>; id?: unknown };
+
+async function handlePolicyEvalTool(
+  body: JsonRpcBody,
+  params: ToolCallParams,
+  adapter: OrgMcpAdapterResponse,
+  env: Env,
+  _orgId: string,
+): Promise<Response> {
+  const context = params?.arguments?.["context"] ?? "";
+  const policyCode = params?.arguments?.["policyCode"];
+  const parametersStr = params?.arguments?.["parameters"];
+
+  let skillId: string;
+  let evalPolicyCode: string;
+
+  if (policyCode) {
+    evalPolicyCode = policyCode.toUpperCase();
+    skillId = adapter._toolSkillMap[policyCode.toLowerCase()] ?? "";
+  } else {
+    const firstTool = Object.keys(adapter._toolSkillMap)[0] ?? "";
+    skillId = adapter._toolSkillMap[firstTool] ?? "";
+    evalPolicyCode = firstTool.toUpperCase();
+  }
+
+  if (!skillId) {
+    return jsonRpcError(body.id, "매칭되는 정책을 찾을 수 없습니다");
+  }
+
+  let parsedParams: Record<string, unknown> | undefined;
+  if (parametersStr) {
+    try { parsedParams = JSON.parse(parametersStr) as Record<string, unknown>; } catch { /* ignore */ }
+  }
+
+  try {
+    const result = await evaluatePolicy(env, skillId, evalPolicyCode, context, parsedParams);
+    if (!result.success) {
+      return jsonRpcError(body.id, result.error?.message ?? "알 수 없는 오류");
+    }
+    const { data } = result;
+    const text = [
+      "## 정책 평가 결과", "",
+      `**정책**: ${data.policyCode}`,
+      `**판정**: ${data.result}`,
+      `**신뢰도**: ${data.confidence}`,
+      `**모델**: ${data.provider} / ${data.model}`,
+      `**응답시간**: ${data.latencyMs}ms`,
+      "", "### 근거", data.reasoning,
+    ].join("\n");
+    return jsonRpcSuccess(body.id, text);
+  } catch (e) {
+    logger.error("foundry_policy_eval error", { evalPolicyCode, error: String(e) });
+    return jsonRpcError(body.id, `평가 중 오류 발생: ${String(e)}`);
+  }
+}
+
+async function handleSkillQueryTool(
+  body: JsonRpcBody,
+  params: ToolCallParams,
+  env: Env,
+  orgId: string,
+): Promise<Response> {
+  const query = params?.arguments?.["query"] ?? "";
+  const tags = params?.arguments?.["tags"] ?? "";
+  const subdomain = params?.arguments?.["subdomain"] ?? "";
+  const limit = params?.arguments?.["limit"] ?? "10";
+
+  const searchParams = new URLSearchParams({ q: query, limit });
+  if (tags) searchParams.set("tags", tags);
+  if (subdomain) searchParams.set("subdomain", subdomain);
+
+  try {
+    const res = await env.SVC_SKILL.fetch(
+      `https://svc-skill.internal/skills?${searchParams}`,
+      { headers: { "X-Internal-Secret": env.INTERNAL_API_SECRET, "X-Organization-Id": orgId } },
+    );
+
+    if (!res.ok) {
+      return jsonRpcError(body.id, `스킬 검색 실패: ${res.status}`);
+    }
+
+    const json = await res.json() as { success: boolean; data: { skills: Array<Record<string, unknown>>; total: number } };
+    const { skills, total } = json.data;
+
+    const text = [
+      `## 스킬 검색 결과 (${total}건)`, "",
+      `**검색어**: ${query}`,
+      `**조직**: ${orgId}`,
+      "",
+      ...skills.map((s, i: number) => {
+        const meta = s["metadata"] as Record<string, unknown> | undefined;
+        const trust = s["trust"] as Record<string, unknown> | undefined;
+        const domain = meta?.["domain"] ?? "unknown";
+        const subdomain = meta?.["subdomain"] ?? "";
+        const trustLevel = trust?.["level"] ?? "unknown";
+        const tags = Array.isArray(meta?.["tags"]) ? (meta["tags"] as string[]).slice(0, 3).join(", ") : "";
+        return `${i + 1}. **${domain}/${subdomain}** (${s["skillId"]})\n   신뢰도: ${trustLevel} | 정책: ${s["policyCount"]}건${tags ? ` | 태그: ${tags}` : ""}`;
+      }),
+    ].join("\n");
+
+    return jsonRpcSuccess(body.id, text);
+  } catch (e) {
+    logger.error("foundry_skill_query error", { orgId, error: String(e) });
+    return jsonRpcError(body.id, `스킬 검색 중 오류 발생: ${String(e)}`);
+  }
+}
+
+async function handleOntologyLookupTool(
+  body: JsonRpcBody,
+  params: ToolCallParams,
+  env: Env,
+  orgId: string,
+): Promise<Response> {
+  const term = params?.arguments?.["term"] ?? "";
+
+  const searchParams = new URLSearchParams({ q: term, limit: "20" });
+
+  try {
+    if (!env.SVC_ONTOLOGY) {
+      return jsonRpcError(body.id, "SVC_ONTOLOGY binding not configured");
+    }
+
+    const res = await env.SVC_ONTOLOGY.fetch(
+      `https://svc-ontology.internal/terms?${searchParams}`,
+      { headers: { "X-Internal-Secret": env.INTERNAL_API_SECRET, "X-Organization-Id": orgId } },
+    );
+
+    if (!res.ok) {
+      return jsonRpcError(body.id, `용어 조회 실패: ${res.status}`);
+    }
+
+    const json = await res.json() as { success: boolean; data: { terms: Array<Record<string, unknown>>; total?: number } };
+    const terms = json.data.terms;
+    const total = json.data.total ?? terms.length;
+
+    const text = [
+      `## 용어 조회 결과 (${total}건)`, "",
+      `**검색어**: ${term}`,
+      `**조직**: ${orgId}`,
+      "",
+      ...terms.map((t, i: number) => {
+        const lines = [`${i + 1}. **${t["label"]}** (${t["termType"] ?? "term"})`];
+        if (t["definition"]) lines.push(`   정의: ${t["definition"]}`);
+        if (t["skosUri"]) lines.push(`   URI: ${t["skosUri"]}`);
+        return lines.join("\n");
+      }),
+    ].join("\n");
+
+    return jsonRpcSuccess(body.id, text);
+  } catch (e) {
+    logger.error("foundry_ontology_lookup error", { orgId, error: String(e) });
+    return jsonRpcError(body.id, `용어 조회 중 오류 발생: ${String(e)}`);
+  }
+}
+
 /**
  * Handle org-level MCP requests with raw JSON-RPC instead of SDK.
  * Avoids Worker crash from registering 848+ tools via server.tool().
@@ -319,24 +542,38 @@ async function handleOrgMcpJsonRpc(
   }
 
   if (body.method === "tools/list") {
-    const mcpTools = adapter.tools.map((t) => ({
+    const policyTools = adapter.tools.map((t) => ({
       name: t.name,
       description: t.description,
       inputSchema: t.inputSchema,
       annotations: t.annotations,
     }));
+    const allTools = [...META_TOOLS, ...policyTools];
     return Response.json({
       jsonrpc: "2.0",
-      result: { tools: mcpTools },
+      result: { tools: allTools },
       id: body.id,
     }, { headers: { ...corsHeaders(), "Content-Type": "application/json" } });
   }
 
   if (body.method === "tools/call") {
-    const params = body.params as { name: string; arguments?: { context?: string; parameters?: string } } | undefined;
+    const params = body.params as ToolCallParams;
     const toolName = params?.name ?? "";
-    const context = params?.arguments?.context ?? "";
-    const parametersStr = params?.arguments?.parameters;
+
+    // ── Meta-tool 분기 (foundry_* prefix) ──
+    if (toolName === "foundry_policy_eval") {
+      return handlePolicyEvalTool(body, params, adapter, env, orgId);
+    }
+    if (toolName === "foundry_skill_query") {
+      return handleSkillQueryTool(body, params, env, orgId);
+    }
+    if (toolName === "foundry_ontology_lookup") {
+      return handleOntologyLookupTool(body, params, env, orgId);
+    }
+
+    // ── 기존 policy tool (policy code 기반) ──
+    const context = params?.arguments?.["context"] ?? "";
+    const parametersStr = params?.arguments?.["parameters"];
 
     const policyCode = toolName.toUpperCase();
     const skillId = adapter._toolSkillMap[toolName];

@@ -12,6 +12,10 @@ inspector_port = 9212
 binding = "SVC_SKILL"
 service = "svc-skill"
 
+[[services]]
+binding = "SVC_ONTOLOGY"
+service = "svc-ontology"
+
 [vars]
 ENVIRONMENT = "development"
 SERVICE_NAME = "svc-mcp-server"
@@ -28,6 +32,10 @@ vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-mcp-server" }
 binding = "SVC_SKILL"
 service = "svc-skill-staging"
 
+[[env.staging.services]]
+binding = "SVC_ONTOLOGY"
+service = "svc-ontology-staging"
+
 # ---------------------------------------------------------------------------
 # Production environment
 # ---------------------------------------------------------------------------
@@ -37,3 +45,7 @@ vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-mcp-server" }
 [[env.production.services]]
 binding = "SVC_SKILL"
 service = "svc-skill-production"
+
+[[env.production.services]]
+binding = "SVC_ONTOLOGY"
+service = "svc-ontology-production"

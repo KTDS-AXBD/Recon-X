@@ -27,6 +27,7 @@
 | AIF-PLAN-019 | SI 산출물 Export UI | 0.1 | Draft | `01-plan/features/deliverable-export-ui.plan.md` |
 | AIF-PLAN-020 | 계정/인프라 이전 | 1.0 | Draft | `03-plan/AIF-PLAN-020_account-migration.md` |
 | AIF-PLAN-026 | Foundry-X 통합 — 제품군 통합 로드맵 | 1.0 | Draft | `01-plan/features/foundry-x-integration.plan.md` |
+| AIF-PLAN-026C | Foundry-X TaskType 확장 Phase 1-3 | 1.0 | Active | `01-plan/features/req-026-phase-1-3.plan.md` |
 
 ## DSGN (8)
 
@@ -40,6 +41,7 @@
 | AIF-DSGN-006 | v0.7.4 Phase 2-C Spec Export & KPI | 1.0 | Active | `02-design/features/v074-pivot-phase2c.design.md` |
 | AIF-DSGN-007 | 온누리상품권 분석 산출물 검증 및 문서화 | 0.1 | Draft | `02-design/features/lpon-deliverable-validation.design.md` |
 | AIF-DSGN-008 | SI 산출물 Export UI | 0.1 | Draft | `02-design/features/deliverable-export-ui.design.md` |
+| AIF-DSGN-026C | Foundry-X TaskType 확장 Phase 1-3 | 1.0 | Active | `02-design/features/req-026-phase-1-3.design.md` |
 
 ## ANLS (23)
 

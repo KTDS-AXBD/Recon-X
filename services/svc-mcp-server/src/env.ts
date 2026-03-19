@@ -1,6 +1,8 @@
 export interface Env {
   // Service binding to svc-skill (MCP adapter + evaluate)
   SVC_SKILL: Fetcher;
+  // Service binding to svc-ontology (term lookup, used by org MCP meta-tools)
+  SVC_ONTOLOGY?: Fetcher;
 
   // Vars
   ENVIRONMENT: string;

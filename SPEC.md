@@ -55,9 +55,10 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-03-19
+- **Last Updated**: 2026-03-20
 - **Current Phase**: Phase 4 Sprint 2 완료 — 12 Workers + Pages 배포, 2-org 파일럿 (퇴직연금 + 온누리상품권), policies 3,675 / skills 3,924
 - **Foundry-X MCP 통합**: ✅ Phase 1-3 완료 — org MCP 2서버 + meta-tool 3종(`foundry_policy_eval`, `foundry_skill_query`, `foundry_ontology_lookup`). 619 tools (616 기존 + 3 meta). Foundry-X AgentTaskType 7종(기존4 + 신규3). SVC_ONTOLOGY binding. PDCA 100%. AIF-REQ-026 IN_PROGRESS
+- **반제품 생성 엔진**: AIF-REQ-026 Phase 2 Sprint 1 완료 — Working Prototype Generator (svc-skill 확장). POST /prototype/generate API, collector(5 SVC) + generators 3종(business-logic/rules-json/terms-jsonld) + fflate ZIP → R2. 262 tests, PDCA 93%. AIF-REQ-027 IN_PROGRESS (별도 pane). D1 0004 production 적용
 - **Production E2E**: ✅ 8/8 PASS (synthetic) + 7/7 PASS (real-doc) + Batch 3: 7/11 parsed (SCDSA002 4건 → encrypted 상태)
 - **Real Document Pilot**: ✅ 20/26 문서 파싱 완료 (Batch 1: 4건, Batch 2: 9/11건, Batch 3: 7/11건)
 - **Production Data**: policies 3,675 approved (LPON 848 + Miraeasset 2,827), skills 3,924 (LPON 859 + Miraeasset 3,065). 2-org
@@ -475,6 +476,12 @@
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
 | AIF-REQ-026 | Feature | Integration | P1 | IN_PROGRESS | Foundry-X 통합 계획 — AI Foundry(역공학: SI 산출물→Skill 추출)와 Foundry-X(순공학: Spec↔Code↔Test 동기화+에이전트 협업)를 하나의 제품군으로 통합. (1) AI Foundry Skill 자산을 Foundry-X MCP/에이전트 도구로 연동, (2) 역공학↔순공학 양방향 포지셔닝 재정의, (3) 기술 스택 정합성 검토(Cloudflare Workers vs Node.js+Hono), (4) 공유 타입/패키지 통합, (5) 통합 로드맵 수립. 참조: [KTDS-AXBD/Foundry-X](https://github.com/KTDS-AXBD/Foundry-X) |
+
+### 반제품 스펙 — 역공학 결과물의 개발 스펙 변환 (신규 등록)
+
+| ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
+|----|------|--------|:--------:|:----:|------|
+| AIF-REQ-027 | Feature | Pipeline | P0 | IN_PROGRESS | 반제품 스펙 포맷 정의 및 파일럿 생성 — AI Foundry 역공학 결과물(policies 3,675, skills 26, ontologies 848)을 AI Agent가 바로 구현 가능한 6개 스펙 문서(비즈니스 로직 명세, 데이터 모델 명세, 기능 정의서, 아키텍처 정의서, API 명세, 화면 정의)로 변환. 파일럿 1개 도메인(퇴직연금 or LPON)에서 Working Version 생성 검증. 참조: `반제품-스펙/prd-final.md`, AIF-REQ-026 |
 
 ---
 

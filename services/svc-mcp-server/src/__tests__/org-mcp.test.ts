@@ -335,6 +335,24 @@ describe("svc-mcp-server org endpoint", () => {
     expect(calls.some((u: string) => u.includes("/evaluate"))).toBe(true);
   });
 
+  it("unknown meta-tool name returns error", async () => {
+    const req = orgJsonRpcRequest("LPON", "tools/call", {
+      name: "foundry_nonexistent",
+      arguments: { query: "test" },
+    }, 14);
+    const res = await handler.fetch(req, env, ctx);
+    expect(res.status).toBe(200);
+
+    const body = (await res.json()) as {
+      jsonrpc: string;
+      id: number;
+      result: { content: Array<{ type: string; text: string }>; isError?: boolean };
+    };
+    expect(body.id).toBe(14);
+    expect(body.result.isError).toBe(true);
+    expect(body.result.content[0]?.text).toContain("Unknown tool");
+  });
+
   it("existing policy tool (pol-gift-charge-001) still works after meta-tool addition", async () => {
     const req = orgJsonRpcRequest("LPON", "tools/call", {
       name: "pol-gift-charge-001",

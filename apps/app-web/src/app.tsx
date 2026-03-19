@@ -30,6 +30,7 @@ const GapAnalysisPage = lazy(() => import("./pages/gap-analysis"));
 const BenchmarkPage = lazy(() => import("./pages/benchmark"));
 const AgentConsolePage = lazy(() => import("./pages/agent-console"));
 const MockupPage = lazy(() => import("./pages/mockup"));
+const PocReportPage = lazy(() => import("./pages/poc-report"));
 const NotFoundPage = lazy(() => import("./pages/not-found"));
 
 function LoadingFallback() {
@@ -82,6 +83,7 @@ export function App() {
             <Route path="/benchmark" element={<ProtectedRoute><Layout><BenchmarkPage /></Layout></ProtectedRoute>} />
             <Route path="/agent-console" element={<ProtectedRoute><Layout><AgentConsolePage /></Layout></ProtectedRoute>} />
             <Route path="/mockup" element={<ProtectedRoute><Layout><MockupPage /></Layout></ProtectedRoute>} />
+            <Route path="/poc-report" element={<ProtectedRoute><Layout><PocReportPage /></Layout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
             <Route path="*" element={<ProtectedRoute><Layout><NotFoundPage /></Layout></ProtectedRoute>} />
           </Routes>

@@ -111,6 +111,7 @@ const menuGroups: MenuGroup[] = [
     items: [
       { icon: <Bot className="w-4 h-4" />, label: 'Agent Console', labelEn: 'Generative UI', path: '/agent-console' },
       { icon: <MonitorPlay className="w-4 h-4" />, label: 'Working Mock-up', labelEn: 'Live Demo', path: '/mockup' },
+      { icon: <FileText className="w-4 h-4" />, label: 'PoC 보고서', labelEn: 'PoC Report', path: '/poc-report' },
     ],
   },
   {

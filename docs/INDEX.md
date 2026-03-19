@@ -9,7 +9,7 @@
 | AIF-SPEC-001 | 퇴직연금 프로세스 정밀분석 PRD v0.1 | 1.0 | Active | `AI_Foundry_퇴직연금_프로세스_정밀분석_PRD_v0.1.md` |
 | AIF-SPEC-002 | 퇴직연금 프로세스 정밀분석 PRD v0.2 | 1.0 | Active | `AI_Foundry_퇴직연금_프로세스_정밀분석_PRD_v0.2.md` |
 
-## PLAN (13)
+## PLAN (14)
 
 | 코드 | 제목 | 버전 | 상태 | 파일 |
 |------|------|:----:|:----:|------|
@@ -29,7 +29,8 @@
 | AIF-PLAN-026 | Foundry-X 통합 — 제품군 통합 로드맵 | 1.0 | Draft | `01-plan/features/foundry-x-integration.plan.md` |
 | AIF-PLAN-026C | Foundry-X TaskType 확장 Phase 1-3 | 1.0 | Active | `01-plan/features/req-026-phase-1-3.plan.md` |
 | AIF-PLAN-026D | 반제품 생성 엔진 — Working Prototype Generator (Phase 2) | 1.0 | Active | `01-plan/features/req-026-phase-2.plan.md` |
-| AIF-PLAN-027 | 반제품 스펙 포맷 정의 및 파일럿 생성 | 1.0 | Active | `01-plan/features/halfproduct-spec.plan.md` |
+| AIF-PLAN-027 | 반제품 스펙 포맷 정의 및 파일럿 생성 | 1.0 | Active | `01-plan/features/req-027-semi-finished-spec.plan.md` |
+| AIF-PLAN-028 | 반제품 스펙 PoC 보고서 Production 게시 | 1.0 | Active | `01-plan/features/req-028-poc-report-page.plan.md` |
 
 ## DSGN (9)
 
@@ -78,7 +79,7 @@
 | AIF-ANLS-026C | Foundry-X TaskType 확장 Phase 1-3 Gap 분석 | 1.0 | Active | `03-analysis/features/req-026-phase-1-3.analysis.md` |
 | AIF-ANLS-026D | 반제품 생성 엔진 Phase 2 Gap 분석 | 1.1 | Active | `03-analysis/features/req-026-phase-2.analysis.md` |
 
-## RPRT (12)
+## RPRT (13)
 
 | 코드 | 제목 | 버전 | 상태 | 파일 |
 |------|------|:----:|:----:|------|
@@ -96,6 +97,7 @@
 | AIF-RPRT-012 | Miraeasset 퇴직연금 분석 보고서 v0.6.0 | 1.0 | Active | `04-report/AIF-RPRT-012_miraeasset-analysis-report.md` |
 | AIF-RPRT-026C | Foundry-X TaskType 확장 Phase 1-3 완료 보고서 | 1.0 | Active | `04-report/features/req-026-phase-1-3.report.md` |
 | AIF-RPRT-026D | 반제품 생성 엔진 Phase 2 PDCA 완료 보고서 | 1.0 | Active | `04-report/features/req-026-phase-2.report.md` |
+| AIF-RPRT-027 | 반제품 스펙 포맷 정의 및 파일럿 생성 완료 보고서 | 1.0 | Active | `04-report/features/req-027-semi-finished-spec.report.md` |
 
 ## GUID (1)
 

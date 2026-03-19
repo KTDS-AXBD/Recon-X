@@ -483,6 +483,12 @@
 |----|------|--------|:--------:|:----:|------|
 | AIF-REQ-027 | Feature | Pipeline | P0 | IN_PROGRESS | 반제품 스펙 포맷 정의 및 파일럿 생성 — AI Foundry 역공학 결과물(policies 3,675, skills 26, ontologies 848)을 AI Agent가 바로 구현 가능한 6개 스펙 문서(비즈니스 로직 명세, 데이터 모델 명세, 기능 정의서, 아키텍처 정의서, API 명세, 화면 정의)로 변환. 파일럿 1개 도메인(퇴직연금 or LPON)에서 Working Version 생성 검증. 참조: `반제품-스펙/prd-final.md`, AIF-REQ-026 |
 
+### 반제품 스펙 PoC 보고서 — Production 게시 (신규 등록)
+
+| ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
+|----|------|--------|:--------:|:----:|------|
+| AIF-REQ-028 | Feature | UX | P0 | PLANNED | 반제품 스펙 PoC 전체 과정 보고서 Production 게시 — AIF-REQ-027의 인터뷰→PRD→PDCA→6개 스펙 문서→Working Version 자동 생성까지 전 과정을 보고서로 구성하여 Production 사이트에 게시. 본부장 리뷰용. 포함 내용: 인터뷰 로그, PRD(3라운드 AI 검토), 6개 스펙 문서(BL 95건, 테이블 17개, FN 10개, API 28개), Working Version(14파일 1,610줄, 24 테스트 100%), PDCA Plan/Design/Report |
+
 ---
 
 ## 8) Risks & Constraints

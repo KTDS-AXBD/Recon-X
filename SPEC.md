@@ -120,17 +120,17 @@
 - **CI/CD Workflows**: ✅ GitHub Actions (CI + 통합 deploy-services.yml + deploy-pages.yml)
 - **typecheck**: ✅ 16개 패키지 전체 통과 (svc-queue-router 추가)
 - **서비스 배포**: ✅ 전 서비스 배포 완료 (2026-02-28)
-  - https://svc-llm-router.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅
-  - https://svc-security.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅
-  - https://svc-ingestion.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅
-  - https://svc-notification.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅
-  - https://svc-governance.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅
-  - https://svc-extraction.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅
-  - https://svc-policy.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅
-  - https://svc-ontology.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅
-  - https://svc-skill.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅
-  - https://svc-queue-router.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅ (sole queue consumer)
-  - https://svc-mcp-server.sinclair-account.workers.dev — `GET /health` HTTP 200 ✅ (MCP Streamable HTTP)
+  - https://svc-llm-router.ktds-axbd.workers.dev — `GET /health` HTTP 200 ✅
+  - https://svc-security.ktds-axbd.workers.dev — `GET /health` HTTP 200 ✅
+  - https://svc-ingestion.ktds-axbd.workers.dev — `GET /health` HTTP 200 ✅
+  - https://svc-notification.ktds-axbd.workers.dev — `GET /health` HTTP 200 ✅
+  - https://svc-governance.ktds-axbd.workers.dev — `GET /health` HTTP 200 ✅
+  - https://svc-extraction.ktds-axbd.workers.dev — `GET /health` HTTP 200 ✅
+  - https://svc-policy.ktds-axbd.workers.dev — `GET /health` HTTP 200 ✅
+  - https://svc-ontology.ktds-axbd.workers.dev — `GET /health` HTTP 200 ✅
+  - https://svc-skill.ktds-axbd.workers.dev — `GET /health` HTTP 200 ✅
+  - https://svc-queue-router.ktds-axbd.workers.dev — `GET /health` HTTP 200 ✅ (sole queue consumer)
+  - https://svc-mcp-server.ktds-axbd.workers.dev — `GET /health` HTTP 200 ✅ (MCP Streamable HTTP)
 - **Wrangler Secrets**: ✅ 전 서비스 INTERNAL_API_SECRET 설정 완료 (2026-02-28)
   - svc-llm-router: `INTERNAL_API_SECRET` / `ANTHROPIC_API_KEY` / `CLOUDFLARE_AI_GATEWAY_URL` ✅
   - svc-security: `INTERNAL_API_SECRET` / `JWT_SECRET`(auto-gen) ✅
@@ -254,7 +254,7 @@
 - **E2E 스크립트**: `--staging`, `--real-doc <path>`, `--json`, `--wait-queue` 지원
 - **샘플 문서**: test-docs/ (퇴직연금 합성 3건)
 - **Staging 배포**: ✅ 11/11 Workers staging 배포 완료 + 12/12 healthy
-  - URL 패턴: `https://svc-xxx-staging.sinclair-account.workers.dev`
+  - URL 패턴: `https://svc-xxx-staging.ktds-axbd.workers.dev`
   - Service binding: staging worker 간 격리 (`-staging` 접미사)
   - Secrets: INTERNAL_API_SECRET ×11 + OPENAI_API_KEY + GOOGLE_AI_API_KEY + AI_GATEWAY_URL + JWT_SECRET
 - **Production 배포**: ✅ 11/11 Workers + Pages 배포 완료 + 12/12 healthy

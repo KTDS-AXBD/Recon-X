@@ -2,6 +2,21 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 179 — 2026-03-19
+
+**Mockup Skill 호출 점검 — sinclair-account→ktds-axbd URL 일괄 교체 + Pages 재생성**:
+- ✅ app-mockup/app-web 프록시 ACCOUNT_SUBDOMAIN `sinclair-account`→`ktds-axbd` 교체 (26개 파일)
+- ✅ Skill 필터 `status: "published"`→`"bundled"` 수정 (SkillInvokerDemo + SkillExportDemo)
+- ✅ 새 계정에 `ai-foundry-mockup` Pages 프로젝트 생성 + 시크릿 설정 + 배포
+- ✅ app-web 재빌드 + Pages 배포
+- ✅ Mockup Skill 호출 탭: 20개 bundled skill 카드 로딩 + 평가 패널 표시 확인
+- ⚠️ Mockup 도메인 변경: `ai-foundry-mockup.pages.dev` → `ai-foundry-mockup-blt.pages.dev`
+
+**검증 결과**:
+- ✅ typecheck 18/18 PASS
+- ✅ Mockup: 정책 엔진 + Skill 호출 + 온톨로지 탭 정상
+- ✅ app-web + app-mockup Pages 배포 완료
+
 ## 세션 178 — 2026-03-19
 
 **전체 서비스 D1/KV ID 교체 + R2 재업로드 + Foundry-X MCP 등록**:

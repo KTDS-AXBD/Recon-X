@@ -291,6 +291,7 @@ bun run typecheck && bun run lint
 | `/ax-11-risk [add\|list\|resolve]` | 리스크 관리 |
 | `/ax-12-retro` | 마일스톤 회고 |
 | `/ax-13-selfcheck` | ax plugin 자율점검 |
+| `/ax-14-integrity [check\|fix\|report]` | 요구사항 정합성 검증 (SPEC ↔ GitHub ↔ Execution Plan) |
 | `/ax-15-statusline [clear\|set]` | StatusLine 요구사항 표시 관리 |
 
 #### 프로젝트 스킬 (res-ai-foundry 전용)

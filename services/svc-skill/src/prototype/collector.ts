@@ -185,16 +185,20 @@ async function fetchExtractions(
     const batch = documentIds.slice(i, i + batchSize);
     const results = await Promise.allSettled(
       batch.map(async (docId) => {
-        const res = await fetchService<{ extractions: ExtractionResult[] }>(
+        const res = await fetchService<{ success: boolean; data: { extractions: ExtractionResult[] } } | { extractions: ExtractionResult[] }>(
           env.SVC_EXTRACTION,
           `/extractions?documentId=${docId}`,
           env.INTERNAL_API_SECRET,
         );
-        return res.extractions;
+        // API 응답 래퍼 패턴: { success, data: { extractions } } 또는 직접 { extractions }
+        const extractions = "data" in res && res.data
+          ? (res.data as { extractions: ExtractionResult[] }).extractions
+          : (res as { extractions: ExtractionResult[] }).extractions;
+        return extractions ?? [];
       }),
     );
     for (const r of results) {
-      if (r.status === "fulfilled") {
+      if (r.status === "fulfilled" && Array.isArray(r.value)) {
         all.push(...r.value);
       }
     }

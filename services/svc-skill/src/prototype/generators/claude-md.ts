@@ -12,6 +12,7 @@ export interface GeneratorOutputs {
   fs: GeneratedFile;
   arch: GeneratedFile;
   api: GeneratedFile;
+  screen?: GeneratedFile;
 }
 
 function inferDomain(data: CollectedData): string {
@@ -76,6 +77,11 @@ export function generateClaudeMd(
     "## API 명세",
     `\`specs/05-api.md\` 참조. 엔드포인트/요청/응답 스키마 준수. (${apiCount}개 API)`,
     "",
+    ...(outputs.screen ? [
+      "## 화면 설계",
+      "`specs/06-screens.md` 참조. SCR-001부터 순서대로 구현.",
+      "",
+    ] : []),
     "## 구현 스택",
     "- Runtime: Node.js (Bun)",
     "- Framework: Hono",

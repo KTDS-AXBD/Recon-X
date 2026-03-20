@@ -138,3 +138,128 @@ describe("collectOrgData", () => {
     expect(data.policies).toHaveLength(1);
   });
 });
+
+// ── Service Binding 통합 시나리오 ──────────────────
+
+describe("collector - Service Binding 통합 시나리오", () => {
+  it("SVC_POLICY timeout 시 policies 빈 배열 반환", async () => {
+    const env = {
+      ...makeEnv(),
+      SVC_POLICY: {
+        fetch: vi.fn().mockRejectedValue(new Error("timeout")),
+      } as unknown as Fetcher,
+    } as unknown as Env;
+
+    const data = await collectOrgData(env, "lpon");
+    expect(data.policies).toEqual([]);
+    // 다른 서비스는 정상
+    expect(data.terms).toHaveLength(1);
+    expect(data.documents).toHaveLength(1);
+    expect(data.skills).toHaveLength(1);
+  });
+
+  it("SVC_ONTOLOGY 500 에러 시 terms 빈 배열 반환", async () => {
+    const env = {
+      ...makeEnv(),
+      SVC_ONTOLOGY: {
+        fetch: vi.fn().mockResolvedValue(
+          new Response("Internal Server Error", { status: 500 }),
+        ),
+      } as unknown as Fetcher,
+    } as unknown as Env;
+
+    const data = await collectOrgData(env, "lpon");
+    expect(data.terms).toEqual([]);
+    expect(data.policies).toHaveLength(1);
+    expect(data.documents).toHaveLength(1);
+    expect(data.skills).toHaveLength(1);
+  });
+
+  it("SVC_INGESTION 401 인증 실패 시 documents 빈 배열 + extractions도 빈 배열", async () => {
+    const env = {
+      ...makeEnv(),
+      SVC_INGESTION: {
+        fetch: vi.fn().mockResolvedValue(
+          new Response("Unauthorized", { status: 401 }),
+        ),
+      } as unknown as Fetcher,
+    } as unknown as Env;
+
+    const data = await collectOrgData(env, "lpon");
+    expect(data.documents).toEqual([]);
+    // documents가 비었으므로 extractions 호출 자체가 skip됨
+    expect(data.extractions).toEqual([]);
+    expect(data.policies).toHaveLength(1);
+    expect(data.terms).toHaveLength(1);
+  });
+
+  it("정책 0건 org — 페이지네이션 즉시 종료", async () => {
+    const fetchSpy = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({
+        success: true,
+        data: { policies: [], total: 0 },
+      }), { status: 200 }),
+    );
+
+    const env = {
+      ...makeEnv(),
+      SVC_POLICY: { fetch: fetchSpy } as unknown as Fetcher,
+    } as unknown as Env;
+
+    const data = await collectOrgData(env, "empty-org");
+    expect(data.policies).toEqual([]);
+    // 0건이면 첫 요청만 발생 (policies.length(0) < limit(200) → break)
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("정확히 limit(200)건 — 추가 요청 없이 종료", async () => {
+    const exactly200 = Array.from({ length: 200 }, (_, i) => ({
+      policy_id: `pol-${i}`,
+      policy_code: `POL-X-${String(i).padStart(3, "0")}`,
+      title: "t", condition: "c", criteria: "cr", outcome: "o",
+      source_document_id: "d1", source_page_ref: null, source_excerpt: null,
+      status: "approved", trust_level: "reviewed", trust_score: 0.8, tags: "[]",
+    }));
+
+    const fetchSpy = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({
+        success: true,
+        data: { policies: exactly200, total: 200 },
+      }), { status: 200 }),
+    );
+
+    const env = {
+      ...makeEnv(),
+      SVC_POLICY: { fetch: fetchSpy } as unknown as Fetcher,
+    } as unknown as Env;
+
+    const data = await collectOrgData(env, "lpon");
+    expect(data.policies).toHaveLength(200);
+    // total(200) == all.length(200) → break, 두 번째 요청 없음
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("terms에 null definition 포함 시 정상 수집", async () => {
+    const env = {
+      ...makeEnv(),
+      SVC_ONTOLOGY: mockFetcher({
+        "/terms": {
+          success: true,
+          data: {
+            terms: [
+              { term_id: "t-1", ontology_id: "o-1", label: "충전", definition: "정상 정의", skos_uri: null, broader_term_id: null, term_type: "entity" },
+              { term_id: "t-2", ontology_id: "o-1", label: "환불", definition: null, skos_uri: null, broader_term_id: null, term_type: "entity" },
+              { term_id: "t-3", ontology_id: "o-1", label: "가맹점", definition: null, skos_uri: null, broader_term_id: "t-1", term_type: "entity" },
+            ],
+            total: 3,
+          },
+        },
+      }),
+    } as unknown as Env;
+
+    const data = await collectOrgData(env, "lpon");
+    expect(data.terms).toHaveLength(3);
+    expect(data.terms[1]!.definition).toBeNull();
+    expect(data.terms[2]!.broader_term_id).toBe("t-1");
+  });
+});

@@ -18,6 +18,7 @@ import { generateFeatureSpec } from "./generators/feature-spec.js";
 import { generateArchitecture } from "./generators/architecture.js";
 import { generateApiSpec } from "./generators/api-spec.js";
 import { generateClaudeMd } from "./generators/claude-md.js";
+import { generateScreenSpec } from "./generators/screen-spec.js";
 import { createManifest, createZip, uploadToR2 } from "./packager.js";
 
 const logger = createLogger("prototype-orchestrator");
@@ -175,14 +176,26 @@ export async function generatePrototype(
     const fs = await generateFeatureSpec(env, data, bl, dm, { skipLlm });
     files.push(fs);
 
-    const [arch, api] = await Promise.all([
+    const phase2Parallel: Promise<GeneratedFile>[] = [
       generateArchitecture(env, data, fs, { skipLlm }),
       generateApiSpec(env, fs, { skipLlm }),
-    ]);
+    ];
+    if (options?.includeScreenSpec !== false) {
+      phase2Parallel.push(
+        generateScreenSpec(env, data, fs, dm, { skipLlm }),
+      );
+    }
+    const phase2Results = await Promise.all(phase2Parallel);
+    const arch = phase2Results[0]!;
+    const api = phase2Results[1]!;
     files.push(arch, api);
+    const screen = phase2Results[2];
+    if (screen) files.push(screen);
 
     // ── Phase 3: 요약 생성 ──
-    files.push(generateClaudeMd(orgName, data, { bl, dm, fs, arch, api }));
+    const claudeMdOutputs: Parameters<typeof generateClaudeMd>[2] = { bl, dm, fs, arch, api };
+    if (screen) claudeMdOutputs.screen = screen;
+    files.push(generateClaudeMd(orgName, data, claudeMdOutputs));
 
     // 3. manifest + ZIP + R2
     files.push(createManifest(orgName, files, options));

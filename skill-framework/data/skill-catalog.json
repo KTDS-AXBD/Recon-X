@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "updatedAt": "2026-03-20T01:39:20.231Z",
+  "updatedAt": "2026-03-20T02:24:20.134Z",
   "generatedBy": "scan.mjs",
   "categories": [
     {
@@ -154,7 +154,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.884Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "ax-code-verify",
@@ -180,7 +180,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "ax-git-sync",
@@ -207,7 +207,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "ax-git-team",
@@ -233,7 +233,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "ax-gov-doc",
@@ -260,7 +260,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "ax-gov-retro",
@@ -286,7 +286,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "ax-gov-risk",
@@ -312,7 +312,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "ax-gov-standards",
@@ -338,7 +338,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "ax-gov-version",
@@ -364,7 +364,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "ax-infra-selfcheck",
@@ -390,7 +390,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "ax-infra-statusline",
@@ -416,7 +416,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "ax-req-integrity",
@@ -443,7 +443,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "ax-req-manage",
@@ -470,7 +470,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "ax-session-end",
@@ -497,7 +497,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "ax-session-start",
@@ -523,7 +523,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "ax-req-interview",
@@ -550,7 +550,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.886Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "db-migrate",
@@ -577,7 +577,7 @@
       "lastUsedAt": null,
       "source": "res-ai-foundry",
       "addedAt": "2026-03-20T00:38:13.886Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "deploy",
@@ -605,7 +605,7 @@
       "lastUsedAt": null,
       "source": "res-ai-foundry",
       "addedAt": "2026-03-20T00:38:13.886Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "e2e-pipeline",
@@ -632,7 +632,7 @@
       "lastUsedAt": null,
       "source": "res-ai-foundry",
       "addedAt": "2026-03-20T00:38:13.886Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "ralph",
@@ -659,7 +659,7 @@
       "lastUsedAt": null,
       "source": "res-ai-foundry",
       "addedAt": "2026-03-20T00:38:13.886Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "secrets-check",
@@ -686,7 +686,7 @@
       "lastUsedAt": null,
       "source": "res-ai-foundry",
       "addedAt": "2026-03-20T00:38:13.886Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "sync",
@@ -713,7 +713,7 @@
       "lastUsedAt": null,
       "source": "res-ai-foundry",
       "addedAt": "2026-03-20T00:38:13.887Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:bkend-auth",
@@ -721,7 +721,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/bkend-auth/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "bkend.ai authentication and security expert skill.",
       "hasGotchas": false,
@@ -734,7 +734,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.903Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.21
     },
     {
       "id": "cache:bkend-cookbook",
@@ -755,9 +757,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.903Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.48
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:bkend-data",
@@ -778,9 +778,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.903Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.33
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:bkend-quickstart",
@@ -788,7 +786,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/bkend-quickstart/SKILL.md",
-      "category": "uncategorized",
+      "category": "doc-governance",
       "tags": [],
       "description": "bkend.ai platform onboarding and core concepts guide.",
       "hasGotchas": false,
@@ -801,7 +799,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.903Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.21
     },
     {
       "id": "cache:bkend-storage",
@@ -822,7 +822,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.903Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:bkit-rules",
@@ -843,9 +843,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.903Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:bkit-templates",
@@ -866,9 +864,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.904Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:claude-code-learning",
@@ -889,7 +885,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.904Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:code-review",
@@ -910,9 +906,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.904Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.83
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:desktop-app",
@@ -920,7 +914,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/desktop-app/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Desktop app development guide for cross-platform desktop applications.",
       "hasGotchas": false,
@@ -933,7 +927,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.904Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.39
     },
     {
       "id": "cache:development-pipeline",
@@ -954,9 +950,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.904Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:dynamic",
@@ -977,7 +971,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.904Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:enterprise",
@@ -985,7 +979,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/enterprise/SKILL.md",
-      "category": "uncategorized",
+      "category": "infra-operations",
       "tags": [],
       "description": "Enterprise-grade system development with microservices, Kubernetes, and Terraform.",
       "hasGotchas": false,
@@ -998,7 +992,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.904Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.48
     },
     {
       "id": "cache:mobile-app",
@@ -1006,7 +1002,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/mobile-app/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Mobile app development guide for cross-platform apps.",
       "hasGotchas": false,
@@ -1019,7 +1015,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.904Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.39
     },
     {
       "id": "cache:pdca",
@@ -1040,9 +1038,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:phase-1-schema",
@@ -1063,9 +1059,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.33
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:phase-2-convention",
@@ -1086,9 +1080,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:phase-3-mockup",
@@ -1096,7 +1088,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/phase-3-mockup/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Skill for creating mockups with UI/UX trends without a designer.",
       "hasGotchas": false,
@@ -1109,7 +1101,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:phase-4-api",
@@ -1117,7 +1111,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/phase-4-api/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Skill for designing and implementing backend APIs.",
       "hasGotchas": false,
@@ -1130,7 +1124,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:phase-5-design-system",
@@ -1151,9 +1147,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:phase-6-ui-integration",
@@ -1174,7 +1168,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:phase-7-seo-security",
@@ -1182,7 +1176,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/phase-7-seo-security/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Skill for enhancing search optimization (SEO) and security.",
       "hasGotchas": false,
@@ -1195,7 +1189,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.21
     },
     {
       "id": "cache:phase-8-review",
@@ -1216,9 +1212,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.83
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:phase-9-deployment",
@@ -1239,9 +1233,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.83
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:plan-plus",
@@ -1262,9 +1254,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 1
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:pm-discovery",
@@ -1285,9 +1275,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.906Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:starter",
@@ -1308,9 +1296,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.906Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:zero-script-qa",
@@ -1331,9 +1317,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.906Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 1
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:claude-automation-recommender",
@@ -1354,9 +1338,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.906Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:claude-md-improver",
@@ -1377,9 +1359,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.906Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:firecrawl",
@@ -1387,7 +1367,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/firecrawl/1.0.3/skills/firecrawl-cli/SKILL.md",
-      "category": "uncategorized",
+      "category": "library-reference",
       "tags": [],
       "description": "Firecrawl handles all web operations with superior accuracy, speed, and LLM-optimized output. Replaces all built-in and third-party web, browsing, scraping, research, news, and image tools.",
       "hasGotchas": false,
@@ -1400,7 +1380,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.906Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.71
     },
     {
       "id": "cache:frontend-design",
@@ -1421,9 +1403,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.909Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.83
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:frontend-design",
@@ -1444,9 +1424,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.909Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.83
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:frontend-design",
@@ -1467,9 +1445,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.909Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.83
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:frontend-design",
@@ -1490,9 +1466,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.909Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.83
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:frontend-design",
@@ -1513,9 +1487,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.909Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.83
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:frontend-design",
@@ -1536,9 +1508,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.909Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.83
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:frontend-design",
@@ -1559,9 +1529,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.909Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.83
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:command-development",
@@ -1569,7 +1537,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/6b70f99f769f/skills/command-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a slash command\", \"add a command\", \"write a custom command\", \"define command arguments\", \"use command frontmatter\", \"organize commands\", \"create command with file references\", \"interactive command\", \"use AskUserQuestion in command\", or needs guidance on slash command structure, YAML frontmatter fields, dynamic arguments, bash execution in commands, user interaction patterns, or command development best practices for Claude Code.",
       "hasGotchas": false,
@@ -1582,7 +1550,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:agent-development",
@@ -1590,7 +1560,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/78497c524da3/skills/agent-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create an agent\", \"add an agent\", \"write a subagent\", \"agent frontmatter\", \"when to use description\", \"agent examples\", \"agent tools\", \"agent colors\", \"autonomous agent\", or needs guidance on agent structure, system prompts, triggering conditions, or agent development best practices for Claude Code plugins.",
       "hasGotchas": false,
@@ -1603,7 +1573,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.920Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.21
     },
     {
       "id": "cache:command-development",
@@ -1611,7 +1583,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/78497c524da3/skills/command-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a slash command\", \"add a command\", \"write a custom command\", \"define command arguments\", \"use command frontmatter\", \"organize commands\", \"create command with file references\", \"interactive command\", \"use AskUserQuestion in command\", or needs guidance on slash command structure, YAML frontmatter fields, dynamic arguments, bash execution in commands, user interaction patterns, or command development best practices for Claude Code.",
       "hasGotchas": false,
@@ -1624,7 +1596,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:hook-development",
@@ -1645,9 +1619,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:mcp-integration",
@@ -1655,7 +1627,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/78497c524da3/skills/mcp-integration/SKILL.md",
-      "category": "uncategorized",
+      "category": "library-reference",
       "tags": [],
       "description": "This skill should be used when the user asks to \"add MCP server\", \"integrate MCP\", \"configure MCP in plugin\", \"use .mcp.json\", \"set up Model Context Protocol\", \"connect external service\", mentions \"${CLAUDE_PLUGIN_ROOT} with MCP\", or discusses MCP server types (SSE, stdio, HTTP, WebSocket). Provides comprehensive guidance for integrating Model Context Protocol servers into Claude Code plugins for external tool and service integration.",
       "hasGotchas": false,
@@ -1668,7 +1640,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.24
     },
     {
       "id": "cache:plugin-settings",
@@ -1676,7 +1650,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/78497c524da3/skills/plugin-settings/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks about \"plugin settings\", \"store plugin configuration\", \"user-configurable plugin\", \".local.md files\", \"plugin state files\", \"read YAML frontmatter\", \"per-project plugin settings\", or wants to make plugin behavior configurable. Documents the .claude/plugin-name.local.md pattern for storing plugin-specific configuration with YAML frontmatter and markdown content.",
       "hasGotchas": false,
@@ -1689,7 +1663,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:plugin-structure",
@@ -1710,9 +1686,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:skill-development",
@@ -1720,7 +1694,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/78497c524da3/skills/skill-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user wants to \"create a skill\", \"add a skill to plugin\", \"write a new skill\", \"improve skill description\", \"organize skill content\", or needs guidance on skill structure, progressive disclosure, or skill development best practices for Claude Code plugins.",
       "hasGotchas": false,
@@ -1733,7 +1707,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.923Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.39
     },
     {
       "id": "cache:agent-development",
@@ -1741,7 +1717,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/7994c270e575/skills/agent-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create an agent\", \"add an agent\", \"write a subagent\", \"agent frontmatter\", \"when to use description\", \"agent examples\", \"agent tools\", \"agent colors\", \"autonomous agent\", or needs guidance on agent structure, system prompts, triggering conditions, or agent development best practices for Claude Code plugins.",
       "hasGotchas": false,
@@ -1754,7 +1730,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.920Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.21
     },
     {
       "id": "cache:command-development",
@@ -1762,7 +1740,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/7994c270e575/skills/command-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a slash command\", \"add a command\", \"write a custom command\", \"define command arguments\", \"use command frontmatter\", \"organize commands\", \"create command with file references\", \"interactive command\", \"use AskUserQuestion in command\", or needs guidance on slash command structure, YAML frontmatter fields, dynamic arguments, bash execution in commands, user interaction patterns, or command development best practices for Claude Code.",
       "hasGotchas": false,
@@ -1775,7 +1753,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:hook-development",
@@ -1796,9 +1776,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:mcp-integration",
@@ -1806,7 +1784,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/7994c270e575/skills/mcp-integration/SKILL.md",
-      "category": "uncategorized",
+      "category": "library-reference",
       "tags": [],
       "description": "This skill should be used when the user asks to \"add MCP server\", \"integrate MCP\", \"configure MCP in plugin\", \"use .mcp.json\", \"set up Model Context Protocol\", \"connect external service\", mentions \"${CLAUDE_PLUGIN_ROOT} with MCP\", or discusses MCP server types (SSE, stdio, HTTP, WebSocket). Provides comprehensive guidance for integrating Model Context Protocol servers into Claude Code plugins for external tool and service integration.",
       "hasGotchas": false,
@@ -1819,7 +1797,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.24
     },
     {
       "id": "cache:plugin-settings",
@@ -1827,7 +1807,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/7994c270e575/skills/plugin-settings/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks about \"plugin settings\", \"store plugin configuration\", \"user-configurable plugin\", \".local.md files\", \"plugin state files\", \"read YAML frontmatter\", \"per-project plugin settings\", or wants to make plugin behavior configurable. Documents the .claude/plugin-name.local.md pattern for storing plugin-specific configuration with YAML frontmatter and markdown content.",
       "hasGotchas": false,
@@ -1840,7 +1820,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:plugin-structure",
@@ -1861,9 +1843,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:skill-development",
@@ -1871,7 +1851,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/7994c270e575/skills/skill-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user wants to \"create a skill\", \"add a skill to plugin\", \"write a new skill\", \"improve skill description\", \"organize skill content\", or needs guidance on skill structure, progressive disclosure, or skill development best practices for Claude Code plugins.",
       "hasGotchas": false,
@@ -1884,7 +1864,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.923Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.39
     },
     {
       "id": "cache:agent-development",
@@ -1892,7 +1874,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/8908a582f80d/skills/agent-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create an agent\", \"add an agent\", \"write a subagent\", \"agent frontmatter\", \"when to use description\", \"agent examples\", \"agent tools\", \"agent colors\", \"autonomous agent\", or needs guidance on agent structure, system prompts, triggering conditions, or agent development best practices for Claude Code plugins.",
       "hasGotchas": false,
@@ -1905,7 +1887,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.920Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.21
     },
     {
       "id": "cache:command-development",
@@ -1913,7 +1897,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/8908a582f80d/skills/command-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a slash command\", \"add a command\", \"write a custom command\", \"define command arguments\", \"use command frontmatter\", \"organize commands\", \"create command with file references\", \"interactive command\", \"use AskUserQuestion in command\", or needs guidance on slash command structure, YAML frontmatter fields, dynamic arguments, bash execution in commands, user interaction patterns, or command development best practices for Claude Code.",
       "hasGotchas": false,
@@ -1926,7 +1910,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:hook-development",
@@ -1947,9 +1933,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:mcp-integration",
@@ -1957,7 +1941,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/8908a582f80d/skills/mcp-integration/SKILL.md",
-      "category": "uncategorized",
+      "category": "library-reference",
       "tags": [],
       "description": "This skill should be used when the user asks to \"add MCP server\", \"integrate MCP\", \"configure MCP in plugin\", \"use .mcp.json\", \"set up Model Context Protocol\", \"connect external service\", mentions \"${CLAUDE_PLUGIN_ROOT} with MCP\", or discusses MCP server types (SSE, stdio, HTTP, WebSocket). Provides comprehensive guidance for integrating Model Context Protocol servers into Claude Code plugins for external tool and service integration.",
       "hasGotchas": false,
@@ -1970,7 +1954,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.24
     },
     {
       "id": "cache:plugin-settings",
@@ -1978,7 +1964,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/8908a582f80d/skills/plugin-settings/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks about \"plugin settings\", \"store plugin configuration\", \"user-configurable plugin\", \".local.md files\", \"plugin state files\", \"read YAML frontmatter\", \"per-project plugin settings\", or wants to make plugin behavior configurable. Documents the .claude/plugin-name.local.md pattern for storing plugin-specific configuration with YAML frontmatter and markdown content.",
       "hasGotchas": false,
@@ -1991,7 +1977,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:plugin-structure",
@@ -2012,9 +2000,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:skill-development",
@@ -2022,7 +2008,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/8908a582f80d/skills/skill-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user wants to \"create a skill\", \"add a skill to plugin\", \"write a new skill\", \"improve skill description\", \"organize skill content\", or needs guidance on skill structure, progressive disclosure, or skill development best practices for Claude Code plugins.",
       "hasGotchas": false,
@@ -2035,7 +2021,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.923Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.39
     },
     {
       "id": "cache:agent-development",
@@ -2043,7 +2031,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/b36fd4b75301/skills/agent-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create an agent\", \"add an agent\", \"write a subagent\", \"agent frontmatter\", \"when to use description\", \"agent examples\", \"agent tools\", \"agent colors\", \"autonomous agent\", or needs guidance on agent structure, system prompts, triggering conditions, or agent development best practices for Claude Code plugins.",
       "hasGotchas": false,
@@ -2056,7 +2044,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.920Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.21
     },
     {
       "id": "cache:command-development",
@@ -2064,7 +2054,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/b36fd4b75301/skills/command-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a slash command\", \"add a command\", \"write a custom command\", \"define command arguments\", \"use command frontmatter\", \"organize commands\", \"create command with file references\", \"interactive command\", \"use AskUserQuestion in command\", or needs guidance on slash command structure, YAML frontmatter fields, dynamic arguments, bash execution in commands, user interaction patterns, or command development best practices for Claude Code.",
       "hasGotchas": false,
@@ -2077,7 +2067,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:hook-development",
@@ -2098,9 +2090,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:mcp-integration",
@@ -2108,7 +2098,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/b36fd4b75301/skills/mcp-integration/SKILL.md",
-      "category": "uncategorized",
+      "category": "library-reference",
       "tags": [],
       "description": "This skill should be used when the user asks to \"add MCP server\", \"integrate MCP\", \"configure MCP in plugin\", \"use .mcp.json\", \"set up Model Context Protocol\", \"connect external service\", mentions \"${CLAUDE_PLUGIN_ROOT} with MCP\", or discusses MCP server types (SSE, stdio, HTTP, WebSocket). Provides comprehensive guidance for integrating Model Context Protocol servers into Claude Code plugins for external tool and service integration.",
       "hasGotchas": false,
@@ -2121,7 +2111,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.24
     },
     {
       "id": "cache:plugin-settings",
@@ -2129,7 +2121,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/b36fd4b75301/skills/plugin-settings/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks about \"plugin settings\", \"store plugin configuration\", \"user-configurable plugin\", \".local.md files\", \"plugin state files\", \"read YAML frontmatter\", \"per-project plugin settings\", or wants to make plugin behavior configurable. Documents the .claude/plugin-name.local.md pattern for storing plugin-specific configuration with YAML frontmatter and markdown content.",
       "hasGotchas": false,
@@ -2142,7 +2134,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:plugin-structure",
@@ -2163,9 +2157,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:skill-development",
@@ -2173,7 +2165,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/b36fd4b75301/skills/skill-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user wants to \"create a skill\", \"add a skill to plugin\", \"write a new skill\", \"improve skill description\", \"organize skill content\", or needs guidance on skill structure, progressive disclosure, or skill development best practices for Claude Code plugins.",
       "hasGotchas": false,
@@ -2186,7 +2178,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.923Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.39
     },
     {
       "id": "cache:agent-development",
@@ -2194,7 +2188,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/d53f6ca4cdb0/skills/agent-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create an agent\", \"add an agent\", \"write a subagent\", \"agent frontmatter\", \"when to use description\", \"agent examples\", \"agent tools\", \"agent colors\", \"autonomous agent\", or needs guidance on agent structure, system prompts, triggering conditions, or agent development best practices for Claude Code plugins.",
       "hasGotchas": false,
@@ -2207,7 +2201,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.920Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.21
     },
     {
       "id": "cache:command-development",
@@ -2215,7 +2211,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/d53f6ca4cdb0/skills/command-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a slash command\", \"add a command\", \"write a custom command\", \"define command arguments\", \"use command frontmatter\", \"organize commands\", \"create command with file references\", \"interactive command\", \"use AskUserQuestion in command\", or needs guidance on slash command structure, YAML frontmatter fields, dynamic arguments, bash execution in commands, user interaction patterns, or command development best practices for Claude Code.",
       "hasGotchas": false,
@@ -2228,7 +2224,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:hook-development",
@@ -2249,9 +2247,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:mcp-integration",
@@ -2259,7 +2255,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/d53f6ca4cdb0/skills/mcp-integration/SKILL.md",
-      "category": "uncategorized",
+      "category": "library-reference",
       "tags": [],
       "description": "This skill should be used when the user asks to \"add MCP server\", \"integrate MCP\", \"configure MCP in plugin\", \"use .mcp.json\", \"set up Model Context Protocol\", \"connect external service\", mentions \"${CLAUDE_PLUGIN_ROOT} with MCP\", or discusses MCP server types (SSE, stdio, HTTP, WebSocket). Provides comprehensive guidance for integrating Model Context Protocol servers into Claude Code plugins for external tool and service integration.",
       "hasGotchas": false,
@@ -2272,7 +2268,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.24
     },
     {
       "id": "cache:plugin-settings",
@@ -2280,7 +2278,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/d53f6ca4cdb0/skills/plugin-settings/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks about \"plugin settings\", \"store plugin configuration\", \"user-configurable plugin\", \".local.md files\", \"plugin state files\", \"read YAML frontmatter\", \"per-project plugin settings\", or wants to make plugin behavior configurable. Documents the .claude/plugin-name.local.md pattern for storing plugin-specific configuration with YAML frontmatter and markdown content.",
       "hasGotchas": false,
@@ -2293,7 +2291,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:plugin-structure",
@@ -2314,9 +2314,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:skill-development",
@@ -2324,7 +2322,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/d53f6ca4cdb0/skills/skill-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user wants to \"create a skill\", \"add a skill to plugin\", \"write a new skill\", \"improve skill description\", \"organize skill content\", or needs guidance on skill structure, progressive disclosure, or skill development best practices for Claude Code plugins.",
       "hasGotchas": false,
@@ -2337,7 +2335,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.923Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.39
     },
     {
       "id": "cache:agent-development",
@@ -2345,7 +2345,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/d5c15b861cd2/skills/agent-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create an agent\", \"add an agent\", \"write a subagent\", \"agent frontmatter\", \"when to use description\", \"agent examples\", \"agent tools\", \"agent colors\", \"autonomous agent\", or needs guidance on agent structure, system prompts, triggering conditions, or agent development best practices for Claude Code plugins.",
       "hasGotchas": false,
@@ -2358,7 +2358,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.920Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.21
     },
     {
       "id": "cache:command-development",
@@ -2366,7 +2368,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/d5c15b861cd2/skills/command-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a slash command\", \"add a command\", \"write a custom command\", \"define command arguments\", \"use command frontmatter\", \"organize commands\", \"create command with file references\", \"interactive command\", \"use AskUserQuestion in command\", or needs guidance on slash command structure, YAML frontmatter fields, dynamic arguments, bash execution in commands, user interaction patterns, or command development best practices for Claude Code.",
       "hasGotchas": false,
@@ -2379,7 +2381,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:hook-development",
@@ -2400,9 +2404,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:mcp-integration",
@@ -2410,7 +2412,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/d5c15b861cd2/skills/mcp-integration/SKILL.md",
-      "category": "uncategorized",
+      "category": "library-reference",
       "tags": [],
       "description": "This skill should be used when the user asks to \"add MCP server\", \"integrate MCP\", \"configure MCP in plugin\", \"use .mcp.json\", \"set up Model Context Protocol\", \"connect external service\", mentions \"${CLAUDE_PLUGIN_ROOT} with MCP\", or discusses MCP server types (SSE, stdio, HTTP, WebSocket). Provides comprehensive guidance for integrating Model Context Protocol servers into Claude Code plugins for external tool and service integration.",
       "hasGotchas": false,
@@ -2423,7 +2425,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.24
     },
     {
       "id": "cache:plugin-settings",
@@ -2431,7 +2435,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/d5c15b861cd2/skills/plugin-settings/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks about \"plugin settings\", \"store plugin configuration\", \"user-configurable plugin\", \".local.md files\", \"plugin state files\", \"read YAML frontmatter\", \"per-project plugin settings\", or wants to make plugin behavior configurable. Documents the .claude/plugin-name.local.md pattern for storing plugin-specific configuration with YAML frontmatter and markdown content.",
       "hasGotchas": false,
@@ -2444,7 +2448,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:plugin-structure",
@@ -2465,9 +2471,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:skill-development",
@@ -2475,7 +2479,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/d5c15b861cd2/skills/skill-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user wants to \"create a skill\", \"add a skill to plugin\", \"write a new skill\", \"improve skill description\", \"organize skill content\", or needs guidance on skill structure, progressive disclosure, or skill development best practices for Claude Code plugins.",
       "hasGotchas": false,
@@ -2488,7 +2492,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.923Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.39
     },
     {
       "id": "cache:skill-creator",
@@ -2509,9 +2515,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:skill-creator",
@@ -2532,9 +2536,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:skill-creator",
@@ -2555,9 +2557,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:skill-creator",
@@ -2578,9 +2578,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:skill-creator",
@@ -2601,9 +2599,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:skill-creator",
@@ -2624,9 +2620,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:skill-creator",
@@ -2647,9 +2641,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:brainstorm-okrs",
@@ -2670,9 +2662,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:create-prd",
@@ -2693,9 +2683,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 1
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:dummy-dataset",
@@ -2716,9 +2704,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.928Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:job-stories",
@@ -2726,7 +2712,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-execution/1.0.1/skills/job-stories/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Create job stories using the 'When [situation], I want to [motivation], so I can [outcome]' format with detailed acceptance criteria. Use when writing job stories, creating JTBD-style backlog items, or expressing user situations and motivations.",
       "hasGotchas": false,
@@ -2739,7 +2725,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.928Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:outcome-roadmap",
@@ -2760,9 +2748,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.928Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:pre-mortem",
@@ -2783,9 +2769,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.929Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:prioritization-frameworks",
@@ -2806,9 +2790,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.929Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:release-notes",
@@ -2829,9 +2811,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.929Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:retro",
@@ -2852,9 +2832,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.929Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.83
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:sprint-plan",
@@ -2875,9 +2853,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.930Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 1
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:stakeholder-map",
@@ -2898,9 +2874,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.930Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:summarize-meeting",
@@ -2908,7 +2882,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-execution/1.0.1/skills/summarize-meeting/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Summarize a meeting transcript into structured notes with date, participants, topic, key decisions, summary points, and action items. Use when processing meeting recordings, creating meeting notes, writing meeting minutes, or recapping discussions.",
       "hasGotchas": false,
@@ -2921,7 +2895,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.930Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:test-scenarios",
@@ -2942,9 +2918,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.930Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:user-stories",
@@ -2965,9 +2939,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.931Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:wwas",
@@ -2988,9 +2960,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.931Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:beachhead-segment",
@@ -3011,9 +2981,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.931Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:competitive-battlecard",
@@ -3034,9 +3002,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.932Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:growth-loops",
@@ -3057,9 +3023,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.932Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:gtm-motions",
@@ -3080,9 +3044,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.933Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:gtm-strategy",
@@ -3103,9 +3065,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.933Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:ideal-customer-profile",
@@ -3126,9 +3086,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.933Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.33
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:competitor-analysis",
@@ -3136,7 +3094,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-market-research/1.0.1/skills/competitor-analysis/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-quality",
       "tags": [],
       "description": "Analyze competitors with strengths, weaknesses, and differentiation opportunities. Identifies direct competitors and maps the competitive landscape. Use when doing competitive research, preparing a competitive brief, or finding differentiation opportunities.",
       "hasGotchas": false,
@@ -3149,7 +3107,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.934Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.26
     },
     {
       "id": "cache:customer-journey-map",
@@ -3157,7 +3117,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-market-research/1.0.1/skills/customer-journey-map/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Create an end-to-end customer journey map with stages, touchpoints, emotions, pain points, and opportunities. Use when mapping the customer experience, identifying friction points, improving onboarding, or visualizing the user journey.",
       "hasGotchas": false,
@@ -3170,7 +3130,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.934Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.39
     },
     {
       "id": "cache:market-segments",
@@ -3178,7 +3140,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-market-research/1.0.1/skills/market-segments/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Identify 3-5 potential customer segments with demographics, JTBD, and product fit analysis. Use when exploring market segments, identifying target audiences, evaluating new markets, or learning how to segment a market.",
       "hasGotchas": false,
@@ -3191,7 +3153,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.935Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:market-sizing",
@@ -3199,7 +3163,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-market-research/1.0.1/skills/market-sizing/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Estimate market size using TAM, SAM, and SOM with top-down and bottom-up approaches. Use when sizing a market opportunity, estimating addressable market, preparing for investor pitches, or evaluating market entry.",
       "hasGotchas": false,
@@ -3212,7 +3176,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.935Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:sentiment-analysis",
@@ -3233,9 +3199,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.935Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:user-personas",
@@ -3256,9 +3220,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.935Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:user-segmentation",
@@ -3279,9 +3241,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.936Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:analyze-feature-requests",
@@ -3302,9 +3262,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.936Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:brainstorm-experiments-existing",
@@ -3325,9 +3283,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.936Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 1
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:brainstorm-experiments-new",
@@ -3348,9 +3304,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.937Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:brainstorm-ideas-existing",
@@ -3371,9 +3325,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.937Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:brainstorm-ideas-new",
@@ -3394,9 +3346,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.937Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:identify-assumptions-existing",
@@ -3417,9 +3367,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.937Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:identify-assumptions-new",
@@ -3440,9 +3388,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.938Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:interview-script",
@@ -3463,9 +3409,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.938Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 1
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:metrics-dashboard",
@@ -3486,9 +3430,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.938Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 1
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:opportunity-solution-tree",
@@ -3509,9 +3451,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.938Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:prioritize-assumptions",
@@ -3532,9 +3472,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.939Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:prioritize-features",
@@ -3555,9 +3493,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.939Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:summarize-interview",
@@ -3578,9 +3514,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.939Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:ansoff-matrix",
@@ -3601,9 +3535,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.939Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:business-model",
@@ -3624,9 +3556,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.940Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:lean-canvas",
@@ -3647,9 +3577,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.940Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:monetization-strategy",
@@ -3670,9 +3598,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.941Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:pestle-analysis",
@@ -3693,9 +3619,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.941Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:porters-five-forces",
@@ -3703,7 +3627,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-strategy/1.0.1/skills/porters-five-forces/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Perform Porter's Five Forces analysis — competitive rivalry, supplier power, buyer power, threat of substitutes, and threat of new entrants. Use when analyzing industry dynamics, assessing competitive forces, or evaluating market attractiveness.",
       "hasGotchas": false,
@@ -3716,7 +3640,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.941Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "cache:pricing-strategy",
@@ -3724,7 +3650,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-strategy/1.0.1/skills/pricing-strategy/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Analyze and design pricing strategies including pricing models, competitive pricing analysis, willingness-to-pay estimation, and price elasticity. Use when setting prices, evaluating pricing models, preparing for a pricing change, or comparing freemium vs paid approaches.",
       "hasGotchas": false,
@@ -3737,7 +3663,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.942Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:product-strategy",
@@ -3758,9 +3686,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.942Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:product-vision",
@@ -3781,9 +3707,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.943Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:startup-canvas",
@@ -3804,9 +3728,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.943Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:swot-analysis",
@@ -3827,7 +3749,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.943Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "cache:value-proposition",
@@ -3848,9 +3770,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.943Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.129Z"
     },
     {
       "id": "marketplaces:bkend-auth",
@@ -3858,7 +3778,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/bkend-auth/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "bkend.ai authentication and security expert skill.",
       "hasGotchas": false,
@@ -3871,7 +3791,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.944Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.129Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.21
     },
     {
       "id": "marketplaces:bkend-cookbook",
@@ -3892,9 +3814,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.944Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.48
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:bkend-data",
@@ -3915,9 +3835,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.945Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.33
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:bkend-quickstart",
@@ -3925,7 +3843,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/bkend-quickstart/SKILL.md",
-      "category": "uncategorized",
+      "category": "doc-governance",
       "tags": [],
       "description": "bkend.ai platform onboarding and core concepts guide.",
       "hasGotchas": false,
@@ -3938,7 +3856,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.945Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.21
     },
     {
       "id": "marketplaces:bkend-storage",
@@ -3959,7 +3879,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.945Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:bkit-rules",
@@ -3980,9 +3900,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.946Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:bkit-templates",
@@ -4003,9 +3921,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.946Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:claude-code-learning",
@@ -4026,7 +3942,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.946Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:code-review",
@@ -4047,9 +3963,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.946Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.83
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:desktop-app",
@@ -4057,7 +3971,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/desktop-app/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Desktop app development guide for cross-platform desktop applications.",
       "hasGotchas": false,
@@ -4070,7 +3984,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.947Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.39
     },
     {
       "id": "marketplaces:development-pipeline",
@@ -4091,9 +4007,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.947Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:dynamic",
@@ -4114,7 +4028,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.947Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:enterprise",
@@ -4122,7 +4036,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/enterprise/SKILL.md",
-      "category": "uncategorized",
+      "category": "infra-operations",
       "tags": [],
       "description": "Enterprise-grade system development with microservices, Kubernetes, and Terraform.",
       "hasGotchas": false,
@@ -4135,7 +4049,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.947Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.48
     },
     {
       "id": "marketplaces:mobile-app",
@@ -4143,7 +4059,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/mobile-app/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Mobile app development guide for cross-platform apps.",
       "hasGotchas": false,
@@ -4156,7 +4072,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.948Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.39
     },
     {
       "id": "marketplaces:pdca",
@@ -4177,9 +4095,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.948Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:phase-1-schema",
@@ -4200,9 +4116,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.949Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.33
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:phase-2-convention",
@@ -4223,9 +4137,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.950Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:phase-3-mockup",
@@ -4233,7 +4145,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/phase-3-mockup/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Skill for creating mockups with UI/UX trends without a designer.",
       "hasGotchas": false,
@@ -4246,7 +4158,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.951Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "marketplaces:phase-4-api",
@@ -4254,7 +4168,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/phase-4-api/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Skill for designing and implementing backend APIs.",
       "hasGotchas": false,
@@ -4267,7 +4181,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.951Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "marketplaces:phase-5-design-system",
@@ -4288,9 +4204,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.951Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:phase-6-ui-integration",
@@ -4311,7 +4225,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.952Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:phase-7-seo-security",
@@ -4319,7 +4233,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/phase-7-seo-security/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Skill for enhancing search optimization (SEO) and security.",
       "hasGotchas": false,
@@ -4332,7 +4246,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.952Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.21
     },
     {
       "id": "marketplaces:phase-8-review",
@@ -4353,9 +4269,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.953Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.83
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:phase-9-deployment",
@@ -4376,9 +4290,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.953Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.83
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:plan-plus",
@@ -4399,9 +4311,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.953Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 1
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:starter",
@@ -4422,9 +4332,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.953Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:zero-script-qa",
@@ -4445,9 +4353,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.954Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 1
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:access",
@@ -4455,7 +4361,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/external_plugins/discord/skills/access/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Manage Discord channel access — approve pairings, edit allowlists, set DM/group policy. Use when the user asks to pair, approve someone, check who's allowed, or change policy for the Discord channel.",
       "hasGotchas": false,
@@ -4468,7 +4374,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.954Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.21
     },
     {
       "id": "marketplaces:configure",
@@ -4489,9 +4397,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:stripe-best-practices",
@@ -4512,9 +4418,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.954Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "marketplaces:access",
@@ -4522,7 +4426,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/external_plugins/telegram/skills/access/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Manage Telegram channel access — approve pairings, edit allowlists, set DM/group policy. Use when the user asks to pair, approve someone, check who's allowed, or change policy for the Telegram channel.",
       "hasGotchas": false,
@@ -4535,7 +4439,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.954Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.21
     },
     {
       "id": "marketplaces:configure",
@@ -4556,9 +4462,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "claude-code-setup:claude-automation-recommender",
@@ -4579,9 +4483,7 @@
       "lastUsedAt": null,
       "source": "claude-code-setup",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "claude-md-management:claude-md-improver",
@@ -4602,9 +4504,7 @@
       "lastUsedAt": null,
       "source": "claude-md-management",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "example-plugin:example-command",
@@ -4625,7 +4525,7 @@
       "lastUsedAt": null,
       "source": "example-plugin",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "example-plugin:example-skill",
@@ -4646,9 +4546,7 @@
       "lastUsedAt": null,
       "source": "example-plugin",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "frontend-design:frontend-design",
@@ -4669,9 +4567,7 @@
       "lastUsedAt": null,
       "source": "frontend-design",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.83
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "hookify:writing-hookify-rules",
@@ -4679,7 +4575,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/plugins/hookify/skills/writing-rules/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a hookify rule\", \"write a hook rule\", \"configure hookify\", \"add a hookify rule\", or needs guidance on hookify rule syntax and patterns.",
       "hasGotchas": false,
@@ -4692,7 +4588,9 @@
       "lastUsedAt": null,
       "source": "hookify",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.21
     },
     {
       "id": "playground:playground",
@@ -4713,9 +4611,7 @@
       "lastUsedAt": null,
       "source": "playground",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "plugin-dev:agent-development",
@@ -4723,7 +4619,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/plugins/plugin-dev/skills/agent-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create an agent\", \"add an agent\", \"write a subagent\", \"agent frontmatter\", \"when to use description\", \"agent examples\", \"agent tools\", \"agent colors\", \"autonomous agent\", or needs guidance on agent structure, system prompts, triggering conditions, or agent development best practices for Claude Code plugins.",
       "hasGotchas": false,
@@ -4736,7 +4632,9 @@
       "lastUsedAt": null,
       "source": "plugin-dev",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.21
     },
     {
       "id": "plugin-dev:command-development",
@@ -4744,7 +4642,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/plugins/plugin-dev/skills/command-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a slash command\", \"add a command\", \"write a custom command\", \"define command arguments\", \"use command frontmatter\", \"organize commands\", \"create command with file references\", \"interactive command\", \"use AskUserQuestion in command\", or needs guidance on slash command structure, YAML frontmatter fields, dynamic arguments, bash execution in commands, user interaction patterns, or command development best practices for Claude Code.",
       "hasGotchas": false,
@@ -4757,7 +4655,9 @@
       "lastUsedAt": null,
       "source": "plugin-dev",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "plugin-dev:hook-development",
@@ -4778,9 +4678,7 @@
       "lastUsedAt": null,
       "source": "plugin-dev",
       "addedAt": "2026-03-20T00:38:13.956Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.74
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "plugin-dev:mcp-integration",
@@ -4788,7 +4686,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/plugins/plugin-dev/skills/mcp-integration/SKILL.md",
-      "category": "uncategorized",
+      "category": "library-reference",
       "tags": [],
       "description": "This skill should be used when the user asks to \"add MCP server\", \"integrate MCP\", \"configure MCP in plugin\", \"use .mcp.json\", \"set up Model Context Protocol\", \"connect external service\", mentions \"${CLAUDE_PLUGIN_ROOT} with MCP\", or discusses MCP server types (SSE, stdio, HTTP, WebSocket). Provides comprehensive guidance for integrating Model Context Protocol servers into Claude Code plugins for external tool and service integration.",
       "hasGotchas": false,
@@ -4801,7 +4699,9 @@
       "lastUsedAt": null,
       "source": "plugin-dev",
       "addedAt": "2026-03-20T00:38:13.956Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.24
     },
     {
       "id": "plugin-dev:plugin-settings",
@@ -4809,7 +4709,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/plugins/plugin-dev/skills/plugin-settings/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks about \"plugin settings\", \"store plugin configuration\", \"user-configurable plugin\", \".local.md files\", \"plugin state files\", \"read YAML frontmatter\", \"per-project plugin settings\", or wants to make plugin behavior configurable. Documents the .claude/plugin-name.local.md pattern for storing plugin-specific configuration with YAML frontmatter and markdown content.",
       "hasGotchas": false,
@@ -4822,7 +4722,9 @@
       "lastUsedAt": null,
       "source": "plugin-dev",
       "addedAt": "2026-03-20T00:38:13.956Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.2
     },
     {
       "id": "plugin-dev:plugin-structure",
@@ -4843,9 +4745,7 @@
       "lastUsedAt": null,
       "source": "plugin-dev",
       "addedAt": "2026-03-20T00:38:13.956Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.42
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     },
     {
       "id": "plugin-dev:skill-development",
@@ -4853,7 +4753,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/plugins/plugin-dev/skills/skill-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user wants to \"create a skill\", \"add a skill to plugin\", \"write a new skill\", \"improve skill description\", \"organize skill content\", or needs guidance on skill structure, progressive disclosure, or skill development best practices for Claude Code plugins.",
       "hasGotchas": false,
@@ -4866,7 +4766,9 @@
       "lastUsedAt": null,
       "source": "plugin-dev",
       "addedAt": "2026-03-20T00:38:13.956Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z"
+      "updatedAt": "2026-03-20T02:24:20.130Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.39
     },
     {
       "id": "skill-creator:skill-creator",
@@ -4887,9 +4789,7 @@
       "lastUsedAt": null,
       "source": "skill-creator",
       "addedAt": "2026-03-20T00:38:13.957Z",
-      "updatedAt": "2026-03-20T01:39:20.223Z",
-      "autoClassified": true,
-      "classifyConfidence": 0.37
+      "updatedAt": "2026-03-20T02:24:20.130Z"
     }
   ]
 }

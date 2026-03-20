@@ -62,5 +62,10 @@ export function classifyByKeywords(skill, keywordsMap) {
  */
 export function loadKeywordsMap(basePath) {
   const p = resolve(basePath, 'skill-framework/data/classify-keywords.json');
-  return JSON.parse(readFileSync(p, 'utf-8'));
+  try {
+    return JSON.parse(readFileSync(p, 'utf-8'));
+  } catch (err) {
+    console.warn(`Warning: Cannot load classify-keywords.json (${err.message}). Skipping classification.`);
+    return {};
+  }
 }

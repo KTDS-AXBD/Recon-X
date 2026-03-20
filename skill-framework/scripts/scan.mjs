@@ -447,7 +447,10 @@ function main() {
   // Auto-classify uncategorized skills
   if (autoClassify) {
     const keywordsMap = loadKeywordsMap(projectRoot);
-    let classified = 0;
+    if (Object.keys(keywordsMap).length === 0) {
+      console.warn('\n   ⚠️  Auto-classify skipped: keywords map unavailable.');
+    } else {
+      let classified = 0;
     for (const skill of merged) {
       if (skill.deleted) continue;
       if (skill.category !== 'uncategorized') continue;
@@ -461,6 +464,7 @@ function main() {
       }
     }
     console.log(`\n   🏷️  Auto-classified: ${classified} skills (threshold: ${threshold})`);
+    }
   }
 
   // Count uncategorized

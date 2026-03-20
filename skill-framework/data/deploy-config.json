@@ -1,0 +1,14 @@
+{
+  "team": {
+    "repoUrl": "git@github.com:KTDS-AXBD/shared-skills.git",
+    "branch": "main",
+    "targetDir": "skills/",
+    "commitPrefix": "chore(skills):"
+  },
+  "local": {
+    "targetDir": "~/.claude/skills/"
+  },
+  "include": ["ax-*"],
+  "exclude": [],
+  "version": "1.0.0"
+}

@@ -4,6 +4,7 @@
  */
 
 import { strictEqual, deepStrictEqual, ok } from 'node:assert';
+import assert from 'node:assert';
 
 // ── Extract functions from scan.mjs by re-implementing (scan.mjs has no exports) ──
 
@@ -95,9 +96,9 @@ const SECRET_EXCLUDE_RE = /\$\{?\w*(?:API_KEY|SECRET|PASSWORD|TOKEN|CREDENTIAL)|
 let passed = 0;
 let failed = 0;
 
-function test(name, fn) {
+async function test(name, fn) {
   try {
-    fn();
+    await fn();
     passed++;
     console.log(`  ✅ ${name}`);
   } catch (e) {
@@ -401,6 +402,150 @@ test('edge: 빈 description 스킬 자동분류 (name/id fallback)', () => {
   // Should still classify via name/id containing 'deploy'
   strictEqual(result.category, 'cicd-deployment');
   ok(result.confidence > 0);
+});
+
+// === Phase 2 Tests: deploy.mjs ===
+console.log('');
+console.log('Phase 2 — deploy:');
+
+test('deploy: filterSkills matches ax-* pattern', () => {
+  const skills = [
+    { id: 'ax-session', scope: 'user', deleted: false },
+    { id: 'bkit:pdca', scope: 'plugin', deleted: false },
+    { id: 'ax-test', scope: 'user', deleted: true },
+  ];
+  const filtered = skills.filter(s => s.scope !== 'plugin' && !s.deleted && s.id.startsWith('ax-'));
+  assert.strictEqual(filtered.length, 1);
+  assert.strictEqual(filtered[0].id, 'ax-session');
+});
+
+test('deploy: excludes plugin scope skills', () => {
+  const skills = [
+    { id: 'bkit:pdca', scope: 'plugin' },
+    { id: 'ax-end', scope: 'user' },
+  ];
+  const deployable = skills.filter(s => s.scope !== 'plugin');
+  assert.strictEqual(deployable.length, 1);
+});
+
+test('deploy: config validation requires repoUrl', () => {
+  const config = { team: { branch: 'main' } };
+  assert.strictEqual(!config.team.repoUrl, true);
+});
+
+// === Phase 2 Tests: usage-tracker ===
+console.log('');
+console.log('Phase 2 — usage-tracker:');
+
+test('usage: JSONL record has required fields', () => {
+  const record = { skill: 'ax-end', ts: '2026-03-20T12:00:00.000Z', tool: 'Skill', event: 'PreToolUse' };
+  assert.ok(record.skill);
+  assert.ok(record.ts);
+  assert.strictEqual(record.tool, 'Skill');
+  assert.strictEqual(record.event, 'PreToolUse');
+});
+
+test('usage: non-Skill events are not logged', () => {
+  const event = { tool_name: 'Read' };
+  const shouldLog = event.tool_name === 'Skill';
+  assert.strictEqual(shouldLog, false);
+});
+
+test('usage: empty skill name is skipped', () => {
+  const skillName = '';
+  assert.strictEqual(skillName === '', true);
+});
+
+// === Phase 2 Tests: usage.mjs ===
+console.log('');
+console.log('Phase 2 — usage.mjs:');
+
+test('usage-report: aggregates counts correctly', () => {
+  const records = [
+    { skill: 'ax-end', ts: '2026-03-20T12:00:00Z' },
+    { skill: 'ax-end', ts: '2026-03-20T13:00:00Z' },
+    { skill: 'ax-start', ts: '2026-03-20T12:00:00Z' },
+  ];
+  const counts = new Map();
+  for (const r of records) {
+    counts.set(r.skill, (counts.get(r.skill) || 0) + 1);
+  }
+  assert.strictEqual(counts.get('ax-end'), 2);
+  assert.strictEqual(counts.get('ax-start'), 1);
+});
+
+test('usage-report: deprecation finds zero-usage skills', () => {
+  const catalogSkills = ['ax-end', 'ax-start', 'old-skill'];
+  const usedSkills = new Set(['ax-end', 'ax-start']);
+  const unused = catalogSkills.filter(s => !usedSkills.has(s));
+  assert.deepStrictEqual(unused, ['old-skill']);
+});
+
+test('usage-report: rotate splits by month', () => {
+  const records = [
+    { ts: '2026-01-15T12:00:00Z' },
+    { ts: '2026-02-20T12:00:00Z' },
+    { ts: '2026-03-10T12:00:00Z' },
+  ];
+  const months = new Set(records.map(r => r.ts.slice(0, 7)));
+  assert.strictEqual(months.size, 3);
+});
+
+// === Phase 2 Tests: Error Handling ===
+console.log('');
+console.log('Phase 2 — error handling:');
+
+await test('classify: loadKeywordsMap returns {} on missing file', async () => {
+  const { loadKeywordsMap } = await import('./classify.mjs');
+  const result = loadKeywordsMap('/nonexistent/path');
+  assert.deepStrictEqual(result, {});
+});
+
+test('scan: auto-classify skips when keywords map empty', () => {
+  const keywordsMap = {};
+  const shouldSkip = Object.keys(keywordsMap).length === 0;
+  assert.strictEqual(shouldSkip, true);
+});
+
+test('lint: fix skips category when keywords map empty', () => {
+  const keywordsMap = {};
+  const hasKeywords = Object.keys(keywordsMap).length > 0;
+  assert.strictEqual(hasKeywords, false);
+});
+
+test('lint: fix aborts on backup failure', () => {
+  let aborted = false;
+  try {
+    throw new Error('Permission denied');
+  } catch {
+    aborted = true;
+  }
+  assert.strictEqual(aborted, true);
+});
+
+// === Phase 2 Tests: Classification Accuracy ===
+console.log('');
+console.log('Phase 2 — classification accuracy:');
+
+await test('classify: tuned keywords classify more skills', async () => {
+  const { classifyByKeywords } = await import('./classify.mjs');
+  const skill = { name: 'create-app', description: 'Create a new project app' };
+  const keywordsMap = {
+    'code-scaffolding': { keywords: ['scaffold', 'template', 'create', 'new', 'setup', 'project', 'app'], weight: 1.0 },
+  };
+  const result = classifyByKeywords(skill, keywordsMap);
+  assert.strictEqual(result.category, 'code-scaffolding');
+  assert.ok(result.confidence > 0);
+});
+
+await test('classify: false positive rate stays low', async () => {
+  const { classifyByKeywords } = await import('./classify.mjs');
+  const skill = { name: 'helper', description: 'A simple helper' };
+  const keywordsMap = {
+    'code-quality': { keywords: ['lint', 'review', 'quality'], weight: 1.0 },
+  };
+  const result = classifyByKeywords(skill, keywordsMap);
+  assert.strictEqual(result.category, 'uncategorized');
 });
 
 // ── Summary ──

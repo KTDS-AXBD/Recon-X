@@ -212,9 +212,15 @@ if (values.fix) {
 
   // Backup catalog
   const backupPath = inputPath.replace(/\.json$/, '.json.bak');
-  copyFileSync(inputPath, backupPath);
-  console.log(`\n📋 Backup: ${backupPath}`);
+  try {
+    copyFileSync(inputPath, backupPath);
+    console.log(`\n📋 Backup: ${backupPath}`);
+  } catch (err) {
+    console.warn(`Warning: Cannot create backup (${err.message}). Fix aborted.`);
+    process.exit(1);
+  }
 
+  const hasKeywords = Object.keys(keywordsMap).length > 0;
   let fixedCategory = 0;
   let fixedKebab = 0;
 
@@ -226,7 +232,7 @@ if (values.fix) {
     const skill = skillMap.get(issue.skillId);
     if (!skill) continue;
 
-    if (issue.ruleId === 'single-category') {
+    if (issue.ruleId === 'single-category' && hasKeywords) {
       const result = classifyByKeywords(skill, keywordsMap);
       if (result.confidence > 0) {
         skill.category = result.category;

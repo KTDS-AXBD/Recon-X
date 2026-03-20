@@ -13,6 +13,11 @@ import { collectOrgData, type CollectedData } from "./collector.js";
 import { generateRulesJson } from "./generators/rules-json.js";
 import { generateTermsJsonld } from "./generators/terms-jsonld.js";
 import { generateBusinessLogic } from "./generators/business-logic.js";
+import { generateDataModel } from "./generators/data-model.js";
+import { generateFeatureSpec } from "./generators/feature-spec.js";
+import { generateArchitecture } from "./generators/architecture.js";
+import { generateApiSpec } from "./generators/api-spec.js";
+import { generateClaudeMd } from "./generators/claude-md.js";
 import { createManifest, createZip, uploadToR2 } from "./packager.js";
 
 const logger = createLogger("prototype-orchestrator");
@@ -155,14 +160,29 @@ export async function generatePrototype(
     files.push(generateTermsJsonld(data.terms));
     files.push(generateReadme(orgName, data));
 
-    // LLM 기반 생성
+    // ── Phase 1: 독립 생성 (병렬) ──
     const skipLlm = options?.skipLlm ?? false;
-    files.push(await generateBusinessLogic(env, data.policies, {
-      skipLlm,
-      maxPoliciesPerScenario: options?.maxPoliciesPerScenario ?? 20,
-    }));
+    const [bl, dm] = await Promise.all([
+      generateBusinessLogic(env, data.policies, {
+        skipLlm,
+        maxPoliciesPerScenario: options?.maxPoliciesPerScenario ?? 20,
+      }),
+      generateDataModel(env, data.terms, { skipLlm }),
+    ]);
+    files.push(bl, dm);
 
-    // TODO Sprint 2: data-model, feature-spec, architecture, api-spec, claude-md
+    // ── Phase 2: 의존 생성 ──
+    const fs = await generateFeatureSpec(env, data, bl, dm, { skipLlm });
+    files.push(fs);
+
+    const [arch, api] = await Promise.all([
+      generateArchitecture(env, data, fs, { skipLlm }),
+      generateApiSpec(env, fs, { skipLlm }),
+    ]);
+    files.push(arch, api);
+
+    // ── Phase 3: 요약 생성 ──
+    files.push(generateClaudeMd(orgName, data, { bl, dm, fs, arch, api }));
 
     // 3. manifest + ZIP + R2
     files.push(createManifest(orgName, files, options));

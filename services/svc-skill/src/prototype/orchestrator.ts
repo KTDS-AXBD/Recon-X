@@ -101,6 +101,12 @@ ontology/terms.jsonld         # 도메인 용어 (SKOS)
   };
 }
 
+interface GenerationMetrics {
+  totalDurationMs: number;
+  generatorCount: number;
+  llmMode: boolean;
+}
+
 async function updatePrototypeStatus(
   env: Env,
   prototypeId: string,
@@ -108,6 +114,7 @@ async function updatePrototypeStatus(
   r2Key?: string,
   data?: CollectedData,
   errorMessage?: string,
+  metrics?: GenerationMetrics,
 ): Promise<void> {
   await env.DB_SKILL.prepare(
     `UPDATE prototypes SET
@@ -118,6 +125,7 @@ async function updatePrototypeStatus(
        term_count = ?,
        skill_count = ?,
        error_message = ?,
+       llm_metrics = ?,
        completed_at = datetime('now')
      WHERE prototype_id = ?`,
   ).bind(
@@ -128,6 +136,7 @@ async function updatePrototypeStatus(
     data?.terms.length ?? 0,
     data?.skills.length ?? 0,
     errorMessage ?? null,
+    metrics ? JSON.stringify(metrics) : null,
     prototypeId,
   ).run();
 }
@@ -140,6 +149,7 @@ export async function generatePrototype(
   options?: GeneratePrototypeOptions,
 ): Promise<void> {
   try {
+    const startTime = Date.now();
     logger.info("Starting prototype generation", { prototypeId, orgId });
 
     // 1. 데이터 수집
@@ -202,9 +212,14 @@ export async function generatePrototype(
     const zipData = createZip(files);
     const r2Key = await uploadToR2(env, prototypeId, zipData);
 
-    // 4. D1 완료
-    await updatePrototypeStatus(env, prototypeId, "completed", r2Key, data);
-    logger.info("Prototype generation completed", { prototypeId, r2Key, fileCount: files.length });
+    // 4. D1 완료 + 메트릭
+    const metrics: GenerationMetrics = {
+      totalDurationMs: Date.now() - startTime,
+      generatorCount: files.filter((f) => f.type === "spec" || f.type === "rules" || f.type === "ontology").length,
+      llmMode: !skipLlm,
+    };
+    await updatePrototypeStatus(env, prototypeId, "completed", r2Key, data, undefined, metrics);
+    logger.info("Prototype generation completed", { prototypeId, r2Key, fileCount: files.length, metrics });
 
   } catch (e) {
     const errMsg = e instanceof Error ? `${e.message}\n${e.stack?.split("\n").slice(0, 3).join("\n")}` : String(e);

@@ -1,13 +1,8 @@
 {
-  "name": "ai-foundry",
+  "name": "recon-x",
   "version": "0.6.0",
   "private": true,
-  "packageManager": "bun@1.3.9",
-  "workspaces": [
-    "packages/*",
-    "services/*",
-    "apps/*"
-  ],
+  "packageManager": "pnpm@10.8.1",
   "scripts": {
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
@@ -16,6 +11,9 @@
     "dev:local": "bash scripts/dev-local.sh",
     "lint": "turbo run lint",
     "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "sharp", "workerd"]
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

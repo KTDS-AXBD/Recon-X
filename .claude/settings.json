@@ -1,19 +1,33 @@
 {
   "permissions": {
     "allow": [
-      "Bash(bun *)",
-      "Bash(bun run *)",
-      "Bash(bunx *)",
-      "Bash(git status *)",
-      "Bash(git diff *)",
-      "Bash(git log *)",
-      "Bash(git branch *)",
-      "Bash(git checkout *)",
-      "Bash(git add *)",
-      "Bash(gh *)",
-      "Bash(ls *)",
-      "Bash(wrangler *)"
+      "Bash(pnpm install*)",
+      "Bash(pnpm test*)",
+      "Bash(pnpm lint*)",
+      "Bash(pnpm typecheck*)",
+      "Bash(pnpm build*)",
+      "Bash(pnpm dev*)",
+      "Bash(turbo *)",
+      "Bash(npx tsc*)",
+      "Bash(npx eslint*)",
+      "Bash(npx vitest*)",
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git branch*)",
+      "Bash(git checkout*)",
+      "Bash(git add*)",
+      "Bash(gh *)"
+    ],
+    "deny": [
+      "Bash(rm -rf*)",
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)",
+      "Bash(npm publish*)"
     ]
+  },
+  "worktree": {
+    "symlinkDirectories": ["node_modules", ".turbo"]
   },
   "hooks": {
     "PreToolUse": [
@@ -22,12 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '\\.dev\\.vars|\\.env'; then echo 'BLOCKED: 민감 파일(.dev.vars/.env) 편집이 차단되었습니다'; exit 2; fi",
-            "timeout": 5000
-          },
-          {
-            "type": "command",
-            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '(ANTHROPIC_API_KEY|INTERNAL_API_SECRET|NEO4J_PASSWORD|NEO4J_URI|NEO4J_USER|UNSTRUCTURED_API_KEY|CF_AI_GATEWAY_TOKEN)\\s*=\\s*\"[^\"]+\"'; then echo 'BLOCKED: 시크릿 값을 코드에 하드코딩하지 마세요. wrangler secret put을 사용하세요'; exit 2; fi",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '\\.env|credentials|pnpm-lock\\.yaml'; then echo 'BLOCKED: 보호 파일 편집 차단 (.env, credentials, lock 파일)'; exit 2; fi",
             "timeout": 5000
           }
         ]
@@ -39,13 +48,21 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run typecheck 2>&1 | tail -20; bun run lint 2>&1 | tail -20",
-            "timeout": 60000
+            "command": "bash .claude/hooks/post-edit-format.sh",
+            "timeout": 15000,
+            "statusMessage": "eslint --fix"
           },
           {
             "type": "command",
-            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -q 'migrations/'; then echo '⚠️ Migration 변경 감지 — migration-checker 에이전트 실행을 권장합니다'; fi",
-            "timeout": 5000
+            "command": "bash .claude/hooks/post-edit-typecheck.sh",
+            "timeout": 60000,
+            "statusMessage": "typecheck"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post-edit-test-warn.sh",
+            "timeout": 5000,
+            "statusMessage": "test coverage check"
           }
         ]
       }

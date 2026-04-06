@@ -4,43 +4,45 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**AI Foundry** (v0.6) — SI 프로젝트 산출물(소스코드, 요구사항 정의서, API 명세서, 테이블 정의서, 화면 설계서 등)을 역공학하여 도메인 지식을 추출하고, 새 프로젝트의 **반제품(Working Prototype)**으로 재패키징하는 엔진. **Foundry-X 제품군**의 지식 추출 엔진 역할.
+**Recon-X** — 기존 시스템·SI 산출물(소스코드, 요구사항 정의서, API 명세서, 테이블 정의서, 화면 설계서)을 정찰(Reconnaissance)하여 기능 스펙을 역추출하는 엔진. **AI Foundry 플랫폼**의 1단계 수집 서비스.
 
-> **한줄 정의**: 과거의 지식을 미래의 코드로 바꾸는 엔진 (Reverse-to-Forward Bridge)
+> **한줄 정의**: 기존 자산을 탐색·분석하여 가치를 추출하는 정찰 엔진
 
-**포지셔닝**: 역공학(기존 산출물 분석)으로 시작해서 순공학(새 프로젝트 부트스트래핑)으로 끝나는 양방향 엔진. Foundry-X(에이전트 협업 플랫폼)와 결합하면, 기존 SI 산출물이 새 프로젝트의 출발점이 된다.
+**포지셔닝**: AI Foundry 플랫폼 산하 `*-X` 패밀리 서비스 중 하나. 역공학으로 기존 산출물에서 스펙을 추출하고, Foundry-X(발굴·형상화)로 핸드오프한다. MSA 재조정 계획: `docs/AX-BD-MSA-Restructuring-Plan.md`.
 
 ```
 Input:  소스코드 + SI 산출물 (요구사항, API 명세, 테이블 정의, 화면 설계서)
-Process: 5-Stage 역공학 파이프라인 + 반제품화
-Output: Working Prototype (하네스 + Spec 초안 + 스키마 + MCP 도구 + Skill 자산)
-         → Foundry-X로 핸드오프 → Production-ready Software
+Process: 5-Stage 역공학 파이프라인 + Fact Check + Spec Export
+Output: Dev Spec Package (API 명세 + 테이블 정의 + Gap 리포트)
+         → Foundry-X로 핸드오프 → 발굴·형상화 단계 입력
 ```
 
-Full product requirements and technical design are in `docs/AI_Foundry_PRD_TDS_v0.7.4.docx` (latest) and `docs/AI_Foundry_PRD_TDS_v0.6.docx`. 정체성 재정의: `docs/AI_Foundry_Identity.md`. 통합 분석: `docs/03-analysis/AIF-ANLS-026_foundry-x-integration-analysis.md`. Built by KTDS AX BD팀. Pilot domain: 퇴직연금 + 온누리상품권.
+Full product requirements: `docs/AI_Foundry_PRD_TDS_v0.7.4.docx`. 정체성 재정의: `docs/AI_Foundry_Identity.md`. Built by KTDS AX BD팀. Pilot domain: 퇴직연금 + 온누리상품권.
 
-> **Status**: Phase 4 Sprint 2 완료. 12 Workers + Pages 배포, staging/production 환경 분리. 2-org 파일럿 (퇴직연금 + 온누리상품권). 멀티 프로바이더 LLM (Anthropic/OpenAI/Google/Workers AI) fallback + MCP Server (Streamable HTTP) 완비. PDF/PPTX 분할 파싱 + FactCheck + SI 산출물 Export + LLM A/B 비교 API. 상세 수치는 SPEC.md §2 참조.
+> **Status**: Phase 4 Sprint 2 완료. 12 Workers + Pages 배포, staging/production 환경 분리. 2-org 파일럿. 멀티 프로바이더 LLM fallback + MCP Server 완비. Fact Check + Spec Export + LLM A/B 비교 API. 상세 수치는 SPEC.md §2 참조.
+> 
+> **리네이밍 진행 중**: GitHub `KTDS-AXBD/AI-Foundry` → `Recon-X` 예정. "AI Foundry"는 상위 포털 플랫폼 이름으로 승격.
 
 ---
 
 ## Commands
 
 ```bash
-# Install
-bun install
+# Install (pnpm 전환 진행 중)
+pnpm install
 
 # Dev / Build / Check (via Turborepo)
-bun run dev          # turbo run dev --parallel (all services)
-bun run typecheck    # turbo run typecheck
-bun run lint         # turbo run lint
-bun run test         # turbo run test
-bun run build        # turbo run build
+pnpm dev             # turbo run dev --parallel
+pnpm typecheck       # turbo run typecheck
+pnpm lint            # turbo run lint
+pnpm test            # turbo run test
+pnpm build           # turbo run build
 
 # Single service dev
 cd services/svc-ingestion && wrangler dev
 
 # Single service test
-cd services/svc-ingestion && bun run test
+cd services/svc-ingestion && pnpm test
 
 # Deploy a service
 cd services/svc-ingestion && CLOUDFLARE_API_TOKEN="..." wrangler deploy
@@ -54,13 +56,13 @@ printf 'value' | CLOUDFLARE_API_TOKEN="..." wrangler secret put SECRET_NAME
 ## Repo Structure
 
 ```
-res-ai-foundry/
-├── apps/app-web/              # Cloudflare Pages SPA (React + Vite)
-│   └── app-mockup/            # Working Mock-up PoC (Generative UI)
+res-ai-foundry/                  # → Recon-X (리네이밍 예정)
 ├── packages/
+│   ├── api/                   # API 패키지 (Cloudflare Workers)
+│   ├── web/                   # Web 프론트엔드 (React + Vite)
 │   ├── types/                 # @ai-foundry/types — shared Zod schemas & TS types
 │   └── utils/                 # @ai-foundry/utils — shared utilities
-├── services/
+├── services/                  # 기존 12 Workers (Pipeline)
 │   ├── svc-ingestion/         # SVC-01  Document Ingestion (R2, Queue)
 │   ├── svc-extraction/        # SVC-02  Structure Extraction (Claude, Neo4j)
 │   ├── svc-policy/            # SVC-03  Policy Inference (Opus, DO, Queue)
@@ -73,15 +75,19 @@ res-ai-foundry/
 │   ├── svc-analytics/         # SVC-10  Analytics (KPI, dashboards)
 │   ├── svc-queue-router/      # Queue Router (pipeline event bus, fan-out)
 │   └── svc-mcp-server/        # SVC-11  MCP Server (Streamable HTTP, Skill tools)
+├── apps/app-web/              # 기존 Cloudflare Pages SPA (마이그레이션 대상)
+├── harness-rules/             # @axbd/harness-kit 커스텀 룰
 ├── docs/                      # PRD, CHANGELOG
-├── scripts/                   # 운영 스크립트 (rebundle, report seed 등)
-├── infra/                     # Infrastructure config
+├── scripts/                   # 운영 스크립트
+├── infra/                     # Infrastructure config (migrations)
+├── eslint.config.js           # ESLint Flat Config (harness-kit)
 ├── turbo.json                 # Turborepo task config
-├── tsconfig.base.json         # Shared TS config (strict)
-└── package.json               # Bun workspaces root
+├── tsconfig.json              # Root TS config (strict)
+├── pnpm-workspace.yaml        # pnpm workspaces
+└── package.json               # Monorepo root
 ```
 
-Each service has its own `wrangler.toml` and deploys independently.
+Each service has its own `wrangler.toml` and deploys independently. `packages/` 구조는 하네스 이식 진행 중.
 
 ---
 

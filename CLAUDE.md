@@ -258,8 +258,8 @@ Phase 1 ✅ → 2 ✅ → 3 ✅ → 4 ✅ (Sprint 2 완료). 각 Phase 상세는
 SPEC.md 기반 SDD(Spec-Driven Development)가 이 프로젝트의 **주 워크플로우**이다.
 
 ### 세션 시작/종료
-- 세션 시작: `/ax-01-start [작업]` (MEMORY.md 자동 로딩 → SPEC.md 보충 읽기)
-- 세션 종료: `/ax-02-end [메모]` (Git 커밋 + SPEC.md §5 지표 + MEMORY.md 컨텍스트 + CHANGELOG.md 세션 기록 + git push)
+- 세션 시작: `/ax:session-start [작업]` (MEMORY.md 자동 로딩 → SPEC.md 보충 읽기)
+- 세션 종료: `/ax:session-end [메모]` (Git 커밋 + SPEC.md §5 지표 + MEMORY.md 컨텍스트 + CHANGELOG.md 세션 기록 + git push)
 - 세션 히스토리: `docs/CHANGELOG.md` (SPEC.md에 세션 로그 누적 금지)
 
 ### Validation Discipline
@@ -271,28 +271,35 @@ bun run typecheck && bun run lint
 ### 커밋 & 배포
 - Conventional Commits: `feat:`, `fix:`, `docs:`, `refactor:`, `style:`, `chore:`
 - `main` 단일 브랜치 운영, 직접 push
-- 배포: `/ax-02-end`에 git push 포함. `/ax-03-deploy --preview`는 프리뷰 전용
+- 배포: `/ax:session-end`에 git push 포함. `/ax:code-deploy --preview`는 프리뷰 전용
 
 ### 스킬
 
-#### ax 플러그인 (user scope, 범용)
-| 스킬 | 용도 |
-|------|------|
-| `/ax-01-start [작업]` | 세션 시작 (MEMORY.md 자동 + SPEC.md 보충) |
-| `/ax-02-end [메모]` | 세션 종료 (커밋 + push + SPEC.md/MEMORY.md/CHANGELOG 동기화) |
-| `/ax-03-deploy [--preview]` | 프리뷰 배포 또는 명시적 재배포 |
-| `/ax-04-verify [all\|lint\|typecheck\|test\|coverage\|watch]` | 코드 검증 (lint + typecheck + test) |
-| `/ax-05-sync [push\|pull\|status]` | 멀티 환경 Git 코드 동기화 |
-| `/ax-06-team <설명>` | Agent Teams 병렬 작업 (tmux) |
-| `/ax-07-gov [list\|check\|apply]` | 거버넌스 표준 관리 |
-| `/ax-08-ver [status\|bump\|tag\|check]` | 버전 관리 |
-| `/ax-09-doc [new\|index\|version\|archive\|check]` | 문서 관리 |
-| `/ax-10-req [new\|triage\|list\|status\|sync]` | 요구사항 관리 |
-| `/ax-11-risk [add\|list\|resolve]` | 리스크 관리 |
-| `/ax-12-retro` | 마일스톤 회고 |
-| `/ax-13-selfcheck` | ax plugin 자율점검 |
-| `/ax-14-integrity [check\|fix\|report]` | 요구사항 정합성 검증 (SPEC ↔ GitHub ↔ Execution Plan) |
-| `/ax-15-statusline [clear\|set]` | StatusLine 요구사항 표시 관리 |
+#### ax 플러그인 (user scope, 범용 — 22 skills)
+| 카테고리 | 스킬 | 용도 |
+|----------|------|------|
+| **세션** | `/ax:session-start` | 프로젝트 컨텍스트 복원 (MEMORY → SPEC 보충 읽기) |
+| | `/ax:daily-check` | 환경 점검 + SPEC.md 수치 정합성 자동 보정 |
+| | `/ax:session-end` | 수치 동기화 + 코드 커밋 + 문서 갱신 + git push + CI/CD 배포 |
+| **코드** | `/ax:code-verify` | lint + typecheck + test 통합 실행, 실패 시 자동 수정 |
+| | `/ax:e2e-audit` | E2E 실행 + 감사 + 커버리지 매트릭스 |
+| | `/ax:code-deploy` | 프리뷰 배포 또는 명시적 재배포 |
+| **Git** | `/ax:git-sync` | 멀티 환경 프로젝트 동기화 (push/pull/stash/config) |
+| | `/ax:git-team` | tmux in-window split Agent Team 병렬 수행 |
+| | `/ax:sprint` | Sprint 계획 + worktree 오케스트레이션 |
+| | `/ax:sprint-autopilot` | Sprint WT 전체 자동화 — Plan→Design→Implement→Analyze→Report |
+| | `/ax:sprint-pipeline` | 복수 Sprint 의존성 분석→배치 병렬 실행→자동 merge |
+| **거버넌스** | `/ax:gov-doc` | 문서 관리 (GOV-001 기반) |
+| | `/ax:gov-version` | 버전 관리 — 상태 확인, 범프, 태그 (GOV-002) |
+| | `/ax:gov-risk` | 리스크/기술부채 등록, 조회, 해소 (GOV-005) |
+| | `/ax:gov-retro` | 마일스톤 회고 — 지표 수집 + CHANGELOG/MEMORY 반영 |
+| | `/ax:gov-standards` | 15개 표준 적용 상태 점검 및 관리 |
+| **요구사항** | `/ax:req-manage` | 요구사항 등록/분류/상태변경/SPEC 동기화 |
+| | `/ax:req-integrity` | SPEC ↔ GitHub Issues ↔ Execution Plan 3-way 정합성 검증 |
+| | `/ax:req-interview` | 요구사항 인터뷰 → PRD 작성 → 외부 AI 다중 검토 → 착수 판단 |
+| **인프라** | `/ax:infra-selfcheck` | ax plugin 구조 자율점검 (8개 항목) |
+| | `/ax:infra-statusline` | tmux pane StatusLine 요구사항 표시 관리 |
+| | `/ax:help` | ax 스킬셋 사용 가이드 — 전체 목록 + 실전 사례 |
 
 #### 프로젝트 스킬 (res-ai-foundry 전용)
 | 스킬 | 용도 |
@@ -311,7 +318,7 @@ bun run typecheck && bun run lint
 - `wrangler-config-reviewer` — 12개 서비스 wrangler.toml 일관성 검증
 
 ### Agent Teams
-- agent team 작업 시 항상 `/ax-06-team` 스킬 사용 (tmux split pane)
+- agent team 작업 시 항상 `/ax:git-team` 스킬 사용 (tmux split pane)
 
 ### MCP Servers
 - `.mcp.json` (repo root, git 커밋) — 팀 공유 MCP: context7 (라이브러리 문서 조회)

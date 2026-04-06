@@ -10,6 +10,7 @@
  * 7. LLM: 상세 플로우 + 에러케이스 보강
  */
 import type { GeneratedFile } from "@ai-foundry/types";
+import { callLlmRouter } from "@ai-foundry/utils";
 import type { Env } from "../../env.js";
 import type { CollectedData, PolicyRow, SkillRow } from "../collector.js";
 
@@ -266,25 +267,11 @@ ${skillList}
 - 크로스 레퍼런스 매트릭스 (FN↔BL↔테이블)`;
 
   try {
-    const llmRes = await env.LLM_ROUTER.fetch("https://internal/complete", {
-      method: "POST",
-      headers: {
-        "X-Internal-Secret": env.INTERNAL_API_SECRET,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        tier: "tier2",
-        callerService: "svc-skill",
-        messages: [{ role: "user", content: prompt }],
-        system: "너는 기능 정의서 작성 전문가야. 비즈니스 로직과 데이터 모델을 기반으로 기능별 입출력/처리플로우/에러케이스를 정의한다.",
-        maxTokens: 4000,
-      }),
+    const content = await callLlmRouter(env, "svc-skill", "sonnet", prompt, {
+      system: "너는 기능 정의서 작성 전문가야. 비즈니스 로직과 데이터 모델을 기반으로 기능별 입출력/처리플로우/에러케이스를 정의한다.",
+      maxTokens: 4000,
     });
-
-    if (llmRes.ok) {
-      const json = (await llmRes.json()) as { content?: string };
-      if (json.content) return json.content;
-    }
+    if (content) return content;
   } catch {
     // fallback
   }

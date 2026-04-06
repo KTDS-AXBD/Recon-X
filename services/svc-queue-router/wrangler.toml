@@ -14,7 +14,7 @@ inspector_port = 9211
 # The default env svc-queue-router Worker must be deleted from Cloudflare
 # if it exists — see deploy-services.yml which skips default env for this service.
 
-# Service bindings — fan-out targets
+# Service bindings — fan-out targets (Recon-X pipeline only)
 [[services]]
 binding = "SVC_INGESTION"
 service = "svc-ingestion"
@@ -34,18 +34,6 @@ service = "svc-ontology"
 [[services]]
 binding = "SVC_SKILL"
 service = "svc-skill"
-
-[[services]]
-binding = "SVC_NOTIFICATION"
-service = "svc-notification"
-
-[[services]]
-binding = "SVC_ANALYTICS"
-service = "svc-analytics"
-
-[[services]]
-binding = "SVC_GOVERNANCE"
-service = "svc-governance"
 
 [vars]
 ENVIRONMENT = "development"
@@ -86,18 +74,6 @@ service = "svc-ontology-staging"
 binding = "SVC_SKILL"
 service = "svc-skill-staging"
 
-[[env.staging.services]]
-binding = "SVC_NOTIFICATION"
-service = "svc-notification-staging"
-
-[[env.staging.services]]
-binding = "SVC_ANALYTICS"
-service = "svc-analytics-staging"
-
-[[env.staging.services]]
-binding = "SVC_GOVERNANCE"
-service = "svc-governance-staging"
-
 # ---------------------------------------------------------------------------
 # Production environment
 # ---------------------------------------------------------------------------
@@ -130,15 +106,3 @@ service = "svc-ontology-production"
 [[env.production.services]]
 binding = "SVC_SKILL"
 service = "svc-skill-production"
-
-[[env.production.services]]
-binding = "SVC_NOTIFICATION"
-service = "svc-notification-production"
-
-[[env.production.services]]
-binding = "SVC_ANALYTICS"
-service = "svc-analytics-production"
-
-[[env.production.services]]
-binding = "SVC_GOVERNANCE"
-service = "svc-governance-production"

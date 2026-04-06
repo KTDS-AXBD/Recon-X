@@ -35,7 +35,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  ALL_SERVICES: "svc-ingestion,svc-extraction,svc-policy,svc-ontology,svc-skill,svc-llm-router,svc-security,svc-governance,svc-notification,svc-analytics,svc-queue-router"
+  ALL_SERVICES: "svc-ingestion,svc-extraction,svc-policy,svc-ontology,svc-skill,svc-queue-router,svc-mcp-server"
 
 jobs:
   # -----------------------------------------------------------------------

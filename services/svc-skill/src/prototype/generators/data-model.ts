@@ -9,6 +9,7 @@
  * 6. LLM: svc-llm-router 경유 정교한 스키마
  */
 import type { GeneratedFile } from "@ai-foundry/types";
+import { callLlmRouter } from "@ai-foundry/utils";
 import type { Env } from "../../env.js";
 import type { TermRow } from "../collector.js";
 
@@ -238,31 +239,12 @@ ${relList || "(없음)"}
 출력 포맷: Markdown + CREATE TABLE SQL (SQLite 호환) + Mermaid ERD.`;
 
   try {
-    const llmRes = await env.LLM_ROUTER.fetch("https://internal/complete", {
-      method: "POST",
-      headers: {
-        "X-Internal-Secret": env.INTERNAL_API_SECRET,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        tier: "tier2",
-        callerService: "svc-skill",
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        system: "너는 데이터 모델 설계 전문가야. 도메인 용어 목록에서 관계형 DB 스키마를 설계한다. 출력 포맷: Markdown + CREATE TABLE SQL (SQLite 호환) + Mermaid ERD.",
-        maxTokens: 4000,
-      }),
+    const content = await callLlmRouter(env, "svc-skill", "sonnet", prompt, {
+      system: "너는 데이터 모델 설계 전문가야. 도메인 용어 목록에서 관계형 DB 스키마를 설계한다. 출력 포맷: Markdown + CREATE TABLE SQL (SQLite 호환) + Mermaid ERD.",
+      maxTokens: 4000,
     });
-
-    if (llmRes.ok) {
-      const json = (await llmRes.json()) as { content?: string };
-      if (json.content) {
-        return json.content;
-      }
+    if (content) {
+      return content;
     }
   } catch {
     // LLM 실패 → null 반환, caller에서 fallback

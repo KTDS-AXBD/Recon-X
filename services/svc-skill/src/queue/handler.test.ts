@@ -74,8 +74,7 @@ function mockEnv(): Env {
       put: vi.fn().mockResolvedValue(undefined),
     } as unknown as R2Bucket,
     QUEUE_PIPELINE: { send: vi.fn().mockResolvedValue(undefined) } as unknown as Queue,
-    SECURITY: { fetch: vi.fn() } as unknown as Fetcher,
-    LLM_ROUTER: { fetch: vi.fn() } as unknown as Fetcher,
+    LLM_ROUTER_URL: "http://test-llm-router",
     SVC_POLICY: {
       fetch: vi.fn().mockResolvedValue(
         new Response(JSON.stringify(MOCK_POLICY_RESPONSE), { status: 200 }),

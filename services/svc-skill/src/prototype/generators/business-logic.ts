@@ -5,6 +5,7 @@
  * 2. 그룹별 시나리오 마크다운 생성 (LLM 보강 또는 기계적 변환)
  */
 import type { GeneratedFile } from "@ai-foundry/types";
+import { callLlmRouter } from "@ai-foundry/utils";
 import type { Env } from "../../env.js";
 import type { PolicyRow } from "../collector.js";
 
@@ -108,26 +109,12 @@ ${policiesText}
 - [예외 상황이나 경계 조건을 추론하여 기술]`;
 
     try {
-      const llmRes = await env.LLM_ROUTER.fetch("https://internal/complete", {
-        method: "POST",
-        headers: {
-          "X-Internal-Secret": env.INTERNAL_API_SECRET,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          tier: "tier2",
-          callerService: "svc-skill",
-          messages: [{ role: "user", content: prompt }],
-          maxTokens: 2000,
-        }),
+      const llmContent = await callLlmRouter(env, "svc-skill", "sonnet", prompt, {
+        maxTokens: 2000,
       });
-
-      if (llmRes.ok) {
-        const json = await llmRes.json() as { content?: string };
-        if (json.content) {
-          sections.push(json.content);
-          continue;
-        }
+      if (llmContent) {
+        sections.push(llmContent);
+        continue;
       }
     } catch {
       // LLM 실패 시 기계적 변환으로 fallback

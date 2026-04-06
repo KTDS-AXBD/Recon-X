@@ -39,8 +39,6 @@ function parseContent(content: string): { text: string; actions: { label: string
         '/ontology': '온톨로지',
         '/skills': 'Skill 카탈로그',
         '/api-console': 'API 연결',
-        '/trust': '신뢰도 대시보드',
-        '/audit': '감사 로그',
         '/settings': '설정',
       };
       const label = PAGE_LABELS[path] ?? path;

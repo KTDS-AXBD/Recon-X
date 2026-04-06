@@ -313,7 +313,7 @@ async function runExtraction(
   env: Env,
 ): Promise<ProviderResult> {
   const start = Date.now();
-  const meta = await callLlmWithMeta(prompt, tier, env.LLM_ROUTER, env.INTERNAL_API_SECRET, 8192, { provider });
+  const meta = await callLlmWithMeta(prompt, tier, env, 8192, { provider });
   const durationMs = Date.now() - start;
 
   const parsed = parseExtractionJson(meta.content);

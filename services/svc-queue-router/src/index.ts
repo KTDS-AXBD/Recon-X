@@ -20,9 +20,6 @@ interface Env {
   SVC_POLICY: Fetcher;
   SVC_ONTOLOGY: Fetcher;
   SVC_SKILL: Fetcher;
-  SVC_NOTIFICATION: Fetcher;
-  SVC_ANALYTICS: Fetcher;
-  SVC_GOVERNANCE: Fetcher;
 }
 
 type EventType =
@@ -58,30 +55,29 @@ function getTargets(type: EventType, env: Env): NamedTarget[] {
       case "extraction.completed":
         return [{ name: "svc-policy", fetcher: env.SVC_POLICY }];
       case "policy.candidate_ready":
-        return [{ name: "svc-notification", fetcher: env.SVC_NOTIFICATION }];
+        return [];
       case "policy.approved":
         return [{ name: "svc-ontology", fetcher: env.SVC_ONTOLOGY }];
       case "ontology.normalized":
         return [{ name: "svc-skill", fetcher: env.SVC_SKILL }];
       case "skill.packaged":
-        return [{ name: "svc-notification", fetcher: env.SVC_NOTIFICATION }, { name: "svc-governance", fetcher: env.SVC_GOVERNANCE }];
+        return [];
       case "analysis.requested":
         return [{ name: "svc-extraction", fetcher: env.SVC_EXTRACTION }];
       case "analysis.completed":
-        return [{ name: "svc-notification", fetcher: env.SVC_NOTIFICATION }];
+        return [];
       case "diagnosis.completed":
-        return [{ name: "svc-notification", fetcher: env.SVC_NOTIFICATION }];
+        return [];
       case "diagnosis.review_completed":
-        return [{ name: "svc-notification", fetcher: env.SVC_NOTIFICATION }];
+        return [];
       case "factcheck.requested":
       case "factcheck.completed":
         return [{ name: "svc-extraction", fetcher: env.SVC_EXTRACTION }];
       case "evaluation.completed":
-        return [{ name: "svc-notification", fetcher: env.SVC_NOTIFICATION }];
+        return [];
     }
   })();
-  // All events also go to analytics for metric aggregation
-  return [...primary, { name: "svc-analytics", fetcher: env.SVC_ANALYTICS }];
+  return primary;
 }
 
 export default {

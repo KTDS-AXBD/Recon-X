@@ -8,6 +8,7 @@
  * 5. 비기능 요구사항 템플릿
  */
 import type { GeneratedFile } from "@ai-foundry/types";
+import { callLlmRouter } from "@ai-foundry/utils";
 import type { Env } from "../../env.js";
 import type { CollectedData } from "../collector.js";
 
@@ -185,27 +186,11 @@ ${moduleList}
 5. 모듈 간 의존 관계 Mermaid 다이어그램`;
 
   try {
-    const res = await env.LLM_ROUTER.fetch("https://internal/complete", {
-      method: "POST",
-      headers: {
-        "X-Internal-Secret": env.INTERNAL_API_SECRET,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        tier: "tier2",
-        callerService: "svc-skill",
-        messages: [
-          { role: "user", content: prompt },
-        ],
-        maxTokens: 3000,
-      }),
+    const content = await callLlmRouter(env, "svc-skill", "sonnet", prompt, {
+      maxTokens: 3000,
     });
-
-    if (res.ok) {
-      const json = await res.json() as { content?: string };
-      if (json.content) {
-        return json.content;
-      }
+    if (content) {
+      return content;
     }
   } catch {
     // LLM 실패 → null 반환, caller에서 mechanical fallback

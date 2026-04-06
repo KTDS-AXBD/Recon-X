@@ -5,8 +5,8 @@
 # Usage:
 #   ./scripts/deploy.sh --env staging              # Deploy all services to staging
 #   ./scripts/deploy.sh --env production            # Deploy all services to production
-#   ./scripts/deploy.sh --env staging --only svc-ingestion,svc-security
-#   ./scripts/deploy.sh --env production --only svc-llm-router
+#   ./scripts/deploy.sh --env staging --only svc-ingestion,svc-extraction
+#   ./scripts/deploy.sh --env production --only svc-skill
 #   ./scripts/deploy.sh --env staging --include-pages   # Also deploy app-web Pages
 #
 # Prerequisites:
@@ -17,17 +17,13 @@ set -euo pipefail
 
 # All Workers services (deploy order: platform first, then pipeline, then queue-router)
 ALL_SERVICES=(
-  svc-security
-  svc-llm-router
-  svc-governance
-  svc-notification
-  svc-analytics
   svc-ingestion
   svc-extraction
   svc-policy
   svc-ontology
   svc-skill
   svc-queue-router
+  svc-mcp-server
 )
 
 ENVIRONMENT=""

@@ -1,0 +1,9 @@
+SPRINT_NUM=1
+F_ITEMS=AIF-REQ-030
+FEATURE=recon-x-restructuring
+PLAN_DOC=docs/01-plan/features/recon-x-restructuring.plan.md
+PRD_DOC=docs/recon-x-restructuring/prd-final.md
+SCOPE=M1-M7: Platform SVC separation + LLM routing + Frontend cleanup + E2E + Interface
+CHECKPOINT=report
+TEST_RESULT=pass
+MATCH_RATE=97

@@ -11,9 +11,8 @@ export interface Env {
   // Queue producer for pipeline events
   QUEUE_PIPELINE: Queue;
 
-  // Service bindings
-  SECURITY: Fetcher;
-  LLM_ROUTER: Fetcher;
+  // External service URLs (HTTP, no service bindings)
+  LLM_ROUTER_URL: string;
   SVC_POLICY: Fetcher;
   SVC_ONTOLOGY: Fetcher;
   SVC_EXTRACTION: Fetcher;

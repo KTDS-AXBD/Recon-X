@@ -1,11 +1,6 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Experience group", () => {
-  test("agent console page renders", async ({ page }) => {
-    await page.goto("/agent-console");
-    await expect(page.getByRole("heading", { name: /Agent Console/ })).toBeVisible();
-  });
-
   test("mockup page renders", async ({ page }) => {
     await page.goto("/mockup");
     await expect(page.getByRole("heading", { name: /Working Mock-up/ })).toBeVisible();
@@ -26,11 +21,6 @@ test.describe("Admin group", () => {
   test("benchmark page renders", async ({ page }) => {
     await page.goto("/benchmark");
     await expect(page.getByRole("heading", { name: /Benchmark Report/ })).toBeVisible();
-  });
-
-  test("audit log page renders", async ({ page }) => {
-    await page.goto("/audit");
-    await expect(page.getByRole("heading", { name: /감사 추적 로그/ })).toBeVisible();
   });
 
   test("settings page renders", async ({ page }) => {

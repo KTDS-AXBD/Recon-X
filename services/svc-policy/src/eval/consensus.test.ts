@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { ConsensusEngine, type ConsensusEnv } from "./consensus.js";
 import type { PolicyCandidate, ConsensusVerdict } from "@ai-foundry/types";
 
@@ -20,7 +20,7 @@ function makeCandidate(overrides: Partial<PolicyCandidate> = {}): PolicyCandidat
 
 function llmSuccess(content: string): Response {
   return new Response(
-    JSON.stringify({ success: true, data: { content } }),
+    JSON.stringify({ success: true, data: { content, provider: "anthropic", model: "opus" } }),
     { status: 200, headers: { "Content-Type": "application/json" } },
   );
 }
@@ -46,9 +46,14 @@ describe("ConsensusEngine", () => {
     engine = new ConsensusEngine();
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   function buildEnv(fetchFn: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>): ConsensusEnv {
+    vi.stubGlobal("fetch", fetchFn);
     return {
-      LLM_ROUTER: { fetch: fetchFn } as unknown as Fetcher,
+      LLM_ROUTER_URL: "http://test-llm-router",
       INTERNAL_API_SECRET: "test-secret",
     };
   }

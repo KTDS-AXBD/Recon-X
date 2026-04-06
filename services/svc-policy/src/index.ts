@@ -5,15 +5,14 @@
  * Receives structured extraction results from svc-extraction and:
  *  1. Sends process graphs / entity maps to Claude Opus (via LLM Router Tier 1)
  *     to generate policy candidates as condition-criteria-outcome triples.
- *  2. Creates a HitlSession Durable Object per candidate and notifies Reviewers
- *     via svc-notification.
+ *  2. Creates a HitlSession Durable Object per candidate for Reviewer workflows.
  *  3. Exposes HITL review endpoints so Reviewers can approve / modify / reject.
  *  4. On confirmation, emits a pipeline event to QUEUE_PIPELINE for svc-ontology.
  *
  * Receives queue events via POST /internal/queue-event from svc-queue-router.
  */
 
-import { createLogger, unauthorized, verifyInternalSecret, errFromUnknown, extractRbacContext, checkPermission, logAudit } from "@ai-foundry/utils";
+import { createLogger, unauthorized, verifyInternalSecret, errFromUnknown, extractRbacContext, checkPermission, logAuditLocal } from "@ai-foundry/utils";
 import type { Env } from "./env.js";
 import { handleInferPolicies, handleListPolicies, handleGetPolicy } from "./routes/policies.js";
 import { handleApprovePolicy, handleModifyPolicy, handleRejectPolicy, handleGetSession, handleListExpiredSessions, handleCleanupExpiredSessions, handleBulkApprovePolicy } from "./routes/hitl.js";
@@ -62,14 +61,14 @@ export default {
       if (method === "POST" && path === "/policies/infer") {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "policy", "create");
+          const denied = checkPermission(rbacCtx.role, "policy", "create");
           if (denied) return denied;
-          ctx.waitUntil(logAudit(env, {
+          logAuditLocal({
             userId: rbacCtx.userId,
             organizationId: rbacCtx.organizationId,
             action: "create",
             resource: "policy",
-          }));
+          });
         }
         return await handleInferPolicies(request, env, ctx);
       }
@@ -93,7 +92,7 @@ export default {
       if (method === "GET" && path === "/policies") {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "policy", "read");
+          const denied = checkPermission(rbacCtx.role, "policy", "read");
           if (denied) return denied;
         }
         return await handleListPolicies(request, env);
@@ -103,14 +102,14 @@ export default {
       if (method === "POST" && path === "/policies/bulk-approve") {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "policy", "approve");
+          const denied = checkPermission(rbacCtx.role, "policy", "approve");
           if (denied) return denied;
-          ctx.waitUntil(logAudit(env, {
+          logAuditLocal({
             userId: rbacCtx.userId,
             organizationId: rbacCtx.organizationId,
             action: "approve",
             resource: "policy",
-          }));
+          });
         }
         return await handleBulkApprovePolicy(request, env, ctx);
       }
@@ -138,7 +137,7 @@ export default {
         if (method === "GET" && !action) {
           const rbacCtx = extractRbacContext(request);
           if (rbacCtx) {
-            const denied = await checkPermission(env, rbacCtx.role, "policy", "read");
+            const denied = checkPermission(rbacCtx.role, "policy", "read");
             if (denied) return denied;
           }
           return await handleGetPolicy(request, env, policyId);
@@ -148,15 +147,15 @@ export default {
         if (method === "POST" && action === "approve") {
           const rbacCtx = extractRbacContext(request);
           if (rbacCtx) {
-            const denied = await checkPermission(env, rbacCtx.role, "policy", "approve");
+            const denied = checkPermission(rbacCtx.role, "policy", "approve");
             if (denied) return denied;
-            ctx.waitUntil(logAudit(env, {
+            logAuditLocal({
               userId: rbacCtx.userId,
               organizationId: rbacCtx.organizationId,
               action: "approve",
               resource: "policy",
               resourceId: policyId,
-            }));
+            });
           }
           return await handleApprovePolicy(request, env, policyId, ctx);
         }
@@ -165,15 +164,15 @@ export default {
         if (method === "POST" && action === "modify") {
           const rbacCtx = extractRbacContext(request);
           if (rbacCtx) {
-            const denied = await checkPermission(env, rbacCtx.role, "policy", "update");
+            const denied = checkPermission(rbacCtx.role, "policy", "update");
             if (denied) return denied;
-            ctx.waitUntil(logAudit(env, {
+            logAuditLocal({
               userId: rbacCtx.userId,
               organizationId: rbacCtx.organizationId,
               action: "update",
               resource: "policy",
               resourceId: policyId,
-            }));
+            });
           }
           return await handleModifyPolicy(request, env, policyId, ctx);
         }
@@ -182,15 +181,15 @@ export default {
         if (method === "POST" && action === "reject") {
           const rbacCtx = extractRbacContext(request);
           if (rbacCtx) {
-            const denied = await checkPermission(env, rbacCtx.role, "policy", "reject");
+            const denied = checkPermission(rbacCtx.role, "policy", "reject");
             if (denied) return denied;
-            ctx.waitUntil(logAudit(env, {
+            logAuditLocal({
               userId: rbacCtx.userId,
               organizationId: rbacCtx.organizationId,
               action: "reject",
               resource: "policy",
               resourceId: policyId,
-            }));
+            });
           }
           return await handleRejectPolicy(request, env, policyId, ctx);
         }
@@ -205,7 +204,7 @@ export default {
         }
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "policy", "read");
+          const denied = checkPermission(rbacCtx.role, "policy", "read");
           if (denied) return denied;
         }
         return await handleGetSession(request, env, sessionId);

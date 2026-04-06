@@ -36,7 +36,7 @@ function mockEnv(dbOverrides?: Parameters<typeof mockDb>[0]): Env {
     DB_INGESTION: mockDb(dbOverrides),
     R2_DOCUMENTS: mockR2(),
     QUEUE_PIPELINE: { send: vi.fn().mockResolvedValue(undefined) } as unknown as Queue,
-    SECURITY: { fetch: vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true, data: { allowed: true } }), { status: 200 })) } as unknown as Fetcher,
+
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-ingestion",
     MAX_FILE_SIZE_MB: "50",

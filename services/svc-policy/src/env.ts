@@ -3,10 +3,10 @@ export interface Env {
   DB_POLICY: D1Database;
 
   // Service bindings
-  SECURITY: Fetcher;
-  LLM_ROUTER: Fetcher;
-  NOTIFICATION: Fetcher;
   SVC_EXTRACTION: Fetcher;
+
+  // External service URLs
+  LLM_ROUTER_URL: string;
 
   // Queue producer for pipeline events
   QUEUE_PIPELINE: Queue;

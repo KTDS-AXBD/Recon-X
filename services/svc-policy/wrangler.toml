@@ -12,21 +12,6 @@ binding = "DB_POLICY"
 database_name = "db-policy"
 database_id = "48c22ca4-a7f8-4f3d-ae1b-e5dee4e8712a"
 
-# Service binding to svc-security for audit logging
-[[services]]
-binding = "SECURITY"
-service = "svc-security"
-
-# Service binding to svc-llm-router for LLM tier routing (Claude Opus for policy inference)
-[[services]]
-binding = "LLM_ROUTER"
-service = "svc-llm-router"
-
-# Service binding to svc-notification for HITL review alerts
-[[services]]
-binding = "NOTIFICATION"
-service = "svc-notification"
-
 # Service binding to svc-extraction for fetching extraction results (queue handler)
 [[services]]
 binding = "SVC_EXTRACTION"
@@ -52,6 +37,7 @@ queue = "ai-foundry-pipeline"
 [vars]
 ENVIRONMENT = "development"
 SERVICE_NAME = "svc-policy"
+LLM_ROUTER_URL = "http://localhost:8706"
 # Secrets (set via `wrangler secret put`):
 # INTERNAL_API_SECRET
 
@@ -59,24 +45,12 @@ SERVICE_NAME = "svc-policy"
 # Staging environment
 # ---------------------------------------------------------------------------
 [env.staging]
-vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-policy" }
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-policy", LLM_ROUTER_URL = "https://svc-llm-router-staging.ktds-axbd.workers.dev" }
 
 [[env.staging.d1_databases]]
 binding = "DB_POLICY"
 database_name = "db-policy-staging"
 database_id = "330cc11b-625b-4c46-915d-078d44828ded"
-
-[[env.staging.services]]
-binding = "SECURITY"
-service = "svc-security-staging"
-
-[[env.staging.services]]
-binding = "LLM_ROUTER"
-service = "svc-llm-router-staging"
-
-[[env.staging.services]]
-binding = "NOTIFICATION"
-service = "svc-notification-staging"
 
 [[env.staging.services]]
 binding = "SVC_EXTRACTION"
@@ -99,24 +73,12 @@ queue = "ai-foundry-pipeline-staging"
 # Production environment
 # ---------------------------------------------------------------------------
 [env.production]
-vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-policy" }
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-policy", LLM_ROUTER_URL = "https://svc-llm-router-production.ktds-axbd.workers.dev" }
 
 [[env.production.d1_databases]]
 binding = "DB_POLICY"
 database_name = "db-policy"
 database_id = "48c22ca4-a7f8-4f3d-ae1b-e5dee4e8712a"
-
-[[env.production.services]]
-binding = "SECURITY"
-service = "svc-security-production"
-
-[[env.production.services]]
-binding = "LLM_ROUTER"
-service = "svc-llm-router-production"
-
-[[env.production.services]]
-binding = "NOTIFICATION"
-service = "svc-notification-production"
 
 [[env.production.services]]
 binding = "SVC_EXTRACTION"

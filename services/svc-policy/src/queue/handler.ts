@@ -181,7 +181,7 @@ export async function processQueueEvent(
 
   let rawContent: string;
   try {
-    rawContent = await callOpusLlm(system, userContent, env.LLM_ROUTER, env.INTERNAL_API_SECRET);
+    rawContent = await callOpusLlm(system, userContent, env);
   } catch (e) {
     logger.error("Opus LLM call failed", { extractionId, error: String(e) });
     return new Response(

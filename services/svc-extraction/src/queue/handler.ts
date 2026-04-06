@@ -118,7 +118,7 @@ async function runExtraction(
     const tier = selectTier(chunks);
     const totalChunkLen = chunks.reduce((sum, c) => sum + c.masked_text.length, 0);
     logger.info("Selected LLM tier", { tier, totalChunkLen, chunkCount: chunks.length, classification: dominantClassification });
-    const rawContent = await callLlm(prompt, tier, env.LLM_ROUTER, env.INTERNAL_API_SECRET);
+    const rawContent = await callLlm(prompt, tier, env);
 
     // Strip markdown code fences (```json ... ```) that LLMs often add
     const jsonContent = rawContent
@@ -243,7 +243,7 @@ async function runAnalysis(
       rules: parsed.rules ?? [],
       relationships: parsed.relationships ?? [],
     });
-    const rawScoring = await callLlm(scoringPrompt, "sonnet", env.LLM_ROUTER, env.INTERNAL_API_SECRET);
+    const rawScoring = await callLlm(scoringPrompt, "sonnet", env);
     scoringResult = parseScoringResult(rawScoring);
   } catch (e) {
     logger.warn("Pass 1 scoring failed, using empty result", { documentId, error: String(e) });
@@ -312,7 +312,7 @@ async function runAnalysis(
       rules: parsed.rules ?? [],
       relationships: parsed.relationships ?? [],
     });
-    const rawDiagnosis = await callLlm(diagnosisPrompt, "sonnet", env.LLM_ROUTER, env.INTERNAL_API_SECRET);
+    const rawDiagnosis = await callLlm(diagnosisPrompt, "sonnet", env);
     findings = parseDiagnosisResult(rawDiagnosis);
   } catch (e) {
     logger.warn("Pass 2 diagnosis failed, proceeding with empty findings", { documentId, error: String(e) });

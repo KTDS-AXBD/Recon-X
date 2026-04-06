@@ -9,7 +9,6 @@ import {
   Network,
   Package,
   Plug,
-  ShieldCheck,
   FileText,
   BookOpen,
   Settings,
@@ -29,7 +28,6 @@ import {
   Wrench,
   ScanSearch,
   Sparkles,
-  Bot,
   MonitorPlay,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -86,7 +84,6 @@ const menuGroups: MenuGroup[] = [
       { icon: <CheckSquare className="w-4 h-4" />, label: 'HITL 검토', labelEn: 'HITL Review', path: '/hitl' },
       { icon: <GitCompareArrows className="w-4 h-4" />, label: '팩트 체크', labelEn: 'Fact Check', path: '/fact-check' },
       { icon: <ScanSearch className="w-4 h-4" />, label: 'Gap 분석', labelEn: 'Gap Analysis', path: '/gap-analysis' },
-      { icon: <ShieldCheck className="w-4 h-4" />, label: '신뢰도 대시보드', labelEn: 'Trust', path: '/trust' },
     ],
   },
   {
@@ -109,7 +106,6 @@ const menuGroups: MenuGroup[] = [
     labelEn: 'Experience',
     defaultOpen: true,
     items: [
-      { icon: <Bot className="w-4 h-4" />, label: 'Agent Console', labelEn: 'Generative UI', path: '/agent-console' },
       { icon: <MonitorPlay className="w-4 h-4" />, label: 'Working Mock-up', labelEn: 'Live Demo', path: '/mockup' },
       { icon: <FileText className="w-4 h-4" />, label: 'PoC 보고서', labelEn: 'PoC Report', path: '/poc-report' },
     ],
@@ -123,7 +119,6 @@ const menuGroups: MenuGroup[] = [
     items: [
       { icon: <Network className="w-4 h-4" />, label: '온톨로지', labelEn: 'Ontology', path: '/ontology' },
       { icon: <BarChart3 className="w-4 h-4" />, label: '벤치마크 리포트', labelEn: 'Benchmark', path: '/benchmark' },
-      { icon: <FileText className="w-4 h-4" />, label: '감사 로그', labelEn: 'Audit Log', path: '/audit' },
       { icon: <Settings className="w-4 h-4" />, label: '설정', labelEn: 'Settings', path: '/settings' },
     ],
   },

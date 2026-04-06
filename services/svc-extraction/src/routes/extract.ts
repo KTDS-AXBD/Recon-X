@@ -69,7 +69,7 @@ export async function handleExtract(
       chunk_index: i,
     }));
     const prompt = buildExtractionPrompt(chunksWithMeta, classification);
-    const rawContent = await callLlm(prompt, tier, env.LLM_ROUTER, env.INTERNAL_API_SECRET);
+    const rawContent = await callLlm(prompt, tier, env);
 
     // Strip markdown code fences (```json ... ```) that LLMs often add
     const jsonContent = rawContent

@@ -152,8 +152,6 @@ export async function processQueueEvent(body: unknown, env: Env, _ctx: Execution
       const maskedText = await maskText(
         documentId,
         text,
-        env.SECURITY,
-        env.INTERNAL_API_SECRET,
       );
 
       const chunkId = crypto.randomUUID();

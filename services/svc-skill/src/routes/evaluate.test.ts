@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { handleEvaluateSkill, handleListEvaluations } from "./evaluate.js";
 import type { Env } from "../env.js";
 
@@ -81,25 +81,21 @@ function mockR2Null() {
   return { get: vi.fn().mockResolvedValue(null) } as unknown as R2Bucket;
 }
 
-function mockLlmRouter(content: string, provider = "anthropic", model = "claude-sonnet") {
-  return {
-    fetch: vi.fn().mockImplementation(() =>
-      Promise.resolve(
-        new Response(
-          JSON.stringify({ success: true, data: { content, provider, model } }),
-          { status: 200, headers: { "Content-Type": "application/json" } },
-        ),
+function stubLlmRouter(content: string, provider = "anthropic", model = "claude-sonnet") {
+  vi.stubGlobal("fetch", vi.fn().mockImplementation(() =>
+    Promise.resolve(
+      new Response(
+        JSON.stringify({ success: true, data: { content, provider, model } }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
       ),
     ),
-  } as unknown as Fetcher;
+  ));
 }
 
-function mockLlmRouterFail(status = 500) {
-  return {
-    fetch: vi.fn().mockImplementation(() =>
-      Promise.resolve(new Response("LLM error", { status })),
-    ),
-  } as unknown as Fetcher;
+function stubLlmRouterFail(status = 500) {
+  vi.stubGlobal("fetch", vi.fn().mockImplementation(() =>
+    Promise.resolve(new Response("LLM error", { status })),
+  ));
 }
 
 function mockCtx(): ExecutionContext {
@@ -118,8 +114,7 @@ function makeEnv(overrides?: Partial<Env>): Env {
   return {
     DB_SKILL: mockDb({ r2_key: "skill-packages/sk-001.skill.json", domain: "퇴직연금" }),
     R2_SKILL_PACKAGES: mockR2(sampleSkillPackage),
-    LLM_ROUTER: mockLlmRouter(llmSuccessResponse),
-    SECURITY: { fetch: vi.fn() } as unknown as Fetcher,
+    LLM_ROUTER_URL: "http://test-llm-router",
     SVC_POLICY: { fetch: vi.fn() } as unknown as Fetcher,
     SVC_ONTOLOGY: { fetch: vi.fn() } as unknown as Fetcher,
     SVC_EXTRACTION: { fetch: vi.fn() } as unknown as Fetcher,
@@ -139,6 +134,11 @@ function makeEnv(overrides?: Partial<Env>): Env {
 // ── Tests: handleEvaluateSkill ──────────────────────────────────────
 
 describe("handleEvaluateSkill", () => {
+  beforeEach(() => {
+    // Default LLM stub — individual tests override as needed
+    stubLlmRouter(llmSuccessResponse);
+  });
+
   it("evaluates a policy and returns structured result", async () => {
     const env = makeEnv();
     const ctx = mockCtx();
@@ -204,7 +204,8 @@ describe("handleEvaluateSkill", () => {
   });
 
   it("returns 500 when LLM call fails", async () => {
-    const env = makeEnv({ LLM_ROUTER: mockLlmRouterFail() });
+    stubLlmRouterFail();
+    const env = makeEnv();
     const ctx = mockCtx();
     const req = makeRequest({
       policyCode: "POL-PENSION-WD-001",
@@ -228,8 +229,8 @@ describe("handleEvaluateSkill", () => {
   });
 
   it("supports provider parameter for specific LLM", async () => {
-    const llm = mockLlmRouter(llmSuccessResponse, "openai", "gpt-4.1");
-    const env = makeEnv({ LLM_ROUTER: llm });
+    stubLlmRouter(llmSuccessResponse, "openai", "gpt-4.1");
+    const env = makeEnv();
     const ctx = mockCtx();
     const req = makeRequest({
       policyCode: "POL-PENSION-WD-001",
@@ -244,8 +245,8 @@ describe("handleEvaluateSkill", () => {
   });
 
   it("supports benchmark mode with multiple providers", async () => {
-    const llm = mockLlmRouter(llmSuccessResponse);
-    const env = makeEnv({ LLM_ROUTER: llm });
+    stubLlmRouter(llmSuccessResponse);
+    const env = makeEnv();
     const ctx = mockCtx();
     const req = makeRequest({
       policyCode: "POL-PENSION-WD-001",

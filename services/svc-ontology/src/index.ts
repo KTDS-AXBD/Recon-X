@@ -18,7 +18,7 @@ import {
   errFromUnknown,
   extractRbacContext,
   checkPermission,
-  logAudit,
+  logAuditLocal,
 } from "@ai-foundry/utils";
 import type { Env } from "./env.js";
 import { handleNormalize } from "./routes/normalize.js";
@@ -144,16 +144,14 @@ export default {
       if (method === "POST" && path === "/normalize") {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "ontology", "create");
+          const denied = checkPermission(rbacCtx.role, "ontology", "create");
           if (denied) return denied;
-          ctx.waitUntil(
-            logAudit(env, {
-              userId: rbacCtx.userId,
-              organizationId: rbacCtx.organizationId,
-              action: "create",
-              resource: "ontology",
-            }),
-          );
+          logAuditLocal({
+            userId: rbacCtx.userId,
+            organizationId: rbacCtx.organizationId,
+            action: "create",
+            resource: "ontology",
+          });
         }
         return await handleNormalize(request, env, ctx);
       }
@@ -162,7 +160,7 @@ export default {
       if (method === "GET" && path === "/terms/stats") {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "ontology", "read");
+          const denied = checkPermission(rbacCtx.role, "ontology", "read");
           if (denied) return denied;
         }
         return await handleTermsStats(request, env);
@@ -172,7 +170,7 @@ export default {
       if (method === "GET" && path === "/graph/visualization") {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "ontology", "read");
+          const denied = checkPermission(rbacCtx.role, "ontology", "read");
           if (denied) return denied;
         }
         return await handleGraphVisualization(request, env);
@@ -182,7 +180,7 @@ export default {
       if (method === "GET" && path === "/terms") {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "ontology", "read");
+          const denied = checkPermission(rbacCtx.role, "ontology", "read");
           if (denied) return denied;
         }
         return await handleListTerms(request, env);
@@ -197,7 +195,7 @@ export default {
         }
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "ontology", "read");
+          const denied = checkPermission(rbacCtx.role, "ontology", "read");
           if (denied) return denied;
         }
         return await handleGetTerm(request, env, termId);
@@ -207,7 +205,7 @@ export default {
       if (method === "GET" && path === "/graph") {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "ontology", "read");
+          const denied = checkPermission(rbacCtx.role, "ontology", "read");
           if (denied) return denied;
         }
         return await handleGetGraph(request, env);

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,8 +15,6 @@ import {
 import { User, Bell, Lock, Palette, Database, Save, RefreshCw, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTheme } from '@/contexts/ThemeContext';
-import { fetchNotifications, markNotificationRead } from '@/api/notification';
-import type { Notification } from '@/api/notification';
 import { useOrganization } from '@/contexts/OrganizationContext';
 
 interface ServiceHealth {
@@ -27,8 +25,7 @@ interface ServiceHealth {
 
 const SERVICES = [
   'svc-ingestion', 'svc-extraction', 'svc-policy', 'svc-ontology', 'svc-skill',
-  'svc-llm-router', 'svc-security', 'svc-governance', 'svc-notification',
-  'svc-analytics', 'svc-queue-router',
+  'svc-queue-router', 'svc-mcp-server',
 ] as const;
 
 export default function SettingsPage() {
@@ -38,41 +35,12 @@ export default function SettingsPage() {
   const [slackNotifications, setSlackNotifications] = useState(false);
   const [twoFactorAuth, setTwoFactorAuth] = useState(true);
   const [language, setLanguage] = useState('ko');
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [notifLoading, setNotifLoading] = useState(false);
   const [healthChecks, setHealthChecks] = useState<ServiceHealth[]>(
     SERVICES.map((s) => ({ name: s, status: 'loading' as const })),
   );
   const [healthLoading, setHealthLoading] = useState(false);
 
   const handleSave = () => toast.success('설정이 저장되었습니다');
-
-  // --- Notification API ---
-  const loadNotifications = useCallback(async () => {
-    setNotifLoading(true);
-    try {
-      const res = await fetchNotifications(organizationId);
-      if (res.success && res.data) {
-        setNotifications(res.data.notifications);
-      }
-    } catch {
-      // silent — notifications unavailable
-    } finally {
-      setNotifLoading(false);
-    }
-  }, []);
-
-  const handleMarkRead = async (id: string) => {
-    try {
-      await markNotificationRead(organizationId, id);
-      setNotifications((prev) =>
-        prev.map((n) => (n.notificationId === id ? { ...n, readAt: new Date().toISOString() } : n)),
-      );
-      toast.success('알림을 읽음 처리했습니다');
-    } catch {
-      toast.error('처리 실패');
-    }
-  };
 
   // --- Health Check ---
   const runHealthChecks = useCallback(async () => {
@@ -113,10 +81,6 @@ export default function SettingsPage() {
     toast.info(`Health Check: ${String(okCount)}/${String(SERVICES.length)} 정상`);
   }, []);
 
-  useEffect(() => {
-    void loadNotifications();
-  }, [loadNotifications]);
-
   const okCount = healthChecks.filter((c) => c.status === 'ok').length;
   const errorCount = healthChecks.filter((c) => c.status === 'error').length;
   const loadingCount = healthChecks.filter((c) => c.status === 'loading').length;
@@ -137,11 +101,6 @@ export default function SettingsPage() {
           <TabsTrigger value="profile"><User className="w-4 h-4 mr-2" />프로필</TabsTrigger>
           <TabsTrigger value="notifications">
             <Bell className="w-4 h-4 mr-2" />알림
-            {notifications.filter((n) => !n.readAt).length > 0 && (
-              <span className="ml-1 text-xs bg-red-500 text-white rounded-full px-1.5 py-0.5">
-                {notifications.filter((n) => !n.readAt).length}
-              </span>
-            )}
           </TabsTrigger>
           <TabsTrigger value="security"><Lock className="w-4 h-4 mr-2" />보안</TabsTrigger>
           <TabsTrigger value="appearance"><Palette className="w-4 h-4 mr-2" />모양</TabsTrigger>
@@ -186,12 +145,7 @@ export default function SettingsPage() {
         <TabsContent value="notifications" className="space-y-6">
           <Card className="shadow-sm">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>알림 설정 Notification Settings</CardTitle>
-                <Button variant="outline" size="sm" onClick={() => void loadNotifications()} disabled={notifLoading}>
-                  <RefreshCw className={`w-4 h-4 mr-1 ${notifLoading ? 'animate-spin' : ''}`} />새로고침
-                </Button>
-              </div>
+              <CardTitle>알림 설정 Notification Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
@@ -207,52 +161,6 @@ export default function SettingsPage() {
                   <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Slack 채널로 실시간 알림을 받습니다</div>
                 </div>
                 <Switch checked={slackNotifications} onCheckedChange={setSlackNotifications} />
-              </div>
-
-              {/* Recent notifications from API */}
-              <div className="pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
-                <h4 className="font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
-                  최근 알림 ({String(notifications.length)}건)
-                </h4>
-                {notifications.length === 0 ? (
-                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>알림이 없습니다.</p>
-                ) : (
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {notifications.slice(0, 20).map((n) => (
-                      <div
-                        key={n.notificationId}
-                        className="flex items-start justify-between p-3 rounded-lg"
-                        style={{
-                          backgroundColor: n.readAt ? 'var(--surface)' : 'var(--accent-bg, rgba(59,130,246,0.08))',
-                          border: '1px solid var(--border)',
-                        }}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>
-                            {!n.readAt && <span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-2" />}
-                            {n.title}
-                          </div>
-                          <div className="text-xs mt-1 truncate" style={{ color: 'var(--text-secondary)' }}>
-                            {n.body}
-                          </div>
-                          <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
-                            {new Date(n.createdAt).toLocaleString('ko-KR')}
-                          </div>
-                        </div>
-                        {!n.readAt && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="ml-2 shrink-0"
-                            onClick={() => void handleMarkRead(n.notificationId)}
-                          >
-                            읽음
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
 
               <div className="pt-4 border-t" style={{ borderColor: 'var(--border)' }}>

@@ -21,7 +21,7 @@ import {
   fetchBenchmark,
   type BenchmarkData,
   type BenchmarkOrgData,
-} from "@/api/analytics";
+} from "@/api/benchmark";
 
 /* ─── Helpers ─── */
 

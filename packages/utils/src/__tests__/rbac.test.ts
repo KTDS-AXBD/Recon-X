@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { extractRbacContext, checkPermission, logAudit } from "../rbac.js";
+import { extractRbacContext, checkPermission } from "../rbac.js";
+import { logAuditLocal } from "../audit.js";
 
 // ── extractRbacContext ──────────────────────────────────────────
 
@@ -76,78 +77,44 @@ describe("extractRbacContext", () => {
   });
 });
 
-// ── checkPermission ─────────────────────────────────────────────
+// ── checkPermission (local) ────────────────────────────────────
 
 describe("checkPermission", () => {
-  function mockEnv(response: { ok: boolean; body: unknown }) {
-    return {
-      SECURITY: {
-        fetch: vi.fn().mockResolvedValue(
-          new Response(JSON.stringify(response.body), {
-            status: response.ok ? 200 : 500,
-          }),
-        ),
-      } as unknown as Fetcher,
-      INTERNAL_API_SECRET: "test-secret",
-    };
-  }
-
-  it("returns null (allowed) when permission check passes", async () => {
-    const env = mockEnv({ ok: true, body: { success: true, data: { allowed: true } } });
-    const result = await checkPermission(env, "Analyst", "document", "read");
+  it("returns null (allowed) when role has permission", () => {
+    const result = checkPermission("Analyst", "document", "read");
     expect(result).toBeNull();
   });
 
-  it("returns 403 when permission is denied", async () => {
-    const env = mockEnv({ ok: true, body: { success: true, data: { allowed: false } } });
-    const result = await checkPermission(env, "Client", "document", "delete");
+  it("returns 403 when role lacks permission", () => {
+    const result = checkPermission("Client", "document", "delete");
     expect(result).not.toBeNull();
     expect(result!.status).toBe(403);
   });
 
-  it("returns 403 when security service returns error", async () => {
-    const env = mockEnv({ ok: false, body: {} });
-    const result = await checkPermission(env, "Analyst", "document", "read");
-    expect(result).not.toBeNull();
-    expect(result!.status).toBe(403);
+  it("allows Admin all actions", () => {
+    const result = checkPermission("Admin", "document", "delete");
+    expect(result).toBeNull();
   });
 
-  it("returns 403 when response body is unsuccessful", async () => {
-    const env = mockEnv({ ok: true, body: { success: false } });
-    const result = await checkPermission(env, "Analyst", "document", "read");
-    expect(result).not.toBeNull();
-    expect(result!.status).toBe(403);
+  it("allows Reviewer to approve policies", () => {
+    const result = checkPermission("Reviewer", "policy", "approve");
+    expect(result).toBeNull();
   });
 
-  it("sends correct request to security service", async () => {
-    const env = mockEnv({ ok: true, body: { success: true, data: { allowed: true } } });
-    await checkPermission(env, "Reviewer", "policy", "approve");
-
-    const fetchMock = env.SECURITY.fetch as ReturnType<typeof vi.fn>;
-    expect(fetchMock).toHaveBeenCalledOnce();
-
-    const [url, opts] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("https://svc-security/rbac/check");
-    expect(opts.method).toBe("POST");
-    expect(opts.headers).toEqual(
-      expect.objectContaining({ "X-Internal-Secret": "test-secret" }),
-    );
-    const body = JSON.parse(opts.body as string) as { role: string; resource: string; action: string };
-    expect(body).toEqual({ role: "Reviewer", resource: "policy", action: "approve" });
+  it("denies Analyst from deleting documents", () => {
+    const result = checkPermission("Analyst", "document", "delete");
+    expect(result).not.toBeNull();
+    expect(result!.status).toBe(403);
   });
 });
 
-// ── logAudit ────────────────────────────────────────────────────
+// ── logAuditLocal ──────────────────────────────────────────────
 
-describe("logAudit", () => {
-  it("sends audit entry to security service", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response("ok"));
-    const env = {
-      SECURITY: { fetch: fetchMock } as unknown as Fetcher,
-      INTERNAL_API_SECRET: "test-secret",
-    };
+describe("logAuditLocal", () => {
+  it("logs audit entry as JSON to console", () => {
+    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-    await logAudit(env, {
+    logAuditLocal({
       userId: "user-1",
       organizationId: "org-1",
       action: "upload",
@@ -156,40 +123,31 @@ describe("logAudit", () => {
       details: { fileName: "test.pdf" },
     });
 
-    expect(fetchMock).toHaveBeenCalledOnce();
-    const [url, opts] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("https://svc-security/audit");
-    expect(opts.method).toBe("POST");
+    expect(consoleSpy).toHaveBeenCalledOnce();
+    const logged = JSON.parse(consoleSpy.mock.calls[0]![0] as string) as Record<string, unknown>;
+    expect(logged["type"]).toBe("audit");
+    expect(logged["userId"]).toBe("user-1");
+    expect(logged["action"]).toBe("upload");
+    expect(logged["resource"]).toBe("document");
+    expect(logged["timestamp"]).toBeDefined();
 
-    const body = JSON.parse(opts.body as string) as Record<string, unknown>;
-    expect(body).toEqual({
-      userId: "user-1",
-      organizationId: "org-1",
-      action: "upload",
-      resource: "document",
-      resourceId: "doc-123",
-      details: { fileName: "test.pdf" },
-    });
+    consoleSpy.mockRestore();
   });
 
-  it("sends without optional fields", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response("ok"));
-    const env = {
-      SECURITY: { fetch: fetchMock } as unknown as Fetcher,
-      INTERNAL_API_SECRET: "test-secret",
-    };
+  it("logs without optional fields", () => {
+    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-    await logAudit(env, {
+    logAuditLocal({
       userId: "user-1",
       organizationId: "org-1",
       action: "read",
       resource: "analytics",
     });
 
-    const body = JSON.parse(
-      (fetchMock.mock.calls[0] as [string, RequestInit])[1].body as string,
-    ) as Record<string, unknown>;
-    expect(body["resourceId"]).toBeUndefined();
-    expect(body["details"]).toBeUndefined();
+    const logged = JSON.parse(consoleSpy.mock.calls[0]![0] as string) as Record<string, unknown>;
+    expect(logged["resourceId"]).toBeUndefined();
+    expect(logged["details"]).toBeUndefined();
+
+    consoleSpy.mockRestore();
   });
 });

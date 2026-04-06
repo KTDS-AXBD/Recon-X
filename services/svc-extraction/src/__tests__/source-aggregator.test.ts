@@ -9,8 +9,7 @@ function createMockEnv(fetchResponses: Map<string, unknown>): Env {
   return {
     DB_EXTRACTION: {} as D1Database,
     QUEUE_PIPELINE: { send: vi.fn() } as unknown as Queue,
-    SECURITY: { fetch: vi.fn() } as unknown as Fetcher,
-    LLM_ROUTER: { fetch: vi.fn() } as unknown as Fetcher,
+    LLM_ROUTER_URL: "http://test-llm-router",
     SVC_INGESTION: {
       fetch: vi.fn().mockImplementation((url: string) => {
         // Match URL pattern against registered responses

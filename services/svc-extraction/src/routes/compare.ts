@@ -170,7 +170,7 @@ async function handleCompare(
   const comparisonPrompt = buildComparisonPrompt(orgAResult, orgBResult);
   let llmOutput;
   try {
-    const rawComparison = await callLlm(comparisonPrompt, "sonnet", env.LLM_ROUTER, env.INTERNAL_API_SECRET);
+    const rawComparison = await callLlm(comparisonPrompt, "sonnet", env);
     llmOutput = parseComparisonResult(rawComparison);
   } catch (e) {
     return new Response(

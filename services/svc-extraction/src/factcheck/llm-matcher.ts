@@ -8,7 +8,7 @@
  * Part of v0.7.4 Pivot Phase 2-B Session 4.
  */
 
-import { createLogger } from "@ai-foundry/utils";
+import { createLogger, type LlmClientEnv } from "@ai-foundry/utils";
 import type { MatchedItem } from "@ai-foundry/types";
 import type { SourceApi, SourceTable, DocSpec } from "./types.js";
 import type { MatchResult } from "./matcher.js";
@@ -53,8 +53,7 @@ export interface LlmMatchResult {
 export async function llmSemanticMatch(
   matchResult: MatchResult,
   docSpec: DocSpec,
-  llmRouter: Fetcher,
-  internalSecret: string,
+  env: LlmClientEnv,
 ): Promise<LlmMatchResult> {
   const newMatches: MatchedItem[] = [];
   const confirmedGaps: LlmMatchResult["confirmedGaps"] = [];
@@ -70,8 +69,7 @@ export async function llmSemanticMatch(
       const verdict = await matchSourceItem(
         { type: "api", name: api.path, detail: formatApiDetail(api) },
         docContext,
-        llmRouter,
-        internalSecret,
+        env,
       );
       processed++;
 
@@ -112,8 +110,7 @@ export async function llmSemanticMatch(
       const verdict = await matchSourceItem(
         { type: "table", name: table.tableName, detail: formatTableDetail(table) },
         docContext,
-        llmRouter,
-        internalSecret,
+        env,
       );
       processed++;
 
@@ -199,11 +196,10 @@ ${docContext}
 async function matchSourceItem(
   item: SourceItemInfo,
   docContext: string,
-  llmRouter: Fetcher,
-  internalSecret: string,
+  env: LlmClientEnv,
 ): Promise<LlmMatchVerdict> {
   const prompt = buildSemanticMatchPrompt(item, docContext);
-  const rawContent = await callLlm(prompt, "sonnet", llmRouter, internalSecret, 1024);
+  const rawContent = await callLlm(prompt, "sonnet", env, 1024);
 
   // Strip code fences
   const jsonContent = rawContent

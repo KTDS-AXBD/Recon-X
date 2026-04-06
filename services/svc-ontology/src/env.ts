@@ -3,9 +3,10 @@ export interface Env {
   DB_ONTOLOGY: D1Database;
 
   // Service bindings
-  SECURITY: Fetcher;
-  LLM_ROUTER: Fetcher;
   SVC_POLICY: Fetcher;
+
+  // HTTP endpoints
+  LLM_ROUTER_URL: string;
 
   // Queue producer for pipeline events
   QUEUE_PIPELINE: Queue;

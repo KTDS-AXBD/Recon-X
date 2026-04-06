@@ -32,7 +32,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: "DEV_PROXY=remote bun dev",
+    command: "DEV_PROXY=remote pnpm dev",
     url: "http://localhost:5173",
     reuseExistingServer: !process.env["CI"],
     timeout: 30_000,

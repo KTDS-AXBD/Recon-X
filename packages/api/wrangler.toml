@@ -1,0 +1,63 @@
+name = "recon-x-api"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+SERVICE_NAME = "recon-x-api"
+ENVIRONMENT = "production"
+
+# 11 service bindings (svc-queue-router excluded — internal only)
+[[services]]
+binding = "SVC_INGESTION"
+service = "svc-ingestion"
+
+[[services]]
+binding = "SVC_EXTRACTION"
+service = "svc-extraction"
+
+[[services]]
+binding = "SVC_POLICY"
+service = "svc-policy"
+
+[[services]]
+binding = "SVC_ONTOLOGY"
+service = "svc-ontology"
+
+[[services]]
+binding = "SVC_SKILL"
+service = "svc-skill"
+
+[[services]]
+binding = "SVC_LLM_ROUTER"
+service = "svc-llm-router"
+
+[[services]]
+binding = "SVC_SECURITY"
+service = "svc-security"
+
+[[services]]
+binding = "SVC_GOVERNANCE"
+service = "svc-governance"
+
+[[services]]
+binding = "SVC_NOTIFICATION"
+service = "svc-notification"
+
+[[services]]
+binding = "SVC_ANALYTICS"
+service = "svc-analytics"
+
+[[services]]
+binding = "SVC_MCP_SERVER"
+service = "svc-mcp-server"
+
+[env.staging]
+name = "recon-x-api-staging"
+[env.staging.vars]
+ENVIRONMENT = "staging"
+
+[env.production]
+name = "recon-x-api-production"
+[env.production.vars]
+ENVIRONMENT = "production"

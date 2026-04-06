@@ -2,6 +2,16 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 190 — 2026-04-06
+
+**ax plugin 커맨드 누락 수정 + CLAUDE.md 스킬 참조 업데이트**:
+- ✅ daily-check, e2e-audit, req-interview — commands/ 누락 원인 조사 + 커맨드 파일 생성
+- ✅ CLAUDE.md 스킬 테이블: `/ax-NN-xxx` → `/ax:xxx` 형식 + 카테고리별 22 skills 정리
+- 근본 원인: skills/ 소스는 있으나 commands/ 미등록 → Claude Code가 스킬로 인식 못함
+- 환경 이슈: HOME=/home/sinclair/.claude-work → ~/.claude 경로 혼동 주의
+
+---
+
 ## 세션 188c — 2026-03-20
 
 **AIF-REQ-029 Phase 4 — Skill Framework 독립 CC 플러그인 배포**:

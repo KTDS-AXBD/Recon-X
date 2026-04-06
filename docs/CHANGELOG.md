@@ -2,6 +2,19 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 193 — 2026-04-07
+
+**E2E 테스트 환경 구축 — Playwright + 41 tests**:
+- ✅ Playwright 설정: Chromium headless, staging proxy 연결, storageState 인증
+- ✅ 25개 라우트 smoke test 작성 (100% 라우트 커버리지)
+- ✅ Functional tests 8건: Dashboard 네비게이션/통계, Upload UI, HITL 선택, Skill 검색/필터
+- ✅ RBAC tests 4건: Reviewer vs Analyst fact-check 권한 차이 + 사이드바 사용자 정보
+- ✅ vite.config.ts proxy 버그 수정: `/api` → `/api/` (DEV_PROXY=remote에서 `/api-console` 라우트 충돌 해소)
+- 결과: 41/41 passed, 21.1s, E2E 커버리지 100%
+
+**검증 결과**:
+- ✅ typecheck / E2E 41 passed
+
 ## 세션 192 — 2026-04-07
 
 **Cloudflare 이전 wrangler.toml ID 보정 — 개인계정→회사계정**:

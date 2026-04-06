@@ -4,16 +4,20 @@
 
 ## 세션 193 — 2026-04-07
 
-**E2E 테스트 환경 구축 — Playwright + 41 tests**:
+**E2E 테스트 환경 구축 — Playwright + 46 tests (P1~P8 전체 완료)**:
 - ✅ Playwright 설정: Chromium headless, staging proxy 연결, storageState 인증
 - ✅ 25개 라우트 smoke test 작성 (100% 라우트 커버리지)
 - ✅ Functional tests 8건: Dashboard 네비게이션/통계, Upload UI, HITL 선택, Skill 검색/필터
 - ✅ RBAC tests 4건: Reviewer vs Analyst fact-check 권한 차이 + 사이드바 사용자 정보
+- ✅ CI 통합: GitHub Actions E2E job 추가 (ci.yml), 실패 시 artifact 업로드
+- ✅ 파일 업로드 E2E 2건: Analyst 역할 PDF 업로드(201) + 미지원 파일 거부 + 자동 cleanup
+- ✅ Organization 전환 E2E 3건: Miraeasset↔LPON 데이터 갱신 + 페이지 간 유지 + 4 org 목록
+- ✅ E2E Audit Report: `docs/03-analysis/AIF-ANLS-027_e2e-audit-20260407.md`
 - ✅ vite.config.ts proxy 버그 수정: `/api` → `/api/` (DEV_PROXY=remote에서 `/api-console` 라우트 충돌 해소)
-- 결과: 41/41 passed, 21.1s, E2E 커버리지 100%
+- 결과: 46/46 passed, 32.6s, 라우트 커버리지 100%, CI 통합 완료
 
 **검증 결과**:
-- ✅ typecheck / E2E 41 passed
+- ✅ typecheck / E2E 46 passed / CI (Typecheck & Test + E2E Tests) all success
 
 ## 세션 192 — 2026-04-07
 

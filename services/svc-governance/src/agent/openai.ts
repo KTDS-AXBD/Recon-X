@@ -11,7 +11,7 @@ import type { ToolDefinition } from "./tools.js";
 const logger = createLogger("svc-governance:agent:openai");
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-const MODEL = "gpt-4.1-nano";
+const MODEL = "gpt-4.1-mini";
 const MAX_TOKENS = 1024;
 
 // ── OpenAI types (minimal) ──────────────────────────────────────

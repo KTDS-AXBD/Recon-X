@@ -153,7 +153,7 @@ LPON(전자식 온누리상품권 플랫폼)의 **소스코드 2,612개 Java 파
 - [x] Fact Check 페이지 브라우저 E2E 확인 (BUG-5 수정: camelCase 정합 + URL path 수정)
 - [x] Spec Catalog 페이지 브라우저 E2E 확인 (230 APIs, 152 Tables 정상 렌더링)
 - [x] Export Center 패키지 생성 + 다운로드 브라우저 확인 (4 packages, 다운로드 버튼 정상)
-- [ ] AI Chat Widget 동작 확인
+- [x] AI Chat Widget 동작 확인 (gpt-4.1-mini 업그레이드, 4 tools 검증 완료)
 
 ## 주요 수치
 

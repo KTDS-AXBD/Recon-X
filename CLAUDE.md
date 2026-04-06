@@ -19,7 +19,7 @@ Output: Working Prototype (하네스 + Spec 초안 + 스키마 + MCP 도구 + Sk
 
 Full product requirements and technical design are in `docs/AI_Foundry_PRD_TDS_v0.7.4.docx` (latest) and `docs/AI_Foundry_PRD_TDS_v0.6.docx`. 정체성 재정의: `docs/AI_Foundry_Identity.md`. 통합 분석: `docs/03-analysis/AIF-ANLS-026_foundry-x-integration-analysis.md`. Built by KTDS AX BD팀. Pilot domain: 퇴직연금 + 온누리상품권.
 
-> **Status**: Phase 4 Sprint 2 완료. 12 Workers + Pages 배포, 1,801 tests (117 test files), staging/production 환경 분리. 퇴직연금 실문서 파일럿: 13/15 문서 파싱, policies 2,827, terms 1,441. LPON 온누리상품권: 85/88 파싱, policies 848, ontologies 848, terms 7,332, skills 859. Production: policies 3,675, skills 3,924 (2-org). 멀티 프로바이더 LLM (Anthropic/OpenAI/Google/Workers AI) fallback + MCP Server (Streamable HTTP) 완비. PDF/PPTX 분할 파싱 + FactCheck 커버리지 31.2% + SI 산출물 Export + LLM A/B 비교 API.
+> **Status**: Phase 4 Sprint 2 완료. 12 Workers + Pages 배포, staging/production 환경 분리. 2-org 파일럿 (퇴직연금 + 온누리상품권). 멀티 프로바이더 LLM (Anthropic/OpenAI/Google/Workers AI) fallback + MCP Server (Streamable HTTP) 완비. PDF/PPTX 분할 파싱 + FactCheck + SI 산출물 Export + LLM A/B 비교 API. 상세 수치는 SPEC.md §2 참조.
 
 ---
 

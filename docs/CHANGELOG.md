@@ -2,6 +2,23 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 192 — 2026-04-07
+
+**Cloudflare 이전 wrangler.toml ID 보정 — 개인계정→회사계정**:
+- ✅ secrets-check 전수 점검: 25종 × 3환경 = 75개 전부 ✅ (SLACK_WEBHOOK_URL만 optional ⚠️)
+- ✅ D1 10개 production export (106,849 INSERT, 69MB) — 최신 백업 `backup/*-20260407.sql`
+- ✅ 회사 계정 인프라 확인: Workers 36/36, D1 20개, R2 4개, Health 12/12 HTTP 200 (세션 176에서 이미 구축)
+- ✅ wrangler.toml 8개 서비스 D1 ID 교체 (16값) + KV_PROMPTS 3환경 교체
+- ✅ scripts/rebundle-production.ts, upload-bundled-r2.ts DB_SKILL_ID 갱신
+- ✅ SPEC.md repo 참조 수정 (`KTDS-AXBD/res-ai-foundry` → `KTDS-AXBD/AI-Foundry`)
+- ✅ AIF-PLAN-020 체크리스트 완료 표기 + status Active
+- 발견: 세션 176에서 Phase 0~5 완료 기록이지만 wrangler.toml ID 교체가 누락되어 있었음
+
+**검증 결과**:
+- ✅ typecheck 18/18, Health 12/12 (ktds-axbd.workers.dev)
+
+---
+
 ## 세션 191 — 2026-04-06
 
 **GitHub Org 마이그레이션 — AX-BD-Team → KTDS-AXBD**:

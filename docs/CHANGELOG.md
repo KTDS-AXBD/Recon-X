@@ -2,6 +2,17 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 194 — 2026-04-07
+
+**데모 시나리오 실행 — AI Chat Widget Tool Use 수정**:
+- ✅ AI Chat Widget 미동작 원인 분석: Anthropic API fallback → OpenAI gpt-4.1-nano가 function calling 미수행
+- ✅ OpenAI 모델 업그레이드: `gpt-4.1-nano` → `gpt-4.1-mini` (svc-governance/agent/openai.ts)
+- ✅ svc-governance-production 재배포 + 4개 도구 호출 검증 (search_skills, get_document_stats, get_policy_stats, get_skill_stats)
+- ✅ 데모 체크리스트 완료: AI Chat Widget 항목 체크 → 전체 12/12 완료
+
+**검증 결과**:
+- ✅ typecheck / lint / production 배포 + API E2E 검증 (4 tool calls)
+
 ## 세션 193 — 2026-04-07
 
 **E2E 테스트 환경 구축 — Playwright + 46 tests (P1~P8 전체 완료)**:

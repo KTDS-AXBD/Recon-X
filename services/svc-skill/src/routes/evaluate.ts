@@ -15,6 +15,7 @@ import {
   notFound,
   errFromUnknown,
   extractRbacContext,
+  callLlmRouterWithMeta,
 } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
 import { buildEvaluatePrompt, parseEvaluateResponse } from "../prompts/evaluate.js";
@@ -55,52 +56,23 @@ async function callLlmWithProvider(
 ): Promise<{ content: string; model: string; provider: string; latencyMs: number }> {
   const start = Date.now();
 
-  const body: Record<string, unknown> = {
-    tier: "sonnet",
-    messages: [{ role: "user", content: user }],
+  const opts: { system: string; maxTokens: number; temperature: number; provider?: "anthropic" | "openai" | "google" | "workers-ai" } = {
     system,
-    callerService: "svc-skill",
     maxTokens: 2048,
     temperature: 0.3,
   };
-
   if (provider) {
-    body["preferredProvider"] = provider;
+    opts.provider = provider as "anthropic" | "openai" | "google";
   }
 
-  const response = await env.LLM_ROUTER.fetch(
-    "https://svc-llm-router.internal/complete",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Internal-Secret": env.INTERNAL_API_SECRET,
-      },
-      body: JSON.stringify(body),
-    },
-  );
+  const result = await callLlmRouterWithMeta(env, "svc-skill", "sonnet", user, opts);
 
   const latencyMs = Date.now() - start;
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`LLM Router error ${response.status}: ${text}`);
-  }
-
-  const json = (await response.json()) as {
-    success: boolean;
-    data: { content: string; model?: string; provider?: string };
-    error?: { message: string };
-  };
-
-  if (!json.success) {
-    throw new Error(`LLM Router failure: ${json.error?.message ?? "unknown"}`);
-  }
-
   return {
-    content: json.data.content,
-    model: json.data.model ?? "unknown",
-    provider: json.data.provider ?? provider ?? "unknown",
+    content: result.content,
+    model: result.model,
+    provider: result.provider,
     latencyMs,
   };
 }

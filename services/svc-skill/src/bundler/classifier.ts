@@ -1,3 +1,4 @@
+import { callLlmRouter } from "@ai-foundry/utils";
 import { SKILL_CATEGORIES, CATEGORY_IDS } from "./categories.js";
 import type { SkillCategory } from "./categories.js";
 import type { Env } from "../env.js";
@@ -46,12 +47,6 @@ function stripMarkdownFence(text: string): string {
   return text.replace(/^```(?:json)?\s*\n?/m, "").replace(/\n?```\s*$/m, "");
 }
 
-interface LlmResponse {
-  success: boolean;
-  data?: { content?: string };
-  error?: { message?: string };
-}
-
 interface RawClassification {
   policyId?: string;
   category?: string;
@@ -59,34 +54,11 @@ interface RawClassification {
 }
 
 async function callLlm(env: Env, userContent: string): Promise<string> {
-  const resp = await env.LLM_ROUTER.fetch(
-    "https://svc-llm-router.internal/complete",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Internal-Secret": env.INTERNAL_API_SECRET,
-      },
-      body: JSON.stringify({
-        tier: "haiku",
-        messages: [{ role: "user", content: userContent }],
-        system: SYSTEM_PROMPT,
-        callerService: "svc-skill",
-        maxTokens: 4096,
-        temperature: 0.1,
-      }),
-    },
-  );
-
-  if (!resp.ok) {
-    throw new Error(`LLM Router error ${resp.status}`);
-  }
-
-  const json = (await resp.json()) as LlmResponse;
-  if (!json.success) {
-    throw new Error(json.error?.message ?? "LLM classification failed");
-  }
-  return json.data?.content ?? "";
+  return callLlmRouter(env, "svc-skill", "haiku", userContent, {
+    system: SYSTEM_PROMPT,
+    maxTokens: 4096,
+    temperature: 0.1,
+  });
 }
 
 function parseResponse(raw: string): ClassificationResult[] {

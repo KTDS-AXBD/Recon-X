@@ -9,7 +9,7 @@
  * Results are written to DB_EXTRACTION and forwarded to svc-policy via the pipeline queue.
  */
 
-import { createLogger, unauthorized, verifyInternalSecret, errFromUnknown, notFound, ok, extractRbacContext, checkPermission, logAudit } from "@ai-foundry/utils";
+import { createLogger, unauthorized, verifyInternalSecret, errFromUnknown, notFound, ok, extractRbacContext, checkPermission, logAuditLocal } from "@ai-foundry/utils";
 import type { Env } from "./env.js";
 import { handleExtract } from "./routes/extract.js";
 import { handleAnalysisRoutes } from "./routes/analysis.js";
@@ -50,7 +50,7 @@ export default {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
           const action = method === "GET" ? "read" : "execute";
-          const denied = await checkPermission(env, rbacCtx.role, "extraction", action);
+          const denied = checkPermission(rbacCtx.role, "extraction", action);
           if (denied) return denied;
         }
         // compare routes first (more specific), then analysis routes
@@ -68,7 +68,7 @@ export default {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
           const action = method === "GET" ? "read" : "execute";
-          const denied = await checkPermission(env, rbacCtx.role, "extraction", action);
+          const denied = checkPermission(rbacCtx.role, "extraction", action);
           if (denied) return denied;
         }
         return await handleLlmCompareRoutes(request, env);
@@ -84,14 +84,14 @@ export default {
       if (method === "POST" && path === "/extract") {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "extraction", "execute");
+          const denied = checkPermission(rbacCtx.role, "extraction", "execute");
           if (denied) return denied;
-          ctx.waitUntil(logAudit(env, {
+          logAuditLocal({
             userId: rbacCtx.userId,
             organizationId: rbacCtx.organizationId,
             action: "execute",
             resource: "extraction",
-          }));
+          });
         }
         return await handleExtract(request, env, ctx);
       }
@@ -100,7 +100,7 @@ export default {
       if (method === "GET" && path === "/extractions") {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "extraction", "read");
+          const denied = checkPermission(rbacCtx.role, "extraction", "read");
           if (denied) return denied;
         }
         const documentId = url.searchParams.get("documentId");
@@ -139,7 +139,7 @@ export default {
       if (method === "GET" && extractionMatch) {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "extraction", "read");
+          const denied = checkPermission(rbacCtx.role, "extraction", "read");
           if (denied) return denied;
         }
         const extractionId = extractionMatch[1];
@@ -185,7 +185,7 @@ export default {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
           const action = method === "GET" ? "read" : "execute";
-          const denied = await checkPermission(env, rbacCtx.role, "extraction", action);
+          const denied = checkPermission(rbacCtx.role, "extraction", action);
           if (denied) return denied;
         }
         const resp = await handleFactcheckRoutes(request, env, ctx, path, method, url);
@@ -197,7 +197,7 @@ export default {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
           const action = method === "GET" ? "read" : "execute";
-          const denied = await checkPermission(env, rbacCtx.role, "extraction", action);
+          const denied = checkPermission(rbacCtx.role, "extraction", action);
           if (denied) return denied;
         }
         const resp = await handleExportRoutes(request, env, ctx, path, method, url);
@@ -208,7 +208,7 @@ export default {
       if (path.startsWith("/gap-analysis")) {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "extraction", "read");
+          const denied = checkPermission(rbacCtx.role, "extraction", "read");
           if (denied) return denied;
         }
         // Sub-routes with dedicated handlers
@@ -227,7 +227,7 @@ export default {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
           const action = method === "GET" ? "read" : "execute";
-          const denied = await checkPermission(env, rbacCtx.role, "extraction", action);
+          const denied = checkPermission(rbacCtx.role, "extraction", action);
           if (denied) return denied;
         }
         const resp = await handleSpecRoutes(request, env, ctx, path, method, url);

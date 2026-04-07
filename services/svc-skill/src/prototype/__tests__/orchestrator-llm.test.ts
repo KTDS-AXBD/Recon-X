@@ -49,22 +49,27 @@ function mockFetcher(responses: Record<string, unknown>): Fetcher {
   } as unknown as Fetcher;
 }
 
-function createMockLlmRouter(shouldFail = false) {
-  return {
-    fetch: vi.fn().mockImplementation(async () => {
+function stubGlobalFetchForLlm(shouldFail = false) {
+  const llmFetchSpy = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
+    // LLM Router calls go to our LLM_ROUTER_URL
+    if (typeof url === "string" && url.startsWith("http://test-llm-router")) {
       if (shouldFail) return new Response("error", { status: 500 });
       return new Response(
-        JSON.stringify({ content: "# LLM Generated Content\n\nTest output" }),
+        JSON.stringify({ success: true, data: { content: "# LLM Generated Content\n\nTest output" } }),
         { status: 200 },
       );
-    }),
-  } as unknown as Fetcher;
+    }
+    // Shouldn't reach here in these tests
+    return new Response("Not found", { status: 404 });
+  });
+  vi.stubGlobal("fetch", llmFetchSpy);
+  return llmFetchSpy;
 }
 
 /** R2 put은 vi.fn(), D1 prepare→bind→all/run 체이닝 */
-function makeEnv(llmRouter: Fetcher): Env {
+function makeEnv(): Env {
   return {
-    LLM_ROUTER: llmRouter,
+    LLM_ROUTER_URL: "http://test-llm-router",
     DB_SKILL: {
       prepare: vi.fn().mockReturnValue({
         bind: vi.fn().mockReturnValue({
@@ -98,8 +103,6 @@ function makeEnv(llmRouter: Fetcher): Env {
       "/extractions": { extractions: [] },
     }),
     INTERNAL_API_SECRET: "test-secret",
-    // 사용하지 않는 바인딩은 빈 객체
-    SECURITY: {} as Fetcher,
     KV_SKILL_CACHE: {} as KVNamespace,
     QUEUE_PIPELINE: {} as Queue,
     ENVIRONMENT: "test",
@@ -111,13 +114,13 @@ function makeEnv(llmRouter: Fetcher): Env {
 
 describe("orchestrator — LLM integration", () => {
   it("skipLlm=false → LLM Router 호출 + generatedBy=llm-sonnet 파일 존재", async () => {
-    const llmRouter = createMockLlmRouter(false);
-    const env = makeEnv(llmRouter);
+    const llmFetchSpy = stubGlobalFetchForLlm(false);
+    const env = makeEnv();
 
     await generatePrototype(env, "proto-1", "org-1", "TestOrg", { skipLlm: false, includeScreenSpec: false, maxPoliciesPerScenario: 20 });
 
     // LLM Router가 호출되었는지 확인
-    expect(llmRouter.fetch).toHaveBeenCalled();
+    expect(llmFetchSpy).toHaveBeenCalled();
 
     // R2에 ZIP이 업로드되었는지 확인 (완료 = completed)
     expect(env.R2_SKILL_PACKAGES.put).toHaveBeenCalled();
@@ -131,14 +134,14 @@ describe("orchestrator — LLM integration", () => {
   });
 
   it("LLM 실패(500) → mechanical fallback으로 에러 없이 완료", async () => {
-    const llmRouter = createMockLlmRouter(true); // 500 응답
-    const env = makeEnv(llmRouter);
+    const llmFetchSpy = stubGlobalFetchForLlm(true); // 500 응답
+    const env = makeEnv();
 
     // 에러 없이 완료되어야 함
     await generatePrototype(env, "proto-2", "org-1", "TestOrg", { skipLlm: false, includeScreenSpec: false, maxPoliciesPerScenario: 20 });
 
     // LLM Router가 호출은 되었지만 실패
-    expect(llmRouter.fetch).toHaveBeenCalled();
+    expect(llmFetchSpy).toHaveBeenCalled();
 
     // R2에 ZIP 업로드 — fallback으로 완료
     expect(env.R2_SKILL_PACKAGES.put).toHaveBeenCalled();
@@ -152,21 +155,21 @@ describe("orchestrator — LLM integration", () => {
   });
 
   it("skipLlm=true → LLM Router 미호출", async () => {
-    const llmRouter = createMockLlmRouter(false);
-    const env = makeEnv(llmRouter);
+    const llmFetchSpy = stubGlobalFetchForLlm(false);
+    const env = makeEnv();
 
     await generatePrototype(env, "proto-3", "org-1", "TestOrg", { skipLlm: true, includeScreenSpec: false, maxPoliciesPerScenario: 20 });
 
     // LLM Router가 호출되지 않아야 함
-    expect(llmRouter.fetch).not.toHaveBeenCalled();
+    expect(llmFetchSpy).not.toHaveBeenCalled();
 
     // 기계적 변환으로 정상 완료
     expect(env.R2_SKILL_PACKAGES.put).toHaveBeenCalled();
   });
 
   it("includeScreenSpec=true → specs/06-screens.md 포함", async () => {
-    const llmRouter = createMockLlmRouter(false);
-    const env = makeEnv(llmRouter);
+    stubGlobalFetchForLlm(false);
+    const env = makeEnv();
 
     await generatePrototype(env, "proto-4", "org-1", "TestOrg", {
       skipLlm: true,
@@ -185,8 +188,8 @@ describe("orchestrator — LLM integration", () => {
   });
 
   it("includeScreenSpec=false → specs/06-screens.md 미포함", async () => {
-    const llmRouter = createMockLlmRouter(false);
-    const env = makeEnv(llmRouter);
+    stubGlobalFetchForLlm(false);
+    const env = makeEnv();
 
     await generatePrototype(env, "proto-5", "org-1", "TestOrg", {
       skipLlm: true,

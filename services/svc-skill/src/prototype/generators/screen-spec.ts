@@ -8,6 +8,7 @@
  * 5. LLM: svc-llm-router 경유 상세 화면 설계 보강
  */
 import type { GeneratedFile } from "@ai-foundry/types";
+import { callLlmRouter } from "@ai-foundry/utils";
 import type { Env } from "../../env.js";
 import type { CollectedData } from "../collector.js";
 
@@ -271,28 +272,12 @@ ${tableList}
 마지막에 내비게이션 플로우 매트릭스 (화면 간 이동 관계) 포함.`;
 
   try {
-    const res = await env.LLM_ROUTER.fetch("https://internal/complete", {
-      method: "POST",
-      headers: {
-        "X-Internal-Secret": env.INTERNAL_API_SECRET,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        tier: "tier2",
-        callerService: "svc-skill",
-        messages: [
-          { role: "user", content: prompt },
-        ],
-        system: "너는 화면 설계 전문가야. 기능 정의서와 데이터 모델을 기반으로 화면별 필드/흐름/에러를 정의한다.",
-        maxTokens: 4000,
-      }),
+    const content = await callLlmRouter(env, "svc-skill", "sonnet", prompt, {
+      system: "너는 화면 설계 전문가야. 기능 정의서와 데이터 모델을 기반으로 화면별 필드/흐름/에러를 정의한다.",
+      maxTokens: 4000,
     });
-
-    if (res.ok) {
-      const json = (await res.json()) as { content?: string };
-      if (json.content) {
-        return json.content;
-      }
+    if (content) {
+      return content;
     }
   } catch {
     // LLM 실패 → null 반환, caller에서 mechanical fallback

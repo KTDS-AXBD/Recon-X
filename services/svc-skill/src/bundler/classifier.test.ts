@@ -14,8 +14,9 @@ function makePolicies(count: number): PolicyInput[] {
 }
 
 function mockEnv(fetchFn: ReturnType<typeof vi.fn>): Env {
+  vi.stubGlobal("fetch", fetchFn);
   return {
-    LLM_ROUTER: { fetch: fetchFn } as unknown as Fetcher,
+    LLM_ROUTER_URL: "http://test-llm-router",
     INTERNAL_API_SECRET: "test-secret",
   } as unknown as Env;
 }
@@ -112,7 +113,7 @@ describe("classifyPolicies", () => {
     await classifyPolicies(mockEnv(fetchFn), makePolicies(1));
 
     const [url, opts] = fetchFn.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("https://svc-llm-router.internal/complete");
+    expect(url).toBe("http://test-llm-router/complete");
     const body = JSON.parse(opts.body as string) as Record<string, unknown>;
     expect(body["tier"]).toBe("haiku");
     expect(body["callerService"]).toBe("svc-skill");

@@ -33,16 +33,7 @@ function mockEnv(): Env {
   return {
     DB_EXTRACTION: mockDb(),
     QUEUE_PIPELINE: { send: vi.fn().mockResolvedValue(undefined) } as unknown as Queue,
-    SECURITY: {
-      fetch: vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ success: true, data: { allowed: true } }), { status: 200 }),
-      ),
-    } as unknown as Fetcher,
-    LLM_ROUTER: {
-      fetch: vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ success: true, data: { content: "{}" } }), { status: 200 }),
-      ),
-    } as unknown as Fetcher,
+    LLM_ROUTER_URL: "http://test-llm-router",
     SVC_INGESTION: {
       fetch: vi.fn().mockResolvedValue(
         new Response(

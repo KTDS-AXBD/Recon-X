@@ -6,7 +6,7 @@
 #   ./scripts/health-check.sh                    # Check production (default domain)
 #   ./scripts/health-check.sh --env staging      # Check staging environment
 #   ./scripts/health-check.sh --json             # Output results as JSON
-#   ./scripts/health-check.sh --alert            # Send alert on failure (via svc-notification)
+#   ./scripts/health-check.sh --alert            # Report alert on failure
 #
 set -euo pipefail
 
@@ -22,12 +22,8 @@ SERVICES=(
   svc-policy
   svc-ontology
   svc-skill
-  svc-llm-router
-  svc-security
-  svc-governance
-  svc-notification
-  svc-analytics
   svc-queue-router
+  svc-mcp-server
 )
 
 # Pages URL
@@ -169,23 +165,10 @@ if [[ ${#UNHEALTHY[@]} -gt 0 ]]; then
     echo "    - ${u}"
   done
 
-  # Alert via svc-notification (if --alert and INTERNAL_API_SECRET is set)
-  if [[ "$ALERT_ON_FAILURE" == "true" ]] && [[ -n "${INTERNAL_API_SECRET:-}" ]]; then
-    NOTIFICATION_URL="https://svc-notification.${DOMAIN}/notifications"
-    UNHEALTHY_LIST=$(IFS=', '; echo "${UNHEALTHY[*]}")
-    curl -s -X POST "$NOTIFICATION_URL" \
-      -H "Content-Type: application/json" \
-      -H "X-Internal-Secret: ${INTERNAL_API_SECRET}" \
-      -o /dev/null \
-      --json "{
-        \"recipient_id\": \"system\",
-        \"type\": \"health_check_failure\",
-        \"title\": \"Health Check Alert: ${#UNHEALTHY[@]} service(s) down\",
-        \"body\": \"Unhealthy: ${UNHEALTHY_LIST} (env: ${ENVIRONMENT}, time: ${TIMESTAMP})\",
-        \"channel\": \"internal\"
-      }" 2>/dev/null || true
+  # Alert placeholder (svc-notification removed in MSA cleanup)
+  if [[ "$ALERT_ON_FAILURE" == "true" ]]; then
     echo ""
-    echo "  Alert sent to svc-notification."
+    echo "  Alert: ${#UNHEALTHY[@]} service(s) unhealthy. Manual notification required."
   fi
 
   exit 1

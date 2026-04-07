@@ -16,9 +16,7 @@ const OntologyPage = lazy(() => import("./pages/ontology"));
 const SkillCatalogPage = lazy(() => import("./pages/skill-catalog"));
 const SkillDetailPage = lazy(() => import("./pages/skill-detail"));
 const ApiConsolePage = lazy(() => import("./pages/api-console"));
-const TrustDashboardPage = lazy(() => import("./pages/trust"));
 const AnalysisReportPage = lazy(() => import("./pages/analysis-report"));
-const AuditPage = lazy(() => import("./pages/audit"));
 const GuidePage = lazy(() => import("./pages/guide"));
 const SettingsPage = lazy(() => import("./pages/settings"));
 const SourceUploadPage = lazy(() => import("./pages/source-upload"));
@@ -28,7 +26,6 @@ const SpecDetailPage = lazy(() => import("./pages/spec-detail"));
 const ExportCenterPage = lazy(() => import("./pages/export-center"));
 const GapAnalysisPage = lazy(() => import("./pages/gap-analysis"));
 const BenchmarkPage = lazy(() => import("./pages/benchmark"));
-const AgentConsolePage = lazy(() => import("./pages/agent-console"));
 const MockupPage = lazy(() => import("./pages/mockup"));
 const PocReportPage = lazy(() => import("./pages/poc-report"));
 const NotFoundPage = lazy(() => import("./pages/not-found"));
@@ -71,8 +68,6 @@ export function App() {
             <Route path="/skills" element={<ProtectedRoute><Layout><SkillCatalogPage /></Layout></ProtectedRoute>} />
             <Route path="/skills/:id" element={<ProtectedRoute><Layout><SkillDetailPage /></Layout></ProtectedRoute>} />
             <Route path="/api-console" element={<ProtectedRoute><Layout><ApiConsolePage /></Layout></ProtectedRoute>} />
-            <Route path="/trust" element={<ProtectedRoute><Layout><TrustDashboardPage /></Layout></ProtectedRoute>} />
-            <Route path="/audit" element={<ProtectedRoute><Layout><AuditPage /></Layout></ProtectedRoute>} />
             <Route path="/guide" element={<ProtectedRoute><Layout><GuidePage /></Layout></ProtectedRoute>} />
             <Route path="/source-upload" element={<ProtectedRoute><Layout><SourceUploadPage /></Layout></ProtectedRoute>} />
             <Route path="/fact-check" element={<ProtectedRoute><Layout><FactCheckPage /></Layout></ProtectedRoute>} />
@@ -81,7 +76,6 @@ export function App() {
             <Route path="/specs/:id" element={<ProtectedRoute><Layout><SpecDetailPage /></Layout></ProtectedRoute>} />
             <Route path="/export" element={<ProtectedRoute><Layout><ExportCenterPage /></Layout></ProtectedRoute>} />
             <Route path="/benchmark" element={<ProtectedRoute><Layout><BenchmarkPage /></Layout></ProtectedRoute>} />
-            <Route path="/agent-console" element={<ProtectedRoute><Layout><AgentConsolePage /></Layout></ProtectedRoute>} />
             <Route path="/mockup" element={<ProtectedRoute><Layout><MockupPage /></Layout></ProtectedRoute>} />
             <Route path="/poc-report" element={<ProtectedRoute><Layout><PocReportPage /></Layout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />

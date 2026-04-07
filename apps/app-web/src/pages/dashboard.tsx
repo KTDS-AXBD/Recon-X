@@ -7,9 +7,7 @@ import {
   CheckSquare,
   Package,
   ShieldCheck,
-  TrendingUp,
   AlertCircle,
-  Bell,
   FileText,
   BookOpen,
   ArrowRight,
@@ -18,9 +16,6 @@ import type { LucideIcon } from 'lucide-react';
 import { fetchSkills } from '@/api/skill';
 import { fetchDocuments } from '@/api/ingestion';
 import { fetchPolicies } from '@/api/policy';
-import { fetchAuditLogs } from '@/api/security';
-import { fetchNotifications, type Notification } from '@/api/notification';
-import type { AuditRow } from '@/api/security';
 import { useOrganization } from '@/contexts/OrganizationContext';
 
 interface SystemStat {
@@ -36,10 +31,7 @@ export default function DashboardPage() {
     { label: '등록 문서', value: '—', color: '#3B82F6', icon: FileText },
     { label: '검토 대기', value: '—', color: 'var(--accent)', icon: AlertCircle },
     { label: '활성 Skill', value: '—', color: 'var(--success)', icon: ShieldCheck },
-    { label: '감사 이벤트', value: '—', color: '#6B7280', icon: TrendingUp },
   ]);
-  const [recentActivities, setRecentActivities] = useState<AuditRow[]>([]);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -47,12 +39,10 @@ export default function DashboardPage() {
 
     async function loadData() {
       try {
-        const [docsRes, policiesRes, skillsRes, auditRes, notiRes] = await Promise.allSettled([
+        const [docsRes, policiesRes, skillsRes] = await Promise.allSettled([
           fetchDocuments(organizationId),
           fetchPolicies(organizationId, { status: 'candidate', limit: 1 }),
           fetchSkills(organizationId, { limit: 1 }),
-          fetchAuditLogs(organizationId, { limit: 4 }),
-          fetchNotifications(organizationId),
         ]);
 
         if (cancelled) return;
@@ -63,23 +53,12 @@ export default function DashboardPage() {
           ? policiesRes.value.data.total : 0;
         const skillCount = skillsRes.status === 'fulfilled' && skillsRes.value.success
           ? skillsRes.value.data.total : 0;
-        const auditData = auditRes.status === 'fulfilled' && auditRes.value.success
-          ? auditRes.value.data : null;
 
         setStats([
           { label: '등록 문서', value: `${docCount}건`, color: '#3B82F6', icon: FileText },
           { label: '검토 대기', value: `${candidateCount}건`, color: 'var(--accent)', icon: AlertCircle },
           { label: '활성 Skill', value: `${skillCount}개`, color: 'var(--success)', icon: ShieldCheck },
-          { label: '감사 이벤트', value: `${auditData?.pagination.total ?? 0}건`, color: '#6B7280', icon: TrendingUp },
         ]);
-
-        if (auditData) {
-          setRecentActivities(auditData.items.slice(0, 4));
-        }
-
-        if (notiRes.status === 'fulfilled' && notiRes.value.success) {
-          setNotifications(notiRes.value.data.notifications.slice(0, 5));
-        }
       } catch {
         // graceful fallback
       } finally {
@@ -138,7 +117,7 @@ export default function DashboardPage() {
       )}
 
       {/* System Status */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         {stats.map((stat, index) => (
           <Card key={index} style={{ borderRadius: 'var(--radius-lg)' }}>
             <CardContent className="p-6">
@@ -180,79 +159,6 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Recent Activities + Notifications */}
-      <div className="grid grid-cols-2 gap-6">
-        <Card style={{ borderRadius: 'var(--radius-lg)' }}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              최근 활동 Recent Activities
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {recentActivities.length > 0 ? recentActivities.map((item) => (
-                <div key={item.audit_id} className="flex items-start gap-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--surface)' }}>
-                  <div className="text-xs shrink-0" style={{ color: 'var(--text-secondary)' }}>
-                    {new Date(item.occurred_at).toLocaleString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm" style={{ color: 'var(--text-primary)' }}>
-                      {item.action} — {item.resource}
-                    </div>
-                    <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                      by {item.user_id}
-                    </div>
-                  </div>
-                </div>
-              )) : (
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  {loading ? '불러오는 중...' : '최근 활동 없음'}
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card style={{ borderRadius: 'var(--radius-lg)' }}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="w-5 h-5" />
-              알림 Notifications
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {notifications.length > 0 ? notifications.map((n) => (
-                <div
-                  key={n.notificationId}
-                  className="p-3 rounded-lg border-l-4"
-                  style={{
-                    backgroundColor: n.readAt ? 'var(--surface)' : 'rgba(246, 173, 85, 0.05)',
-                    borderColor: n.readAt ? 'var(--border)' : 'var(--accent)',
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                      {n.title}
-                    </div>
-                    <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                      {new Date(n.createdAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                  </div>
-                  <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
-                    {n.body}
-                  </div>
-                </div>
-              )) : (
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  {loading ? '불러오는 중...' : '알림 없음'}
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }

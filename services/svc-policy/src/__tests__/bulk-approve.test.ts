@@ -73,17 +73,8 @@ function mockDb(overrides?: {
 function mockEnv(dbOverrides?: Parameters<typeof mockDb>[0]): Env {
   return {
     DB_POLICY: mockDb(dbOverrides),
-    SECURITY: {
-      fetch: vi.fn().mockResolvedValue(
-        new Response(
-          JSON.stringify({ success: true, data: { allowed: true } }),
-          { status: 200 },
-        ),
-      ),
-    } as unknown as Fetcher,
-    LLM_ROUTER: { fetch: vi.fn() } as unknown as Fetcher,
-    NOTIFICATION: { fetch: vi.fn() } as unknown as Fetcher,
     SVC_EXTRACTION: { fetch: vi.fn() } as unknown as Fetcher,
+    LLM_ROUTER_URL: "http://test-llm-router",
     QUEUE_PIPELINE: {
       send: vi.fn().mockResolvedValue(undefined),
     } as unknown as Queue,

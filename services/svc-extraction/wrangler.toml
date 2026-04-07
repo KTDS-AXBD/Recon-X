@@ -12,16 +12,6 @@ binding = "DB_EXTRACTION"
 database_name = "db-structure"
 database_id = "698c88b5-5355-401d-960a-4d8aa74c3b2c"
 
-# Service binding to svc-security for audit logging
-[[services]]
-binding = "SECURITY"
-service = "svc-security"
-
-# Service binding to svc-llm-router for LLM tier routing
-[[services]]
-binding = "LLM_ROUTER"
-service = "svc-llm-router"
-
 # Pipeline event bus producer (to emit extraction.completed)
 [[queues.producers]]
 binding = "QUEUE_PIPELINE"
@@ -40,6 +30,7 @@ bucket_name = "ai-foundry-skill-packages"
 [vars]
 ENVIRONMENT = "development"
 SERVICE_NAME = "svc-extraction"
+LLM_ROUTER_URL = "http://localhost:8706"
 # Secrets (set via `wrangler secret put`):
 # INTERNAL_API_SECRET
 
@@ -47,20 +38,12 @@ SERVICE_NAME = "svc-extraction"
 # Staging environment
 # ---------------------------------------------------------------------------
 [env.staging]
-vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-extraction" }
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-extraction", LLM_ROUTER_URL = "https://svc-llm-router-staging.ktds-axbd.workers.dev" }
 
 [[env.staging.d1_databases]]
 binding = "DB_EXTRACTION"
 database_name = "db-structure-staging"
 database_id = "5567133d-b0b5-496d-bf8f-0ef1dea62075"
-
-[[env.staging.services]]
-binding = "SECURITY"
-service = "svc-security-staging"
-
-[[env.staging.services]]
-binding = "LLM_ROUTER"
-service = "svc-llm-router-staging"
 
 [[env.staging.queues.producers]]
 binding = "QUEUE_PIPELINE"
@@ -78,20 +61,12 @@ bucket_name = "ai-foundry-skill-packages-staging"
 # Production environment
 # ---------------------------------------------------------------------------
 [env.production]
-vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-extraction" }
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-extraction", LLM_ROUTER_URL = "https://svc-llm-router-production.ktds-axbd.workers.dev" }
 
 [[env.production.d1_databases]]
 binding = "DB_EXTRACTION"
 database_name = "db-structure"
 database_id = "698c88b5-5355-401d-960a-4d8aa74c3b2c"
-
-[[env.production.services]]
-binding = "SECURITY"
-service = "svc-security-production"
-
-[[env.production.services]]
-binding = "LLM_ROUTER"
-service = "svc-llm-router-production"
 
 [[env.production.queues.producers]]
 binding = "QUEUE_PIPELINE"

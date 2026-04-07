@@ -30,17 +30,12 @@ function mockDb(overrides?: {
 function mockEnv(dbOverrides?: Parameters<typeof mockDb>[0]): Env {
   return {
     DB_ONTOLOGY: mockDb(dbOverrides),
-    SECURITY: {
-      fetch: vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ success: true, data: { allowed: true } }), { status: 200 }),
-      ),
-    } as unknown as Fetcher,
-    LLM_ROUTER: { fetch: vi.fn() } as unknown as Fetcher,
     SVC_POLICY: { fetch: vi.fn().mockResolvedValue(new Response("{}")) } as unknown as Fetcher,
     QUEUE_PIPELINE: { send: vi.fn().mockResolvedValue(undefined) } as unknown as Queue,
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-ontology",
     INTERNAL_API_SECRET: "test-secret",
+    LLM_ROUTER_URL: "https://svc-llm-router.test",
     NEO4J_URI: "https://test.databases.neo4j.io",
     NEO4J_USERNAME: "neo4j",
     NEO4J_PASSWORD: "pass",

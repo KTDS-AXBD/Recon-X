@@ -57,18 +57,12 @@ function mockEnv(): Env {
         }),
       }),
     } as unknown as D1Database,
-    SECURITY: { fetch: vi.fn() } as unknown as Fetcher,
-    LLM_ROUTER: {
-      fetch: vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ success: true, data: { content: "[]" } }), { status: 200 }),
-      ),
-    } as unknown as Fetcher,
-    NOTIFICATION: { fetch: vi.fn() } as unknown as Fetcher,
     SVC_EXTRACTION: {
       fetch: vi.fn().mockResolvedValue(
         new Response(JSON.stringify(MOCK_EXTRACTION_RESPONSE), { status: 200 }),
       ),
     } as unknown as Fetcher,
+    LLM_ROUTER_URL: "http://test-llm-router",
     QUEUE_PIPELINE: { send: vi.fn().mockResolvedValue(undefined) } as unknown as Queue,
     HITL_SESSION: {
       idFromName: vi.fn().mockReturnValue({ toString: () => "do-id-1" }),

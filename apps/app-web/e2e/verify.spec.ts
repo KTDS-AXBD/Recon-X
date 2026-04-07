@@ -16,8 +16,4 @@ test.describe("Verify group", () => {
     await expect(page.getByRole("heading", { name: /Gap 분석/ })).toBeVisible();
   });
 
-  test("trust dashboard page renders", async ({ page }) => {
-    await page.goto("/trust");
-    await expect(page.getByRole("heading", { name: /신뢰도/ })).toBeVisible();
-  });
 });

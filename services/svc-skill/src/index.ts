@@ -20,7 +20,7 @@ import {
   errFromUnknown,
   extractRbacContext,
   checkPermission,
-  logAudit,
+  logAuditLocal,
 } from "@ai-foundry/utils";
 import type { Env } from "./env.js";
 import {
@@ -128,15 +128,15 @@ export default {
         if (!orgId) return new Response("Not Found", { status: 404 });
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "skill", "download");
+          const denied = checkPermission(rbacCtx.role, "skill", "download");
           if (denied) return denied;
-          ctx.waitUntil(logAudit(env, {
+          logAuditLocal({
             userId: rbacCtx.userId,
             organizationId: rbacCtx.organizationId,
             action: "download",
             resource: "skill",
             details: { adapter_type: "mcp-org", orgId },
-          }));
+          });
         }
         return await handleGetOrgMcpAdapter(request, env, orgId, ctx);
       }
@@ -145,16 +145,14 @@ export default {
       if (method === "POST" && path === "/skills") {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "skill", "create");
+          const denied = checkPermission(rbacCtx.role, "skill", "create");
           if (denied) return denied;
-          ctx.waitUntil(
-            logAudit(env, {
-              userId: rbacCtx.userId,
-              organizationId: rbacCtx.organizationId,
-              action: "create",
-              resource: "skill",
-            }),
-          );
+          logAuditLocal({
+            userId: rbacCtx.userId,
+            organizationId: rbacCtx.organizationId,
+            action: "create",
+            resource: "skill",
+          });
         }
         return await handleCreateSkill(request, env, ctx);
       }
@@ -163,7 +161,7 @@ export default {
       if (method === "GET" && path === "/skills") {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "skill", "read");
+          const denied = checkPermission(rbacCtx.role, "skill", "read");
           if (denied) return denied;
         }
         return await handleListSkills(request, env);
@@ -173,7 +171,7 @@ export default {
       if (method === "GET" && path === "/skills/search/tags") {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "skill", "read");
+          const denied = checkPermission(rbacCtx.role, "skill", "read");
           if (denied) return denied;
         }
         return await handleSearchTags(request, env);
@@ -183,7 +181,7 @@ export default {
       if (method === "GET" && path === "/skills/stats") {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "skill", "read");
+          const denied = checkPermission(rbacCtx.role, "skill", "read");
           if (denied) return denied;
         }
         return await handleGetSkillStats(request, env);
@@ -202,17 +200,15 @@ export default {
         if (method === "GET" && subpath === "download") {
           const rbacCtx = extractRbacContext(request);
           if (rbacCtx) {
-            const denied = await checkPermission(env, rbacCtx.role, "skill", "download");
+            const denied = checkPermission(rbacCtx.role, "skill", "download");
             if (denied) return denied;
-            ctx.waitUntil(
-              logAudit(env, {
+            logAuditLocal({
                 userId: rbacCtx.userId,
                 organizationId: rbacCtx.organizationId,
                 action: "download",
                 resource: "skill",
                 resourceId: skillId,
-              }),
-            );
+            });
           }
           return await handleDownloadSkill(request, env, skillId, ctx);
         }
@@ -221,18 +217,16 @@ export default {
         if (method === "GET" && subpath === "export-cc") {
           const rbacCtx = extractRbacContext(request);
           if (rbacCtx) {
-            const denied = await checkPermission(env, rbacCtx.role, "skill", "download");
+            const denied = checkPermission(rbacCtx.role, "skill", "download");
             if (denied) return denied;
-            ctx.waitUntil(
-              logAudit(env, {
+            logAuditLocal({
                 userId: rbacCtx.userId,
                 organizationId: rbacCtx.organizationId,
                 action: "download",
                 resource: "skill",
                 resourceId: skillId,
                 details: { adapter_type: "cc-skill" },
-              }),
-            );
+            });
           }
           return await handleExportCc(request, env, skillId, ctx);
         }
@@ -241,17 +235,15 @@ export default {
         if (method === "POST" && subpath === "evaluate") {
           const rbacCtx = extractRbacContext(request);
           if (rbacCtx) {
-            const denied = await checkPermission(env, rbacCtx.role, "skill", "read");
+            const denied = checkPermission(rbacCtx.role, "skill", "read");
             if (denied) return denied;
-            ctx.waitUntil(
-              logAudit(env, {
+            logAuditLocal({
                 userId: rbacCtx.userId,
                 organizationId: rbacCtx.organizationId,
                 action: "evaluate",
                 resource: "skill",
                 resourceId: skillId,
-              }),
-            );
+            });
           }
           return await handleEvaluateSkill(request, env, skillId, ctx);
         }
@@ -260,7 +252,7 @@ export default {
         if (method === "GET" && subpath === "evaluations") {
           const rbacCtx = extractRbacContext(request);
           if (rbacCtx) {
-            const denied = await checkPermission(env, rbacCtx.role, "skill", "read");
+            const denied = checkPermission(rbacCtx.role, "skill", "read");
             if (denied) return denied;
           }
           return await handleListEvaluations(request, env, skillId);
@@ -270,18 +262,16 @@ export default {
         if (method === "GET" && subpath === "mcp") {
           const rbacCtx = extractRbacContext(request);
           if (rbacCtx) {
-            const denied = await checkPermission(env, rbacCtx.role, "skill", "download");
+            const denied = checkPermission(rbacCtx.role, "skill", "download");
             if (denied) return denied;
-            ctx.waitUntil(
-              logAudit(env, {
+            logAuditLocal({
                 userId: rbacCtx.userId,
                 organizationId: rbacCtx.organizationId,
                 action: "download",
                 resource: "skill",
                 resourceId: skillId,
                 details: { adapter_type: "mcp" },
-              }),
-            );
+            });
           }
           return await handleGetMcpAdapter(request, env, skillId, ctx);
         }
@@ -290,17 +280,15 @@ export default {
         if (method === "PATCH" && subpath === "status") {
           const rbacCtx = extractRbacContext(request);
           if (rbacCtx) {
-            const denied = await checkPermission(env, rbacCtx.role, "skill", "create");
+            const denied = checkPermission(rbacCtx.role, "skill", "create");
             if (denied) return denied;
-            ctx.waitUntil(
-              logAudit(env, {
+            logAuditLocal({
                 userId: rbacCtx.userId,
                 organizationId: rbacCtx.organizationId,
                 action: "update_status",
                 resource: "skill",
                 resourceId: skillId,
-              }),
-            );
+            });
           }
           return await handleUpdateSkillStatus(request, env, skillId);
         }
@@ -309,18 +297,16 @@ export default {
         if (method === "GET" && subpath === "openapi") {
           const rbacCtx = extractRbacContext(request);
           if (rbacCtx) {
-            const denied = await checkPermission(env, rbacCtx.role, "skill", "download");
+            const denied = checkPermission(rbacCtx.role, "skill", "download");
             if (denied) return denied;
-            ctx.waitUntil(
-              logAudit(env, {
+            logAuditLocal({
                 userId: rbacCtx.userId,
                 organizationId: rbacCtx.organizationId,
                 action: "download",
                 resource: "skill",
                 resourceId: skillId,
                 details: { adapter_type: "openapi" },
-              }),
-            );
+            });
           }
           return await handleGetOpenApiAdapter(request, env, skillId, ctx);
         }
@@ -329,7 +315,7 @@ export default {
         if (method === "GET" && !subpath) {
           const rbacCtx = extractRbacContext(request);
           if (rbacCtx) {
-            const denied = await checkPermission(env, rbacCtx.role, "skill", "read");
+            const denied = checkPermission(rbacCtx.role, "skill", "read");
             if (denied) return denied;
           }
           return await handleGetSkill(request, env, skillId);

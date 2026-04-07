@@ -4,6 +4,7 @@ import type {
   PolicySemanticDimension,
 } from "@ai-foundry/types";
 import type { PolicyCandidate } from "@ai-foundry/types";
+import { callLlmRouter, type LlmClientEnv } from "@ai-foundry/utils";
 import { buildSemanticEvalPrompt } from "../prompts/semantic-eval.js";
 
 /** 시맨틱 평가 dimension 가중치 */
@@ -21,10 +22,7 @@ const THRESHOLDS = {
   needsReview: 0.7,
 } as const;
 
-export interface SemanticEvalEnv {
-  LLM_ROUTER: Fetcher;
-  INTERNAL_API_SECRET: string;
-}
+export type SemanticEvalEnv = LlmClientEnv;
 
 /**
  * Policy Semantic Evaluator — Sonnet LLM을 사용한 의미적 품질 평가.
@@ -46,39 +44,13 @@ export class SemanticEvaluator {
     try {
       const { system, userContent } = buildSemanticEvalPrompt(candidate);
 
-      const response = await env.LLM_ROUTER.fetch(
-        "https://svc-llm-router.internal/complete",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Internal-Secret": env.INTERNAL_API_SECRET,
-          },
-          body: JSON.stringify({
-            tier: "sonnet",
-            messages: [{ role: "user", content: userContent }],
-            system,
-            callerService: "svc-policy",
-            maxTokens: 1024,
-            temperature: 0.1,
-          }),
-        },
-      );
+      const content = await callLlmRouter(env, "svc-policy", "sonnet", userContent, {
+        system,
+        maxTokens: 1024,
+        temperature: 0.1,
+      });
 
-      if (!response.ok) {
-        throw new Error(`LLM Router error: ${response.status}`);
-      }
-
-      const json = (await response.json()) as {
-        success: boolean;
-        data: { content: string };
-        error?: { message: string };
-      };
-      if (!json.success) {
-        throw new Error(`LLM failure: ${json.error?.message ?? "unknown"}`);
-      }
-
-      const dimensions = this.parseDimensionScores(json.data.content);
+      const dimensions = this.parseDimensionScores(content);
       const issues = this.buildIssues(dimensions);
       const weightedScore = this.calculateWeightedScore(dimensions);
       const verdict = this.determineVerdict(weightedScore);

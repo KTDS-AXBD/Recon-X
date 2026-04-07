@@ -10,9 +10,6 @@ interface Env {
   SVC_POLICY: Fetcher;
   SVC_ONTOLOGY: Fetcher;
   SVC_SKILL: Fetcher;
-  SVC_NOTIFICATION: Fetcher;
-  SVC_ANALYTICS: Fetcher;
-  SVC_GOVERNANCE: Fetcher;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -32,9 +29,6 @@ function mockEnv(): Env {
     SVC_POLICY: mockFetcher(),
     SVC_ONTOLOGY: mockFetcher(),
     SVC_SKILL: mockFetcher(),
-    SVC_NOTIFICATION: mockFetcher(),
-    SVC_ANALYTICS: mockFetcher(),
-    SVC_GOVERNANCE: mockFetcher(),
   };
 }
 
@@ -205,17 +199,7 @@ describe("svc-queue-router queue handler — event routing", () => {
     expect(init.method).toBe("POST");
   });
 
-  it("routes document.uploaded also to SVC_ANALYTICS", async () => {
-    const msg = makeMessage(makeEvent("document.uploaded"));
-    const batch = makeBatch([msg]);
-
-    await worker.queue(batch, env, ctx);
-
-    const fetchMock = env.SVC_ANALYTICS.fetch as ReturnType<typeof vi.fn>;
-    expect(fetchMock).toHaveBeenCalledOnce();
-  });
-
-  // ── ingestion.completed → SVC_EXTRACTION + SVC_ANALYTICS ──
+  // ── ingestion.completed → SVC_EXTRACTION ──
 
   it("routes ingestion.completed to SVC_EXTRACTION", async () => {
     const msg = makeMessage(makeEvent("ingestion.completed"));
@@ -227,17 +211,7 @@ describe("svc-queue-router queue handler — event routing", () => {
     expect(fetchMock).toHaveBeenCalledOnce();
   });
 
-  it("routes ingestion.completed also to SVC_ANALYTICS", async () => {
-    const msg = makeMessage(makeEvent("ingestion.completed"));
-    const batch = makeBatch([msg]);
-
-    await worker.queue(batch, env, ctx);
-
-    const fetchMock = env.SVC_ANALYTICS.fetch as ReturnType<typeof vi.fn>;
-    expect(fetchMock).toHaveBeenCalledOnce();
-  });
-
-  // ── extraction.completed → SVC_POLICY + SVC_ANALYTICS ──
+  // ── extraction.completed → SVC_POLICY ──
 
   it("routes extraction.completed to SVC_POLICY", async () => {
     const msg = makeMessage(makeEvent("extraction.completed"));
@@ -249,39 +223,22 @@ describe("svc-queue-router queue handler — event routing", () => {
     expect(fetchMock).toHaveBeenCalledOnce();
   });
 
-  it("routes extraction.completed also to SVC_ANALYTICS", async () => {
-    const msg = makeMessage(makeEvent("extraction.completed"));
-    const batch = makeBatch([msg]);
+  // ── policy.candidate_ready → no targets (platform services removed) ──
 
-    await worker.queue(batch, env, ctx);
-
-    const fetchMock = env.SVC_ANALYTICS.fetch as ReturnType<typeof vi.fn>;
-    expect(fetchMock).toHaveBeenCalledOnce();
-  });
-
-  // ── policy.candidate_ready → SVC_NOTIFICATION + SVC_ANALYTICS ──
-
-  it("routes policy.candidate_ready to SVC_NOTIFICATION", async () => {
+  it("routes policy.candidate_ready to no targets", async () => {
     const msg = makeMessage(makeEvent("policy.candidate_ready"));
     const batch = makeBatch([msg]);
 
     await worker.queue(batch, env, ctx);
 
-    const fetchMock = env.SVC_NOTIFICATION.fetch as ReturnType<typeof vi.fn>;
-    expect(fetchMock).toHaveBeenCalledOnce();
+    // No service binding should be called
+    for (const key of ["SVC_INGESTION", "SVC_EXTRACTION", "SVC_POLICY", "SVC_ONTOLOGY", "SVC_SKILL"] as const) {
+      expect((env[key].fetch as ReturnType<typeof vi.fn>)).not.toHaveBeenCalled();
+    }
+    expect(msg.ack).toHaveBeenCalledOnce();
   });
 
-  it("routes policy.candidate_ready also to SVC_ANALYTICS", async () => {
-    const msg = makeMessage(makeEvent("policy.candidate_ready"));
-    const batch = makeBatch([msg]);
-
-    await worker.queue(batch, env, ctx);
-
-    const fetchMock = env.SVC_ANALYTICS.fetch as ReturnType<typeof vi.fn>;
-    expect(fetchMock).toHaveBeenCalledOnce();
-  });
-
-  // ── policy.approved → SVC_ONTOLOGY + SVC_ANALYTICS ──
+  // ── policy.approved → SVC_ONTOLOGY ──
 
   it("routes policy.approved to SVC_ONTOLOGY", async () => {
     const msg = makeMessage(makeEvent("policy.approved"));
@@ -293,17 +250,7 @@ describe("svc-queue-router queue handler — event routing", () => {
     expect(fetchMock).toHaveBeenCalledOnce();
   });
 
-  it("routes policy.approved also to SVC_ANALYTICS", async () => {
-    const msg = makeMessage(makeEvent("policy.approved"));
-    const batch = makeBatch([msg]);
-
-    await worker.queue(batch, env, ctx);
-
-    const fetchMock = env.SVC_ANALYTICS.fetch as ReturnType<typeof vi.fn>;
-    expect(fetchMock).toHaveBeenCalledOnce();
-  });
-
-  // ── ontology.normalized → SVC_SKILL + SVC_ANALYTICS ──
+  // ── ontology.normalized → SVC_SKILL ──
 
   it("routes ontology.normalized to SVC_SKILL", async () => {
     const msg = makeMessage(makeEvent("ontology.normalized"));
@@ -315,36 +262,19 @@ describe("svc-queue-router queue handler — event routing", () => {
     expect(fetchMock).toHaveBeenCalledOnce();
   });
 
-  it("routes ontology.normalized also to SVC_ANALYTICS", async () => {
-    const msg = makeMessage(makeEvent("ontology.normalized"));
-    const batch = makeBatch([msg]);
+  // ── skill.packaged → no targets (platform services removed) ──
 
-    await worker.queue(batch, env, ctx);
-
-    const fetchMock = env.SVC_ANALYTICS.fetch as ReturnType<typeof vi.fn>;
-    expect(fetchMock).toHaveBeenCalledOnce();
-  });
-
-  // ── skill.packaged → SVC_NOTIFICATION + SVC_ANALYTICS ──
-
-  it("routes skill.packaged to SVC_NOTIFICATION", async () => {
+  it("routes skill.packaged to no targets", async () => {
     const msg = makeMessage(makeEvent("skill.packaged"));
     const batch = makeBatch([msg]);
 
     await worker.queue(batch, env, ctx);
 
-    const fetchMock = env.SVC_NOTIFICATION.fetch as ReturnType<typeof vi.fn>;
-    expect(fetchMock).toHaveBeenCalledOnce();
-  });
-
-  it("routes skill.packaged also to SVC_ANALYTICS", async () => {
-    const msg = makeMessage(makeEvent("skill.packaged"));
-    const batch = makeBatch([msg]);
-
-    await worker.queue(batch, env, ctx);
-
-    const fetchMock = env.SVC_ANALYTICS.fetch as ReturnType<typeof vi.fn>;
-    expect(fetchMock).toHaveBeenCalledOnce();
+    // No service binding should be called
+    for (const key of ["SVC_INGESTION", "SVC_EXTRACTION", "SVC_POLICY", "SVC_ONTOLOGY", "SVC_SKILL"] as const) {
+      expect((env[key].fetch as ReturnType<typeof vi.fn>)).not.toHaveBeenCalled();
+    }
+    expect(msg.ack).toHaveBeenCalledOnce();
   });
 });
 
@@ -369,18 +299,6 @@ describe("svc-queue-router queue handler — internal auth header", () => {
     await worker.queue(batch, env, ctx);
 
     const fetchMock = env.SVC_INGESTION.fetch as ReturnType<typeof vi.fn>;
-    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    const headers = init.headers as Record<string, string>;
-    expect(headers["X-Internal-Secret"]).toBe("test-internal-secret");
-  });
-
-  it("includes X-Internal-Secret header in dispatches to SVC_ANALYTICS", async () => {
-    const msg = makeMessage(makeEvent("ingestion.completed"));
-    const batch = makeBatch([msg]);
-
-    await worker.queue(batch, env, ctx);
-
-    const fetchMock = env.SVC_ANALYTICS.fetch as ReturnType<typeof vi.fn>;
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     const headers = init.headers as Record<string, string>;
     expect(headers["X-Internal-Secret"]).toBe("test-internal-secret");
@@ -428,20 +346,18 @@ describe("svc-queue-router queue handler — event body", () => {
     expect((sentBody["payload"] as Record<string, unknown>)["documentId"]).toBe("doc-1");
   });
 
-  it("sends the same event body to both primary and analytics targets", async () => {
+  it("sends the parsed event as JSON body to ontology target for policy.approved", async () => {
     const event = makeEvent("policy.approved");
     const msg = makeMessage(event);
     const batch = makeBatch([msg]);
 
     await worker.queue(batch, env, ctx);
 
-    const primaryFetch = env.SVC_ONTOLOGY.fetch as ReturnType<typeof vi.fn>;
-    const analyticsFetch = env.SVC_ANALYTICS.fetch as ReturnType<typeof vi.fn>;
-
-    const [, primaryInit] = primaryFetch.mock.calls[0] as [string, RequestInit];
-    const [, analyticsInit] = analyticsFetch.mock.calls[0] as [string, RequestInit];
-
-    expect(primaryInit.body).toBe(analyticsInit.body);
+    const fetchMock = env.SVC_ONTOLOGY.fetch as ReturnType<typeof vi.fn>;
+    expect(fetchMock).toHaveBeenCalledOnce();
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const sentBody = JSON.parse(init.body as string) as Record<string, unknown>;
+    expect(sentBody["type"]).toBe("policy.approved");
   });
 });
 
@@ -476,8 +392,6 @@ describe("svc-queue-router queue handler — invalid events", () => {
       env.SVC_POLICY,
       env.SVC_ONTOLOGY,
       env.SVC_SKILL,
-      env.SVC_NOTIFICATION,
-      env.SVC_ANALYTICS,
     ]) {
       expect((svc.fetch as ReturnType<typeof vi.fn>)).not.toHaveBeenCalled();
     }
@@ -632,18 +546,15 @@ describe("svc-queue-router queue handler — batch processing", () => {
     expect(msg2.ack).toHaveBeenCalledOnce();
     expect(msg3.ack).toHaveBeenCalledOnce();
 
-    // Each routes to its primary + analytics
+    // Each routes to its primary target only
     expect((env.SVC_INGESTION.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalledOnce();
     expect((env.SVC_EXTRACTION.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalledOnce();
     expect((env.SVC_POLICY.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalledOnce();
-
-    // Analytics receives all three events
-    expect((env.SVC_ANALYTICS.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalledTimes(3);
   });
 
   it("continues processing valid messages after an invalid one", async () => {
     const invalidMsg = makeMessage({ bad: "data" }, "msg-invalid");
-    const validMsg = makeMessage(makeEvent("skill.packaged"), "msg-valid");
+    const validMsg = makeMessage(makeEvent("ontology.normalized"), "msg-valid");
     const batch = makeBatch([invalidMsg, validMsg]);
 
     await worker.queue(batch, env, ctx);
@@ -652,9 +563,8 @@ describe("svc-queue-router queue handler — batch processing", () => {
     expect(invalidMsg.ack).toHaveBeenCalledOnce();
     expect(validMsg.ack).toHaveBeenCalledOnce();
 
-    // skill.packaged routes to SVC_NOTIFICATION
-    expect((env.SVC_NOTIFICATION.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalledOnce();
-    expect((env.SVC_ANALYTICS.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalledOnce();
+    // ontology.normalized routes to SVC_SKILL
+    expect((env.SVC_SKILL.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalledOnce();
   });
 
   it("processes batch with all 7 event types", async () => {
@@ -680,17 +590,13 @@ describe("svc-queue-router queue handler — batch processing", () => {
       expect(msg.ack).toHaveBeenCalledOnce();
     }
 
-    // Each primary target should have been called
+    // Domain pipeline targets should have been called
     expect((env.SVC_INGESTION.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalledOnce();
     expect((env.SVC_EXTRACTION.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalledOnce();
     expect((env.SVC_POLICY.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalledOnce();
-    // SVC_NOTIFICATION receives policy.candidate_ready + skill.packaged = 2
-    expect((env.SVC_NOTIFICATION.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalledTimes(2);
     expect((env.SVC_ONTOLOGY.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalledOnce();
     expect((env.SVC_SKILL.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalledOnce();
-
-    // Analytics receives ALL 7 events
-    expect((env.SVC_ANALYTICS.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalledTimes(7);
+    // policy.candidate_ready and skill.packaged have no targets (platform services removed)
   });
 
   it("handles empty batch gracefully", async () => {
@@ -705,8 +611,6 @@ describe("svc-queue-router queue handler — batch processing", () => {
       env.SVC_POLICY,
       env.SVC_ONTOLOGY,
       env.SVC_SKILL,
-      env.SVC_NOTIFICATION,
-      env.SVC_ANALYTICS,
     ]) {
       expect((svc.fetch as ReturnType<typeof vi.fn>)).not.toHaveBeenCalled();
     }
@@ -727,19 +631,19 @@ describe("svc-queue-router queue handler — fan-out target count", () => {
     ctx = mockCtx();
   });
 
-  type ServiceBinding = "SVC_INGESTION" | "SVC_EXTRACTION" | "SVC_POLICY" | "SVC_ONTOLOGY" | "SVC_SKILL" | "SVC_NOTIFICATION" | "SVC_ANALYTICS";
-  const eventTargetMap: Array<{ type: string; primaryBinding: ServiceBinding }> = [
-    { type: "document.uploaded", primaryBinding: "SVC_INGESTION" },
-    { type: "ingestion.completed", primaryBinding: "SVC_EXTRACTION" },
-    { type: "extraction.completed", primaryBinding: "SVC_POLICY" },
-    { type: "policy.candidate_ready", primaryBinding: "SVC_NOTIFICATION" },
-    { type: "policy.approved", primaryBinding: "SVC_ONTOLOGY" },
-    { type: "ontology.normalized", primaryBinding: "SVC_SKILL" },
-    { type: "skill.packaged", primaryBinding: "SVC_NOTIFICATION" },
+  type ServiceBinding = "SVC_INGESTION" | "SVC_EXTRACTION" | "SVC_POLICY" | "SVC_ONTOLOGY" | "SVC_SKILL";
+  const eventTargetMap: Array<{ type: string; expectedTargets: number; primaryBinding?: ServiceBinding }> = [
+    { type: "document.uploaded", expectedTargets: 1, primaryBinding: "SVC_INGESTION" },
+    { type: "ingestion.completed", expectedTargets: 1, primaryBinding: "SVC_EXTRACTION" },
+    { type: "extraction.completed", expectedTargets: 1, primaryBinding: "SVC_POLICY" },
+    { type: "policy.candidate_ready", expectedTargets: 0 },
+    { type: "policy.approved", expectedTargets: 1, primaryBinding: "SVC_ONTOLOGY" },
+    { type: "ontology.normalized", expectedTargets: 1, primaryBinding: "SVC_SKILL" },
+    { type: "skill.packaged", expectedTargets: 0 },
   ];
 
-  for (const { type, primaryBinding } of eventTargetMap) {
-    it(`dispatches ${type} to exactly 2 targets (primary + analytics)`, async () => {
+  for (const { type, expectedTargets, primaryBinding } of eventTargetMap) {
+    it(`dispatches ${type} to exactly ${expectedTargets} target(s)`, async () => {
       const msg = makeMessage(makeEvent(type));
       const batch = makeBatch([msg]);
 
@@ -753,18 +657,15 @@ describe("svc-queue-router queue handler — fan-out target count", () => {
         "SVC_POLICY",
         "SVC_ONTOLOGY",
         "SVC_SKILL",
-        "SVC_NOTIFICATION",
-        "SVC_ANALYTICS",
       ] as const) {
         totalCalls += (env[key].fetch as ReturnType<typeof vi.fn>).mock.calls.length;
       }
 
-      expect(totalCalls).toBe(2);
+      expect(totalCalls).toBe(expectedTargets);
 
-      // Verify the primary binding was called
-      expect((env[primaryBinding].fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalled();
-      // Verify analytics was called
-      expect((env.SVC_ANALYTICS.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalled();
+      if (primaryBinding) {
+        expect((env[primaryBinding].fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalled();
+      }
     });
   }
 });
@@ -792,24 +693,17 @@ describe("svc-queue-router queue handler — dispatch endpoint", () => {
     const fetchMock = env.SVC_SKILL.fetch as ReturnType<typeof vi.fn>;
     const [url] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("http://internal/internal/queue-event");
-
-    const analyticsFetch = env.SVC_ANALYTICS.fetch as ReturnType<typeof vi.fn>;
-    const [analyticsUrl] = analyticsFetch.mock.calls[0] as [string, RequestInit];
-    expect(analyticsUrl).toBe("http://internal/internal/queue-event");
   });
 
   it("uses POST method for all dispatches", async () => {
-    const msg = makeMessage(makeEvent("policy.candidate_ready"));
+    const msg = makeMessage(makeEvent("document.uploaded"));
     const batch = makeBatch([msg]);
 
     await worker.queue(batch, env, ctx);
 
-    for (const key of ["SVC_NOTIFICATION", "SVC_ANALYTICS"] as const) {
-      const fetchMock = env[key].fetch as ReturnType<typeof vi.fn>;
-      if (fetchMock.mock.calls.length > 0) {
-        const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-        expect(init.method).toBe("POST");
-      }
-    }
+    const fetchMock = env.SVC_INGESTION.fetch as ReturnType<typeof vi.fn>;
+    expect(fetchMock).toHaveBeenCalledOnce();
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(init.method).toBe("POST");
   });
 });

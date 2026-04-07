@@ -202,71 +202,19 @@ describe("classifyXlsxElements", () => {
 // ── maskText ─────────────────────────────────────────────────────
 
 describe("maskText", () => {
-  function mockSecurity(response: Response): Fetcher {
-    return { fetch: vi.fn().mockResolvedValue(response) } as unknown as Fetcher;
-  }
-
-  it("returns masked text on successful masking response", async () => {
-    const security = mockSecurity(
-      new Response(JSON.stringify({ success: true, data: { maskedText: "[MASKED] text" } }), { status: 200 }),
-    );
-    const result = await maskText("doc-1", "sensitive text", security, "secret");
-    expect(result).toBe("[MASKED] text");
+  it("returns original text as-is (stub after svc-security removal)", async () => {
+    const result = await maskText("doc-1", "sensitive text");
+    expect(result).toBe("sensitive text");
   });
 
-  it("returns original text when masking service returns non-ok", async () => {
-    const security = mockSecurity(
-      new Response("Service Unavailable", { status: 503 }),
-    );
-    const result = await maskText("doc-1", "original text", security, "secret");
-    expect(result).toBe("original text");
+  it("returns empty string for empty input", async () => {
+    const result = await maskText("doc-1", "");
+    expect(result).toBe("");
   });
 
-  it("returns original text when masking response has success=false", async () => {
-    const security = mockSecurity(
-      new Response(JSON.stringify({ success: false }), { status: 200 }),
-    );
-    const result = await maskText("doc-1", "original text", security, "secret");
-    expect(result).toBe("original text");
-  });
-
-  it("returns original text when masking response has no data field", async () => {
-    const security = mockSecurity(
-      new Response(JSON.stringify({ success: true }), { status: 200 }),
-    );
-    const result = await maskText("doc-1", "original text", security, "secret");
-    expect(result).toBe("original text");
-  });
-
-  it("returns original text when fetch throws", async () => {
-    const security = {
-      fetch: vi.fn().mockRejectedValue(new Error("Network error")),
-    } as unknown as Fetcher;
-    const result = await maskText("doc-1", "original text", security, "secret");
-    expect(result).toBe("original text");
-  });
-
-  it("sends correct request to security service", async () => {
-    const fetchFn = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ success: true, data: { maskedText: "m" } }), { status: 200 }),
-    );
-    const security = { fetch: fetchFn } as unknown as Fetcher;
-
-    await maskText("doc-1", "some text", security, "my-secret");
-
-    expect(fetchFn).toHaveBeenCalledOnce();
-    const [url, opts] = fetchFn.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("https://svc-security.internal/mask");
-    expect(opts.method).toBe("POST");
-
-    const headers = opts.headers as Record<string, string>;
-    expect(headers["X-Internal-Secret"]).toBe("my-secret");
-    expect(headers["Content-Type"]).toBe("application/json");
-
-    const body = JSON.parse(opts.body as string) as Record<string, unknown>;
-    expect(body["documentId"]).toBe("doc-1");
-    expect(body["text"]).toBe("some text");
-    expect(body["dataClassification"]).toBe("internal");
+  it("returns Korean text unchanged", async () => {
+    const result = await maskText("doc-1", "퇴직연금 설계서 내용");
+    expect(result).toBe("퇴직연금 설계서 내용");
   });
 });
 

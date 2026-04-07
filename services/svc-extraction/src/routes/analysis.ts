@@ -893,7 +893,7 @@ async function runAnalysisPasses(
   try {
     // Pass 1: Scoring + Core Identification
     const scoringPrompt = buildScoringPrompt(extractionResult);
-    const scoringMeta = await callLlmWithMeta(scoringPrompt, tier, env.LLM_ROUTER, env.INTERNAL_API_SECRET, 8192, llmOptions);
+    const scoringMeta = await callLlmWithMeta(scoringPrompt, tier, env, 8192, llmOptions);
     const scoringResult = parseScoringResult(scoringMeta.content);
     const llmProvider = scoringMeta.provider;
     const llmModel = scoringMeta.model;
@@ -960,7 +960,7 @@ async function runAnalysisPasses(
     let findings: ReturnType<typeof parseDiagnosisResult> = [];
     try {
       const diagnosisPrompt = buildDiagnosisPrompt(scoringResult, extractionResult);
-      const rawDiagnosis = await callLlm(diagnosisPrompt, tier, env.LLM_ROUTER, env.INTERNAL_API_SECRET, 8192, llmOptions);
+      const rawDiagnosis = await callLlm(diagnosisPrompt, tier, env, 8192, llmOptions);
       findings = parseDiagnosisResult(rawDiagnosis);
     } catch (diagErr) {
       console.error("[Pass2 Diagnosis error]", String(diagErr));

@@ -1,4 +1,4 @@
-import { createLogger, ok, unauthorized, notFound, badRequest, verifyInternalSecret, errFromUnknown, extractRbacContext, checkPermission, logAudit } from "@ai-foundry/utils";
+import { createLogger, ok, unauthorized, notFound, badRequest, verifyInternalSecret, errFromUnknown, extractRbacContext, checkPermission, logAuditLocal } from "@ai-foundry/utils";
 import type { DocumentUploadedEvent } from "@ai-foundry/types";
 import type { Env } from "./env.js";
 import { handleHealth } from "./routes/health.js";
@@ -34,14 +34,14 @@ export default {
       if (method === "POST" && path === "/documents") {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "document", "upload");
+          const denied = checkPermission(rbacCtx.role, "document", "upload");
           if (denied) return denied;
-          ctx.waitUntil(logAudit(env, {
+          logAuditLocal({
             userId: rbacCtx.userId,
             organizationId: rbacCtx.organizationId,
             action: "upload",
             resource: "document",
-          }));
+          });
         }
         return await handleUpload(request, env, ctx);
       }
@@ -50,7 +50,7 @@ export default {
       if (method === "GET" && path === "/documents") {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "document", "read");
+          const denied = checkPermission(rbacCtx.role, "document", "read");
           if (denied) return denied;
         }
         const orgId = request.headers.get("X-Organization-Id") ?? "unknown";
@@ -91,7 +91,7 @@ export default {
       if (method === "GET" && downloadMatch) {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "document", "read");
+          const denied = checkPermission(rbacCtx.role, "document", "read");
           if (denied) return denied;
         }
         const documentId = downloadMatch[1];
@@ -122,7 +122,7 @@ export default {
       if (method === "GET" && chunksMatch) {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "document", "read");
+          const denied = checkPermission(rbacCtx.role, "document", "read");
           if (denied) return denied;
         }
         const documentId = chunksMatch[1];
@@ -150,7 +150,7 @@ export default {
       if (method === "DELETE" && deleteMatch) {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "document", "delete");
+          const denied = checkPermission(rbacCtx.role, "document", "delete");
           if (denied) return denied;
         }
         const documentId = deleteMatch[1];
@@ -176,7 +176,7 @@ export default {
       if (method === "POST" && reprocessMatch) {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "document", "update");
+          const denied = checkPermission(rbacCtx.role, "document", "update");
           if (denied) return denied;
         }
         const documentId = reprocessMatch[1];
@@ -227,7 +227,7 @@ export default {
       if (method === "GET" && docMatch) {
         const rbacCtx = extractRbacContext(request);
         if (rbacCtx) {
-          const denied = await checkPermission(env, rbacCtx.role, "document", "read");
+          const denied = checkPermission(rbacCtx.role, "document", "read");
           if (denied) return denied;
         }
         const documentId = docMatch[1];

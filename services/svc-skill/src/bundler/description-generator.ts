@@ -59,8 +59,7 @@ export async function generateDescriptions(
       const raw = await callSonnetLlm(
         SYSTEM_PROMPT,
         userPrompt,
-        env.LLM_ROUTER,
-        env.INTERNAL_API_SECRET,
+        env,
       );
 
       const parsed = JSON.parse(raw) as SkillDescription;

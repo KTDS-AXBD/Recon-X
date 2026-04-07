@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { SemanticEvaluator } from "./semantic.js";
 import type { SemanticEvalEnv } from "./semantic.js";
 import type { PolicyCandidate } from "@ai-foundry/types";
@@ -21,21 +21,26 @@ function makeLlmResponse(dimensions: Record<string, number>): Response {
   return new Response(
     JSON.stringify({
       success: true,
-      data: { content: JSON.stringify(dimensions) },
+      data: { content: JSON.stringify(dimensions), provider: "anthropic", model: "sonnet" },
     }),
     { status: 200 },
   );
 }
 
 function makeEnv(fetchFn: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>): SemanticEvalEnv {
+  vi.stubGlobal("fetch", fetchFn);
   return {
-    LLM_ROUTER: { fetch: fetchFn } as unknown as Fetcher,
+    LLM_ROUTER_URL: "http://test-llm-router",
     INTERNAL_API_SECRET: "test-secret",
   };
 }
 
 describe("SemanticEvaluator", () => {
   const evaluator = new SemanticEvaluator();
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it("high-quality policy passes (score > 0.7)", async () => {
     const env = makeEnv(async () => makeLlmResponse({
@@ -86,7 +91,7 @@ describe("SemanticEvaluator", () => {
     const env = makeEnv(async () => new Response(
       JSON.stringify({
         success: true,
-        data: { content: "This is not valid JSON at all" },
+        data: { content: "This is not valid JSON at all", provider: "anthropic", model: "sonnet" },
       }),
       { status: 200 },
     ));

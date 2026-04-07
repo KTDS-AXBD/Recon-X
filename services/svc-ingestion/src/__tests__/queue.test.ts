@@ -52,11 +52,7 @@ function mockEnv(r2Exists = true, magic: Uint8Array = PDF_MAGIC): Env {
     DB_INGESTION: mockDb(),
     R2_DOCUMENTS: mockR2(r2Exists, magic),
     QUEUE_PIPELINE: { send: vi.fn().mockResolvedValue(undefined) } as unknown as Queue,
-    SECURITY: {
-      fetch: vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ success: true, data: { maskedText: "masked" } }), { status: 200 }),
-      ),
-    } as unknown as Fetcher,
+
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-ingestion",
     MAX_FILE_SIZE_MB: "50",

@@ -4,9 +4,9 @@
  * Graceful fallback: on any failure, all terms default to 'entity'.
  */
 
-import type { ApiResponse, LlmResponse, TermType } from "@ai-foundry/types";
+import type { TermType } from "@ai-foundry/types";
 import { TermTypeSchema } from "@ai-foundry/types";
-import { createLogger } from "@ai-foundry/utils";
+import { createLogger, callLlmRouter, type LlmClientEnv } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
 
 const logger = createLogger("svc-ontology:classify");
@@ -52,39 +52,13 @@ export async function classifyTermsWithLlm(
   try {
     const userContent = `정책: "${policyTitle}"\n\n용어 목록:\n${JSON.stringify(terms.map((t) => t.label))}`;
 
-    const body = {
-      tier: "haiku",
-      messages: [{ role: "user", content: userContent }],
+    const content = await callLlmRouter(env, "svc-ontology", "haiku", userContent, {
       system: SYSTEM_PROMPT,
-      callerService: "svc-ontology",
       maxTokens: 2048,
       temperature: 0.1,
-    };
+    });
 
-    const response = await env.LLM_ROUTER.fetch(
-      "https://svc-llm-router.internal/complete",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Internal-Secret": env.INTERNAL_API_SECRET,
-        },
-        body: JSON.stringify(body),
-      },
-    );
-
-    if (!response.ok) {
-      logger.warn("LLM classification failed (non-fatal)", { status: response.status });
-      return fallback;
-    }
-
-    const json = (await response.json()) as ApiResponse<LlmResponse>;
-    if (!json.success) {
-      logger.warn("LLM returned failure (non-fatal)", { error: json.error.message });
-      return fallback;
-    }
-
-    return parseClassificationResponse(json.data.content, terms);
+    return parseClassificationResponse(content, terms);
   } catch (e) {
     logger.warn("LLM classification error (non-fatal)", { error: String(e) });
     return fallback;

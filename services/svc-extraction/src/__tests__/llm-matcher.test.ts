@@ -1,32 +1,27 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import { llmSemanticMatch } from "../factcheck/llm-matcher.js";
 import type { MatchResult } from "../factcheck/matcher.js";
 import type { DocSpec, SourceApi, SourceTable, DocApi, DocTable } from "../factcheck/types.js";
+import type { LlmClientEnv } from "@ai-foundry/utils";
 
 // ── Mock LLM Router ──────────────────────────────────────────────
 
 let mockLlmResponse: string;
 const originalFetch = globalThis.fetch;
 
-function makeMockLlmRouter(): Fetcher {
-  return {
-    fetch: async () => {
-      return Response.json({
-        success: true,
-        data: { content: mockLlmResponse, provider: "anthropic", model: "sonnet" },
-      });
-    },
-    connect: () => { throw new Error("not implemented"); },
-  } as unknown as Fetcher;
+function mockFetchSuccess() {
+  globalThis.fetch = vi.fn().mockImplementation(async () => {
+    return Response.json({
+      success: true,
+      data: { content: mockLlmResponse, provider: "anthropic", model: "sonnet" },
+    });
+  });
 }
 
-function makeMockLlmRouterError(): Fetcher {
-  return {
-    fetch: async () => {
-      return new Response("Internal Server Error", { status: 500 });
-    },
-    connect: () => { throw new Error("not implemented"); },
-  } as unknown as Fetcher;
+function mockFetchError() {
+  globalThis.fetch = vi.fn().mockImplementation(async () => {
+    return new Response("Internal Server Error", { status: 500 });
+  });
 }
 
 // ── Helpers ─────────────────────────────────────────────────────
@@ -103,7 +98,12 @@ function emptyMatchResult(): MatchResult {
   };
 }
 
-const SECRET = "test-secret";
+function mockEnv(): LlmClientEnv {
+  return {
+    LLM_ROUTER_URL: "http://test-llm-router",
+    INTERNAL_API_SECRET: "test-secret",
+  };
+}
 
 // ── Tests ────────────────────────────────────────────────────────
 
@@ -115,9 +115,9 @@ describe("llmSemanticMatch", () => {
   it("빈 unmatched → 처리 없음", async () => {
     const mr = emptyMatchResult();
     const docSpec = makeDocSpec();
-    const router = makeMockLlmRouter();
+    mockFetchSuccess();
 
-    const result = await llmSemanticMatch(mr, docSpec, router, SECRET);
+    const result = await llmSemanticMatch(mr, docSpec, mockEnv());
 
     expect(result.stats.processed).toBe(0);
     expect(result.newMatches).toHaveLength(0);
@@ -137,9 +137,9 @@ describe("llmSemanticMatch", () => {
     mr.unmatchedSourceApis = [makeSourceApi({ path: "/api/v2/voucher/issue" })];
 
     const docSpec = makeDocSpec([makeDocApi({ path: "/api/v2/voucher/publish" })]);
-    const router = makeMockLlmRouter();
+    mockFetchSuccess();
 
-    const result = await llmSemanticMatch(mr, docSpec, router, SECRET);
+    const result = await llmSemanticMatch(mr, docSpec, mockEnv());
 
     expect(result.stats.processed).toBe(1);
     expect(result.stats.matched).toBe(1);
@@ -162,9 +162,9 @@ describe("llmSemanticMatch", () => {
     mr.unmatchedSourceApis = [makeSourceApi({ path: "/api/v2/payment/refund" })];
 
     const docSpec = makeDocSpec();
-    const router = makeMockLlmRouter();
+    mockFetchSuccess();
 
-    const result = await llmSemanticMatch(mr, docSpec, router, SECRET);
+    const result = await llmSemanticMatch(mr, docSpec, mockEnv());
 
     expect(result.stats.processed).toBe(1);
     expect(result.stats.confirmed).toBe(1);
@@ -186,9 +186,9 @@ describe("llmSemanticMatch", () => {
     mr.unmatchedSourceTables = [makeSourceTable({ tableName: "account_balance" })];
 
     const docSpec = makeDocSpec([], [makeDocTable({ tableName: "TB_ACCT_BAL" })]);
-    const router = makeMockLlmRouter();
+    mockFetchSuccess();
 
-    const result = await llmSemanticMatch(mr, docSpec, router, SECRET);
+    const result = await llmSemanticMatch(mr, docSpec, mockEnv());
 
     expect(result.stats.processed).toBe(1);
     expect(result.newMatches).toHaveLength(1);
@@ -209,9 +209,9 @@ describe("llmSemanticMatch", () => {
     mr.unmatchedSourceApis = [makeSourceApi()];
 
     const docSpec = makeDocSpec([makeDocApi()]);
-    const router = makeMockLlmRouter();
+    mockFetchSuccess();
 
-    const result = await llmSemanticMatch(mr, docSpec, router, SECRET);
+    const result = await llmSemanticMatch(mr, docSpec, mockEnv());
 
     expect(result.newMatches[0]!.matchScore).toBe(0.5);
   });
@@ -223,9 +223,9 @@ describe("llmSemanticMatch", () => {
     mr.unmatchedSourceApis = [makeSourceApi()];
 
     const docSpec = makeDocSpec();
-    const router = makeMockLlmRouter();
+    mockFetchSuccess();
 
-    const result = await llmSemanticMatch(mr, docSpec, router, SECRET);
+    const result = await llmSemanticMatch(mr, docSpec, mockEnv());
 
     expect(result.stats.processed).toBe(1);
     expect(result.confirmedGaps).toHaveLength(1);
@@ -239,9 +239,9 @@ describe("llmSemanticMatch", () => {
     mr.unmatchedSourceApis = [makeSourceApi()];
 
     const docSpec = makeDocSpec([makeDocApi()]);
-    const router = makeMockLlmRouter();
+    mockFetchSuccess();
 
-    const result = await llmSemanticMatch(mr, docSpec, router, SECRET);
+    const result = await llmSemanticMatch(mr, docSpec, mockEnv());
 
     expect(result.newMatches).toHaveLength(1);
   });
@@ -251,9 +251,9 @@ describe("llmSemanticMatch", () => {
     mr.unmatchedSourceApis = [makeSourceApi()];
 
     const docSpec = makeDocSpec();
-    const router = makeMockLlmRouterError();
+    mockFetchError();
 
-    const result = await llmSemanticMatch(mr, docSpec, router, SECRET);
+    const result = await llmSemanticMatch(mr, docSpec, mockEnv());
 
     expect(result.stats.errors).toBe(1);
     expect(result.stats.processed).toBe(0);
@@ -269,17 +269,14 @@ describe("llmSemanticMatch", () => {
       JSON.stringify({ found: true, docRef: "TB_MATCH", isNamingDiff: true, severity: null, reasoning: "테이블 매칭" }),
     ];
 
-    const router = {
-      fetch: async () => {
-        const resp = responses[callCount] ?? '{"found":false,"docRef":null,"isNamingDiff":false,"severity":"MEDIUM","reasoning":"fallback"}';
-        callCount++;
-        return Response.json({
-          success: true,
-          data: { content: resp, provider: "anthropic", model: "sonnet" },
-        });
-      },
-      connect: () => { throw new Error("not implemented"); },
-    } as unknown as Fetcher;
+    globalThis.fetch = vi.fn().mockImplementation(async () => {
+      const resp = responses[callCount] ?? '{"found":false,"docRef":null,"isNamingDiff":false,"severity":"MEDIUM","reasoning":"fallback"}';
+      callCount++;
+      return Response.json({
+        success: true,
+        data: { content: resp, provider: "anthropic", model: "sonnet" },
+      });
+    });
 
     const mr = emptyMatchResult();
     mr.unmatchedSourceApis = [
@@ -290,7 +287,7 @@ describe("llmSemanticMatch", () => {
 
     const docSpec = makeDocSpec([makeDocApi()], [makeDocTable()]);
 
-    const result = await llmSemanticMatch(mr, docSpec, router, SECRET);
+    const result = await llmSemanticMatch(mr, docSpec, mockEnv());
 
     expect(result.stats.processed).toBe(3);
     expect(result.stats.matched).toBe(2);

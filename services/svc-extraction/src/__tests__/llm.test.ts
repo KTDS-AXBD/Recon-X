@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { callLlm } from "../llm/caller.js";
 import { buildExtractionPrompt } from "../prompts/structure.js";
 import type { ChunkWithMeta } from "../queue/handler.js";
+import type { LlmClientEnv } from "@ai-foundry/utils";
 
 /** Convert plain strings to ChunkWithMeta for testing */
 function toChunks(texts: string[]): ChunkWithMeta[] {
@@ -17,18 +18,27 @@ function toChunks(texts: string[]): ChunkWithMeta[] {
 // ── callLlm ──────────────────────────────────────────────────────
 
 describe("callLlm", () => {
-  function mockFetcher(response: Response): Fetcher {
-    return { fetch: vi.fn().mockResolvedValue(response) } as unknown as Fetcher;
+  const originalFetch = globalThis.fetch;
+
+  function mockEnv(): LlmClientEnv {
+    return {
+      LLM_ROUTER_URL: "http://test-llm-router",
+      INTERNAL_API_SECRET: "my-secret",
+    };
   }
 
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
   it("returns content on successful response", async () => {
-    const fetcher = mockFetcher(
+    globalThis.fetch = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({ success: true, data: { content: "extraction-result" } }),
         { status: 200 },
       ),
     );
-    const result = await callLlm("prompt", "sonnet", fetcher, "secret");
+    const result = await callLlm("prompt", "sonnet", mockEnv());
     expect(result).toBe("extraction-result");
   });
 
@@ -39,13 +49,13 @@ describe("callLlm", () => {
         { status: 200 },
       ),
     );
-    const fetcher = { fetch: fetchFn } as unknown as Fetcher;
+    globalThis.fetch = fetchFn;
 
-    await callLlm("test-prompt", "sonnet", fetcher, "my-secret");
+    await callLlm("test-prompt", "sonnet", mockEnv());
 
     expect(fetchFn).toHaveBeenCalledOnce();
     const [url, opts] = fetchFn.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("https://svc-llm-router.internal/complete");
+    expect(url).toBe("http://test-llm-router/complete");
     expect(opts.method).toBe("POST");
 
     const headers = opts.headers as Record<string, string>;
@@ -68,9 +78,9 @@ describe("callLlm", () => {
         { status: 200 },
       ),
     );
-    const fetcher = { fetch: fetchFn } as unknown as Fetcher;
+    globalThis.fetch = fetchFn;
 
-    await callLlm("prompt", "haiku", fetcher, "secret");
+    await callLlm("prompt", "haiku", mockEnv());
 
     const body = JSON.parse(
       (fetchFn.mock.calls[0] as [string, RequestInit])[1].body as string,
@@ -79,27 +89,27 @@ describe("callLlm", () => {
   });
 
   it("throws on non-OK HTTP status", async () => {
-    const fetcher = mockFetcher(
+    globalThis.fetch = vi.fn().mockResolvedValue(
       new Response("Bad Request", { status: 400 }),
     );
 
     await expect(
-      callLlm("prompt", "sonnet", fetcher, "secret"),
+      callLlm("prompt", "sonnet", mockEnv()),
     ).rejects.toThrow("LLM Router error 400: Bad Request");
   });
 
   it("throws on 500 server error", async () => {
-    const fetcher = mockFetcher(
+    globalThis.fetch = vi.fn().mockResolvedValue(
       new Response("Internal Server Error", { status: 500 }),
     );
 
     await expect(
-      callLlm("prompt", "sonnet", fetcher, "secret"),
+      callLlm("prompt", "sonnet", mockEnv()),
     ).rejects.toThrow("LLM Router error 500");
   });
 
   it("throws when API returns success: false", async () => {
-    const fetcher = mockFetcher(
+    globalThis.fetch = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
           success: false,
@@ -110,12 +120,12 @@ describe("callLlm", () => {
     );
 
     await expect(
-      callLlm("prompt", "sonnet", fetcher, "secret"),
+      callLlm("prompt", "sonnet", mockEnv()),
     ).rejects.toThrow("rate limited");
   });
 
   it("throws descriptive error on quota exceeded", async () => {
-    const fetcher = mockFetcher(
+    globalThis.fetch = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
           success: false,
@@ -126,7 +136,7 @@ describe("callLlm", () => {
     );
 
     await expect(
-      callLlm("prompt", "sonnet", fetcher, "secret"),
+      callLlm("prompt", "sonnet", mockEnv()),
     ).rejects.toThrow("quota exceeded");
   });
 });

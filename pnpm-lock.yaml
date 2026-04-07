@@ -269,25 +269,6 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
-  services/svc-analytics:
-    dependencies:
-      '@ai-foundry/types':
-        specifier: workspace:*
-        version: link:../../packages/types
-      '@ai-foundry/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
-    devDependencies:
-      '@cloudflare/workers-types':
-        specifier: ^4.20241230.0
-        version: 4.20260405.1
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-      wrangler:
-        specifier: ^4.8.0
-        version: 4.80.0(@cloudflare/workers-types@4.20260405.1)
-
   services/svc-extraction:
     dependencies:
       '@ai-foundry/types':
@@ -299,25 +280,6 @@ importers:
       zod:
         specifier: ^3.25.76
         version: 3.25.76
-    devDependencies:
-      '@cloudflare/workers-types':
-        specifier: ^4.20241230.0
-        version: 4.20260405.1
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-      wrangler:
-        specifier: ^4.8.0
-        version: 4.80.0(@cloudflare/workers-types@4.20260405.1)
-
-  services/svc-governance:
-    dependencies:
-      '@ai-foundry/types':
-        specifier: workspace:*
-        version: link:../../packages/types
-      '@ai-foundry/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20241230.0
@@ -357,25 +319,6 @@ importers:
         specifier: ^4.8.0
         version: 4.80.0(@cloudflare/workers-types@4.20260405.1)
 
-  services/svc-llm-router:
-    dependencies:
-      '@ai-foundry/types':
-        specifier: workspace:*
-        version: link:../../packages/types
-      '@ai-foundry/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
-    devDependencies:
-      '@cloudflare/workers-types':
-        specifier: ^4.20241230.0
-        version: 4.20260405.1
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-      wrangler:
-        specifier: ^4.8.0
-        version: 4.80.0(@cloudflare/workers-types@4.20260405.1)
-
   services/svc-mcp-server:
     dependencies:
       '@ai-foundry/types':
@@ -390,25 +333,6 @@ importers:
       zod:
         specifier: ^3.24.1
         version: 3.25.76
-    devDependencies:
-      '@cloudflare/workers-types':
-        specifier: ^4.20241230.0
-        version: 4.20260405.1
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-      wrangler:
-        specifier: ^4.8.0
-        version: 4.80.0(@cloudflare/workers-types@4.20260405.1)
-
-  services/svc-notification:
-    dependencies:
-      '@ai-foundry/types':
-        specifier: workspace:*
-        version: link:../../packages/types
-      '@ai-foundry/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20241230.0
@@ -466,28 +390,6 @@ importers:
       '@ai-foundry/utils':
         specifier: workspace:*
         version: link:../../packages/utils
-    devDependencies:
-      '@cloudflare/workers-types':
-        specifier: ^4.20241230.0
-        version: 4.20260405.1
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-      wrangler:
-        specifier: ^4.8.0
-        version: 4.80.0(@cloudflare/workers-types@4.20260405.1)
-
-  services/svc-security:
-    dependencies:
-      '@ai-foundry/types':
-        specifier: workspace:*
-        version: link:../../packages/types
-      '@ai-foundry/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
-      zod:
-        specifier: ^3.24.1
-        version: 3.25.76
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20241230.0

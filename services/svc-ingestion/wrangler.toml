@@ -20,11 +20,6 @@ bucket_name = "ai-foundry-documents"
 binding = "QUEUE_PIPELINE"
 queue = "ai-foundry-pipeline"
 
-# Service binding to svc-security for audit logging
-[[services]]
-binding = "SECURITY"
-service = "svc-security"
-
 [vars]
 ENVIRONMENT = "development"
 SERVICE_NAME = "svc-ingestion"
@@ -55,10 +50,6 @@ bucket_name = "ai-foundry-documents-staging"
 binding = "QUEUE_PIPELINE"
 queue = "ai-foundry-pipeline-staging"
 
-[[env.staging.services]]
-binding = "SECURITY"
-service = "svc-security-staging"
-
 # ---------------------------------------------------------------------------
 # Production environment
 # ---------------------------------------------------------------------------
@@ -77,7 +68,3 @@ bucket_name = "ai-foundry-documents"
 [[env.production.queues.producers]]
 binding = "QUEUE_PIPELINE"
 queue = "ai-foundry-pipeline"
-
-[[env.production.services]]
-binding = "SECURITY"
-service = "svc-security-production"

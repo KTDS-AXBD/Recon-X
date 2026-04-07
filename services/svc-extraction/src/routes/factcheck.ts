@@ -593,8 +593,7 @@ async function handleLlmMatch(
   const llmResult = await llmSemanticMatch(
     batchMatchResult,
     docSpec,
-    env.LLM_ROUTER,
-    env.INTERNAL_API_SECRET,
+    env,
   );
 
   const now = new Date().toISOString();

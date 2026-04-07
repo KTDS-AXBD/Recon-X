@@ -20,16 +20,6 @@ bucket_name = "ai-foundry-skill-packages"
 binding = "KV_SKILL_CACHE"
 id = "bdb5c9697bb546b99f6dadec455fd740"
 
-# Service binding to svc-security for audit logging
-[[services]]
-binding = "SECURITY"
-service = "svc-security"
-
-# Service binding to svc-llm-router for LLM tier routing
-[[services]]
-binding = "LLM_ROUTER"
-service = "svc-llm-router"
-
 # Service bindings for cross-service data fetching (queue handler)
 [[services]]
 binding = "SVC_POLICY"
@@ -56,6 +46,7 @@ queue = "ai-foundry-pipeline"
 [vars]
 ENVIRONMENT = "development"
 SERVICE_NAME = "svc-skill"
+LLM_ROUTER_URL = "http://localhost:8706"
 # Secrets (set via `wrangler secret put`):
 # INTERNAL_API_SECRET
 
@@ -63,7 +54,7 @@ SERVICE_NAME = "svc-skill"
 # Staging environment
 # ---------------------------------------------------------------------------
 [env.staging]
-vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-skill" }
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-skill", LLM_ROUTER_URL = "https://svc-llm-router-staging.ktds-axbd.workers.dev" }
 
 [[env.staging.d1_databases]]
 binding = "DB_SKILL"
@@ -77,14 +68,6 @@ bucket_name = "ai-foundry-skill-packages-staging"
 [[env.staging.kv_namespaces]]
 binding = "KV_SKILL_CACHE"
 id = "100a04bcf8554b6abcc982a3bd7d037f"
-
-[[env.staging.services]]
-binding = "SECURITY"
-service = "svc-security-staging"
-
-[[env.staging.services]]
-binding = "LLM_ROUTER"
-service = "svc-llm-router-staging"
 
 [[env.staging.services]]
 binding = "SVC_POLICY"
@@ -110,7 +93,7 @@ queue = "ai-foundry-pipeline-staging"
 # Production environment
 # ---------------------------------------------------------------------------
 [env.production]
-vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-skill" }
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-skill", LLM_ROUTER_URL = "https://svc-llm-router-production.ktds-axbd.workers.dev" }
 
 [[env.production.d1_databases]]
 binding = "DB_SKILL"
@@ -124,14 +107,6 @@ bucket_name = "ai-foundry-skill-packages"
 [[env.production.kv_namespaces]]
 binding = "KV_SKILL_CACHE"
 id = "6eaa9c8dba4a452d8997c0d0aac75100"
-
-[[env.production.services]]
-binding = "SECURITY"
-service = "svc-security-production"
-
-[[env.production.services]]
-binding = "LLM_ROUTER"
-service = "svc-llm-router-production"
 
 [[env.production.services]]
 binding = "SVC_POLICY"

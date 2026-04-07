@@ -8,13 +8,12 @@ import type { Neo4jStatement } from "../neo4j/client.js";
 function mockEnv(overrides?: Partial<Env>): Env {
   return {
     DB_ONTOLOGY: {} as D1Database,
-    SECURITY: {} as Fetcher,
-    LLM_ROUTER: {} as Fetcher,
     SVC_POLICY: {} as Fetcher,
     QUEUE_PIPELINE: {} as Queue,
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-ontology",
     INTERNAL_API_SECRET: "test-secret",
+    LLM_ROUTER_URL: "https://svc-llm-router.test",
     NEO4J_URI: "https://test-instance.databases.neo4j.io",
     NEO4J_USERNAME: "neo4j-user",
     NEO4J_PASSWORD: "neo4j-pass",

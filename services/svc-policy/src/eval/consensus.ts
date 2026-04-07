@@ -5,6 +5,7 @@ import type {
   ConsensusDecision,
 } from "@ai-foundry/types";
 import type { PolicyCandidate } from "@ai-foundry/types";
+import { callLlmRouter, type LlmClientEnv } from "@ai-foundry/utils";
 import {
   buildAdvocatePrompt,
   buildDevilPrompt,
@@ -12,10 +13,7 @@ import {
   buildRound2Prompt,
 } from "../prompts/consensus.js";
 
-export interface ConsensusEnv {
-  LLM_ROUTER: Fetcher;
-  INTERNAL_API_SECRET: string;
-}
+export type ConsensusEnv = LlmClientEnv;
 
 /** Round 2 심화 질문 */
 const ROUND_2_QUESTIONS = [
@@ -160,40 +158,11 @@ export class ConsensusEngine {
     prompt: { system: string; userContent: string },
     env: ConsensusEnv,
   ): Promise<string> {
-    const response = await env.LLM_ROUTER.fetch(
-      "https://svc-llm-router.internal/complete",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Internal-Secret": env.INTERNAL_API_SECRET,
-        },
-        body: JSON.stringify({
-          tier: "opus",
-          messages: [{ role: "user", content: prompt.userContent }],
-          system: prompt.system,
-          callerService: "svc-policy",
-          maxTokens: 2048,
-          temperature: 0.3,
-        }),
-      },
-    );
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`LLM Router error ${response.status}: ${text}`);
-    }
-
-    const json = (await response.json()) as {
-      success: boolean;
-      data: { content: string };
-      error?: { message: string };
-    };
-    if (!json.success) {
-      throw new Error(`LLM failure: ${json.error?.message ?? "unknown"}`);
-    }
-
-    return json.data.content;
+    return callLlmRouter(env, "svc-policy", "opus", prompt.userContent, {
+      system: prompt.system,
+      maxTokens: 2048,
+      temperature: 0.3,
+    });
   }
 
   /**

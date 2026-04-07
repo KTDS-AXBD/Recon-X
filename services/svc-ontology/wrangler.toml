@@ -12,16 +12,6 @@ binding = "DB_ONTOLOGY"
 database_name = "db-ontology"
 database_id = "f7a72b06-a6d7-43e3-8912-f8a77399cced"
 
-# Service binding to svc-security for audit logging
-[[services]]
-binding = "SECURITY"
-service = "svc-security"
-
-# Service binding to svc-llm-router for LLM tier routing
-[[services]]
-binding = "LLM_ROUTER"
-service = "svc-llm-router"
-
 # Service binding to svc-policy for fetching approved policies (queue handler)
 [[services]]
 binding = "SVC_POLICY"
@@ -36,6 +26,7 @@ queue = "ai-foundry-pipeline"
 [vars]
 ENVIRONMENT = "development"
 SERVICE_NAME = "svc-ontology"
+LLM_ROUTER_URL = "http://localhost:8706"
 # Secrets (set via `wrangler secret put`):
 # INTERNAL_API_SECRET
 # NEO4J_URI        — HTTPS endpoint (e.g. https://xxx.databases.neo4j.io) — NO port!
@@ -47,20 +38,12 @@ SERVICE_NAME = "svc-ontology"
 # Staging environment
 # ---------------------------------------------------------------------------
 [env.staging]
-vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-ontology" }
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-ontology", LLM_ROUTER_URL = "https://svc-llm-router-staging.ktds-axbd.workers.dev" }
 
 [[env.staging.d1_databases]]
 binding = "DB_ONTOLOGY"
 database_name = "db-ontology-staging"
 database_id = "232df4b9-4591-43d6-a3c6-b8185d611aad"
-
-[[env.staging.services]]
-binding = "SECURITY"
-service = "svc-security-staging"
-
-[[env.staging.services]]
-binding = "LLM_ROUTER"
-service = "svc-llm-router-staging"
 
 [[env.staging.services]]
 binding = "SVC_POLICY"
@@ -74,20 +57,12 @@ queue = "ai-foundry-pipeline-staging"
 # Production environment
 # ---------------------------------------------------------------------------
 [env.production]
-vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-ontology" }
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-ontology", LLM_ROUTER_URL = "https://svc-llm-router-production.ktds-axbd.workers.dev" }
 
 [[env.production.d1_databases]]
 binding = "DB_ONTOLOGY"
 database_name = "db-ontology"
 database_id = "f7a72b06-a6d7-43e3-8912-f8a77399cced"
-
-[[env.production.services]]
-binding = "SECURITY"
-service = "svc-security-production"
-
-[[env.production.services]]
-binding = "LLM_ROUTER"
-service = "svc-llm-router-production"
 
 [[env.production.services]]
 binding = "SVC_POLICY"

@@ -55,16 +55,7 @@ function mockEnv(dbOverrides?: {
   return {
     DB_EXTRACTION: db,
     QUEUE_PIPELINE: { send: vi.fn().mockResolvedValue(undefined) } as unknown as Queue,
-    SECURITY: {
-      fetch: vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ success: true, data: { allowed: true } }), { status: 200 }),
-      ),
-    } as unknown as Fetcher,
-    LLM_ROUTER: {
-      fetch: vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ success: true, data: { content: "{}" } }), { status: 200 }),
-      ),
-    } as unknown as Fetcher,
+    LLM_ROUTER_URL: "http://test-llm-router",
     SVC_INGESTION: {
       fetch: vi.fn().mockResolvedValue(
         new Response(JSON.stringify({ chunks: [] }), { status: 200 }),
@@ -216,8 +207,7 @@ describe("handleExtract", () => {
     expect(callLlm).toHaveBeenCalledWith(
       expect.any(String),
       "sonnet",
-      env.LLM_ROUTER,
-      env.INTERNAL_API_SECRET,
+      env,
     );
   });
 
@@ -231,8 +221,7 @@ describe("handleExtract", () => {
     expect(callLlm).toHaveBeenCalledWith(
       expect.any(String),
       "haiku",
-      env.LLM_ROUTER,
-      env.INTERNAL_API_SECRET,
+      env,
     );
   });
 

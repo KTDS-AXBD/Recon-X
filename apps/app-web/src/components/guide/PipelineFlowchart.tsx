@@ -68,7 +68,6 @@ const STAGES: StageInfo[] = [
     output: '정책 후보 → HITL 검토 → 확정 정책',
     pages: [
       { label: 'HITL 검토', path: '/hitl' },
-      { label: '신뢰도 대시보드', path: '/trust' },
     ],
   },
   {

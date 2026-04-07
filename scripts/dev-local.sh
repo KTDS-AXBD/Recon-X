@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# dev-local.sh — Start all AI Foundry services locally in batches
+# dev-local.sh — Start all Recon-X services locally in batches
 # Prevents workerd resource contention by staggering startup
 set -euo pipefail
 
@@ -24,38 +24,30 @@ start_service() {
   PIDS+=($!)
 }
 
-echo "=== AI Foundry Local Dev ==="
+echo "=== Recon-X Local Dev ==="
 echo ""
 
-# Wave 1: Core platform services (no dependencies)
-echo "▸ Wave 1: Platform services"
-start_service svc-security
-start_service svc-llm-router
-start_service svc-governance
-sleep 5
-
-# Wave 2: Pipeline services
-echo "▸ Wave 2: Pipeline services"
+# Wave 1: Pipeline services
+echo "▸ Wave 1: Pipeline services"
 start_service svc-ingestion
 start_service svc-extraction
 start_service svc-policy
 sleep 5
 
-# Wave 3: Downstream pipeline + support
-echo "▸ Wave 3: Downstream + support services"
+# Wave 2: Downstream pipeline
+echo "▸ Wave 2: Downstream pipeline"
 start_service svc-ontology
 start_service svc-skill
-start_service svc-notification
 sleep 5
 
-# Wave 4: Aggregation + routing
-echo "▸ Wave 4: Analytics + Queue Router"
-start_service svc-analytics
+# Wave 3: Infrastructure + MCP
+echo "▸ Wave 3: Infrastructure + MCP"
 start_service svc-queue-router
+start_service svc-mcp-server
 sleep 3
 
-# Wave 5: Frontend
-echo "▸ Wave 5: Frontend"
+# Wave 4: Frontend
+echo "▸ Wave 4: Frontend"
 cd "$ROOT/apps/app-web"
 npx vite 2>&1 | sed "s/^/[app-web] /" &
 PIDS+=($!)
@@ -70,12 +62,8 @@ SERVICES=(
   "8703:svc-policy"
   "8704:svc-ontology"
   "8705:svc-skill"
-  "8706:svc-llm-router"
-  "8707:svc-security"
-  "8708:svc-governance"
-  "8709:svc-notification"
-  "8710:svc-analytics"
   "8711:svc-queue-router"
+  "8712:svc-mcp-server"
 )
 for entry in "${SERVICES[@]}"; do
   port="${entry%%:*}"
@@ -90,7 +78,7 @@ for entry in "${SERVICES[@]}"; do
   fi
 done
 echo ""
-echo "Workers: $PASS/11 healthy"
+echo "Workers: $PASS/7 healthy"
 echo "Press Ctrl+C to stop all services."
 echo ""
 

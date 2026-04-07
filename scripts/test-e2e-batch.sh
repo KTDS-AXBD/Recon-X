@@ -66,11 +66,9 @@ fi
 if [[ "$ENV" == "staging" ]]; then
   INGESTION_URL="https://svc-ingestion-staging.ktds-axbd.workers.dev"
   POLICY_URL="https://svc-policy-staging.ktds-axbd.workers.dev"
-  ANALYTICS_URL="https://svc-analytics-staging.ktds-axbd.workers.dev"
 else
   INGESTION_URL="https://svc-ingestion.ktds-axbd.workers.dev"
   POLICY_URL="https://svc-policy.ktds-axbd.workers.dev"
-  ANALYTICS_URL="https://svc-analytics.ktds-axbd.workers.dev"
 fi
 
 SECRET_HEADER="X-Internal-Secret: ${INTERNAL_API_SECRET:-}"
@@ -304,37 +302,6 @@ for i in $(seq 0 $((DOC_COUNT - 1))); do
     '. + [{"name":$name,"status":"passed","stage":"complete","documentId":$docId,"parseStatus":$parseStatus,"chunks":$chunks,"policies":$policies}]')
   echo ""
 done
-
-# --- Quality metrics ---
-echo "================================================================"
-echo "Fetching quality metrics..."
-QUALITY=$(curl -s --max-time 15 "$ANALYTICS_URL/quality?organizationId=$ORG_ID" \
-  -H "$SECRET_HEADER" 2>/dev/null || echo '{"success":false}')
-
-QUALITY_SUCCESS=$(echo "$QUALITY" | jq -r '.success // false')
-if [[ "$QUALITY_SUCCESS" == "true" ]]; then
-  echo ""
-  echo "  Quality Metrics Summary:"
-  # Extract and display available metrics
-  PARSING=$(echo "$QUALITY" | jq -r '.data.parsing // empty')
-  EXTRACTION=$(echo "$QUALITY" | jq -r '.data.extraction // empty')
-  POLICY=$(echo "$QUALITY" | jq -r '.data.policy // empty')
-  SKILL=$(echo "$QUALITY" | jq -r '.data.skill // empty')
-  if [[ -n "$PARSING" && "$PARSING" != "null" ]]; then
-    echo "    Parsing:    $(echo "$PARSING" | jq -c '.')"
-  fi
-  if [[ -n "$EXTRACTION" && "$EXTRACTION" != "null" ]]; then
-    echo "    Extraction: $(echo "$EXTRACTION" | jq -c '.')"
-  fi
-  if [[ -n "$POLICY" && "$POLICY" != "null" ]]; then
-    echo "    Policy:     $(echo "$POLICY" | jq -c '.')"
-  fi
-  if [[ -n "$SKILL" && "$SKILL" != "null" ]]; then
-    echo "    Skill:      $(echo "$SKILL" | jq -c '.')"
-  fi
-else
-  echo "  WARNING: Failed to fetch quality metrics"
-fi
 
 # --- Summary ---
 PASS_RATE=0

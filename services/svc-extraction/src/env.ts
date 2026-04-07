@@ -6,9 +6,10 @@ export interface Env {
   QUEUE_PIPELINE: Queue;
 
   // Service bindings
-  SECURITY: Fetcher;
-  LLM_ROUTER: Fetcher;
   SVC_INGESTION: Fetcher;
+
+  // External service URLs
+  LLM_ROUTER_URL: string;
 
   // Vars
   ENVIRONMENT: string;

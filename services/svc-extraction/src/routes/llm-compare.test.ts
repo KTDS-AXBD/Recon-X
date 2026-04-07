@@ -1,23 +1,8 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { handleLlmCompareRoutes } from "./llm-compare.js";
 import type { Env } from "../env.js";
 
-/* ─── Mock helpers ─── */
-
-function mockFetcher(response: unknown): Fetcher {
-  return {
-    fetch: vi.fn().mockResolvedValue(
-      new Response(JSON.stringify(response), { status: 200, headers: { "Content-Type": "application/json" } }),
-    ),
-  } as unknown as Fetcher;
-}
-
-function mockChunks() {
-  return [
-    { masked_text: "퇴직연금 해지 절차 설명", classification: "process", element_type: "NarrativeText", word_count: 50, chunk_index: 0 },
-    { masked_text: "계좌 개설 프로세스", classification: "process", element_type: "NarrativeText", word_count: 40, chunk_index: 1 },
-  ];
-}
+/* ─── Mock LLM caller ─── */
 
 function mockExtractionResult(provider: string) {
   const baseResult = {
@@ -38,32 +23,40 @@ function mockExtractionResult(provider: string) {
   return baseResult;
 }
 
-function mockLlmRouter() {
+let callCount = 0;
+
+vi.mock("../llm/caller.js", () => ({
+  callLlm: vi.fn().mockImplementation(async () => JSON.stringify(mockExtractionResult("anthropic"))),
+  callLlmWithMeta: vi.fn().mockImplementation(async () => {
+    const providers = ["anthropic", "openai"];
+    const models = ["claude-sonnet-4-6", "gpt-4.1-mini"];
+    const idx = callCount % 2;
+    const provider = providers[idx] ?? "anthropic";
+    const model = models[idx] ?? "claude-sonnet-4-6";
+    callCount++;
+    return {
+      content: JSON.stringify(mockExtractionResult(provider)),
+      provider,
+      model,
+    };
+  }),
+}));
+
+/* ─── Mock helpers ─── */
+
+function mockFetcher(response: unknown): Fetcher {
   return {
-    fetch: vi.fn()
-      // Provider A (anthropic)
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({
-          success: true,
-          data: {
-            content: JSON.stringify(mockExtractionResult("anthropic")),
-            provider: "anthropic",
-            model: "claude-sonnet-4-6",
-          },
-        }), { status: 200, headers: { "Content-Type": "application/json" } }),
-      )
-      // Provider B (openai)
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({
-          success: true,
-          data: {
-            content: JSON.stringify(mockExtractionResult("openai")),
-            provider: "openai",
-            model: "gpt-4.1-mini",
-          },
-        }), { status: 200, headers: { "Content-Type": "application/json" } }),
-      ),
+    fetch: vi.fn().mockResolvedValue(
+      new Response(JSON.stringify(response), { status: 200, headers: { "Content-Type": "application/json" } }),
+    ),
   } as unknown as Fetcher;
+}
+
+function mockChunks() {
+  return [
+    { masked_text: "퇴직연금 해지 절차 설명", classification: "process", element_type: "NarrativeText", word_count: 50, chunk_index: 0 },
+    { masked_text: "계좌 개설 프로세스", classification: "process", element_type: "NarrativeText", word_count: 40, chunk_index: 1 },
+  ];
 }
 
 function mockDb() {
@@ -82,8 +75,7 @@ function mockEnv(overrides?: Partial<Env>): Env {
   return {
     DB_EXTRACTION: mockDb(),
     QUEUE_PIPELINE: {} as Queue,
-    SECURITY: { fetch: vi.fn() } as unknown as Fetcher,
-    LLM_ROUTER: overrides?.LLM_ROUTER ?? mockLlmRouter(),
+    LLM_ROUTER_URL: "http://test-llm-router",
     SVC_INGESTION: overrides?.SVC_INGESTION ?? mockFetcher({ success: true, data: { chunks: mockChunks() } }),
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-extraction",
@@ -95,6 +87,11 @@ function mockEnv(overrides?: Partial<Env>): Env {
 /* ─── Tests ─── */
 
 describe("handleLlmCompareRoutes", () => {
+  beforeEach(() => {
+    callCount = 0;
+    vi.clearAllMocks();
+  });
+
   describe("POST /llm-compare", () => {
     it("runs extraction with both providers and returns comparison", async () => {
       const env = mockEnv();

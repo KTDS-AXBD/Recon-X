@@ -12,7 +12,10 @@
 - ✅ E2E 검증: 11/11 서비스 healthy, 14/14 라우팅 정상
 - ⚡ 발견: SERVICE_MAP prefix-strip 패턴이 현재 Worker 구조와 비호환 → RESOURCE_MAP(path 보존) 전환
 
-**검증 결과**: typecheck PASS, 42 tests (기존 28 + 신규 14), E2E 14/14
+- ✅ CI/CD `deploy-services.yml`에 Gateway 배포 job 추가 (`deploy_gateway` output, 독립 감지)
+- ✅ Pages 재배포: push 시 자동 트리거 (Pages Function→Gateway 프록시 반영)
+
+**검증 결과**: typecheck PASS, 42 tests (기존 28 + 신규 14), E2E 14/14, CI/CD Gateway deploy ✅
 
 ## 세션 197 — 2026-04-07
 **Recon-X MSA 재조정 — 요구사항 인터뷰→PRD→Plan→구현→merge→문서 갱신 (Full Cycle)**:

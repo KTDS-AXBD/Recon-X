@@ -1,7 +1,7 @@
 import { cors } from "hono/cors";
 
 const ALLOWED_ORIGINS = [
-  "https://ai-foundry.minu.best",
+  "https://rx.minu.best",
   "http://localhost:5173",
   "http://localhost:4173",
 ];

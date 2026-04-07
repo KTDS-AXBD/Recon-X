@@ -1,6 +1,6 @@
 /**
  * Proxy /mockup/* requests to the ai-foundry-mockup Pages project.
- * This allows accessing the mock-up site at ai-foundry.minu.best/mockup/
+ * This allows accessing the mock-up site at rx.minu.best/mockup/
  *
  * For HTML responses, asset paths are rewritten to absolute URLs
  * pointing to the mockup origin so JS/CSS/images load correctly.

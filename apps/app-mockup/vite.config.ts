@@ -20,7 +20,7 @@ function buildProxy(mode: string) {
   const proxy: Record<string, object> = {};
   if (mode === "remote") {
     proxy["/api"] = {
-      target: "https://ai-foundry.minu.best",
+      target: "https://rx.minu.best",
       changeOrigin: true,
       secure: true,
     };

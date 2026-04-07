@@ -324,7 +324,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="api-endpoint">API Endpoint</Label>
-                <Input id="api-endpoint" defaultValue="https://ai-foundry.minu.best/api" disabled />
+                <Input id="api-endpoint" defaultValue="https://rx.minu.best/api" disabled />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="max-concurrent">최대 동시 실행 Skill</Label>

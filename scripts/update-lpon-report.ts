@@ -7,7 +7,7 @@
  * Usage: bun run scripts/update-lpon-report.ts [--dry-run]
  */
 
-const API_BASE = "https://ai-foundry.minu.best/api";
+const API_BASE = "https://rx.minu.best/api";
 const ORG_ID = "LPON";
 const DRY_RUN = process.argv.includes("--dry-run");
 

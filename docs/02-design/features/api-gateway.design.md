@@ -190,7 +190,7 @@ export const SERVICE_MAP: Record<string, keyof Env> = {
 import { cors } from "hono/cors";
 
 const ALLOWED_ORIGINS = [
-  "https://ai-foundry.minu.best",     // production
+  "https://rx.minu.best",              // production
   "http://localhost:5173",              // local dev
   "http://localhost:4173",              // local preview
 ];

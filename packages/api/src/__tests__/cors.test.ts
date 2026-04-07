@@ -13,9 +13,9 @@ describe("CORS 미들웨어", () => {
   it("허용된 origin에 CORS 헤더를 반환한다", async () => {
     const app = createApp();
     const res = await app.request("/test", {
-      headers: { Origin: "https://ai-foundry.minu.best" },
+      headers: { Origin: "https://rx.minu.best" },
     });
-    expect(res.headers.get("Access-Control-Allow-Origin")).toBe("https://ai-foundry.minu.best");
+    expect(res.headers.get("Access-Control-Allow-Origin")).toBe("https://rx.minu.best");
   });
 
   it("localhost:5173을 허용한다", async () => {
@@ -40,7 +40,7 @@ describe("CORS 미들웨어", () => {
     const res = await app.request("/test", {
       method: "OPTIONS",
       headers: {
-        Origin: "https://ai-foundry.minu.best",
+        Origin: "https://rx.minu.best",
         "Access-Control-Request-Method": "POST",
       },
     });

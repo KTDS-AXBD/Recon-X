@@ -234,7 +234,7 @@ export function toOpenApiSpec(pkg: SkillPackage, options?: OpenApiOptions): Open
       version: metadata.version,
       contact: {
         name: metadata.author,
-        url: "https://ai-foundry.minu.best",
+        url: "https://rx.minu.best",
       },
     },
     paths,
@@ -311,8 +311,8 @@ export function toOpenApiSpec(pkg: SkillPackage, options?: OpenApiOptions): Open
   }
 
   spec.externalDocs = {
-    description: "AI Foundry Platform Documentation",
-    url: "https://ai-foundry.minu.best",
+    description: "Recon-X Platform Documentation",
+    url: "https://rx.minu.best",
   };
 
   return spec;

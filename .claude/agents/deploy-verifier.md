@@ -19,7 +19,7 @@ color: green
 1. **Workers 상태**: API 헬스 엔드포인트 응답 확인
    - `curl -s https://ai-foundry-api.ktds-axbd.workers.dev/api/health`
 2. **Pages 상태**: 프론트엔드 응답 코드 확인
-   - `curl -s -o /dev/null -w '%{http_code}' https://ai-foundry.minu.best`
+   - `curl -s -o /dev/null -w '%{http_code}' https://rx.minu.best`
 3. **D1 마이그레이션 정합성**: 로컬 마이그레이션 파일 수 vs 프로덕션 적용 수 비교
 4. **CORS 설정**: API 서버의 CORS 미들웨어 존재 확인
 5. **환경변수**: API URL 설정이 Workers URL과 일치하는지 확인

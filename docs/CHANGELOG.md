@@ -9,9 +9,10 @@
 - ✅ vite.config.ts: 제거된 5개 서비스(security/governance/notification/analytics) 프록시 매핑 정리
 - ✅ AIF-REQ-032 IN_PROGRESS → DONE (리브랜딩 완료 검증)
 - ✅ svc-skill openapi test externalDocs URL `ai-foundry` → `rx.minu.best` (CI 실패 수정)
+- ✅ upload E2E flaky 해소: `page.evaluate` cleanup → Playwright `APIRequestContext` 분리 + pre-cleanup + 병렬 삭제
 - ✅ DNS 확인: `rx.minu.best` → Cloudflare IPs (104.26.2.214, 104.26.3.214, 172.67.71.137)
 
-**검증 결과**: typecheck PASS, E2E 42/43 passed (1 flaky — upload cleanup timeout, retry 통과)
+**검증 결과**: typecheck PASS, svc-skill 310 tests PASS, E2E **43/43 passed** (0 flaky)
 
 ## 세션 199 — 2026-04-07
 **Recon-X 리브랜딩 정리 (AIF-REQ-032)**:

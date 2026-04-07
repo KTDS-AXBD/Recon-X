@@ -386,18 +386,18 @@
 - [x] Sprint 1: screen-design-parser + Batch 3 (7/11 파싱) + Queue fix + SCDSA002 탐지 + 배치 자동화
 - [x] Sprint 2: bulk-approve 3,046건 + Tier 2+3 87건 업로드 + 파이프라인 완결 (26,825 terms, 3,104 skills)
 
-### 🔧 Phase 5 — Recon-X MSA 재조정 (AIF-REQ-030, AIF-REQ-031)
-- [ ] M1: 플랫폼 SVC 5개 분리 — svc-llm-router, svc-security, svc-governance, svc-notification, svc-analytics 제거
-- [ ] M2: D1 바인딩 정리 — 잔류 7 Workers의 wrangler.toml 불필요 바인딩 제거
-- [ ] M3: LLM 라우팅 전환 — svc-llm-router 분리 후 파이프라인 LLM 호출 방식 전환
-- [ ] M4: 프론트엔드 정리 — 포털 성격 페이지 제거, Recon-X 전용 UI ~10페이지
-- [ ] M5: 리포 리네임 준비 — package.json, CLAUDE.md, SPEC.md 내부 참조 정리
-- [ ] M6: E2E 테스트 조정 — 분리 기능 테스트 제거/수정, 잔류 기능 전체 PASS
-- [ ] M7: 서비스 연동 인터페이스 정의 — Foundry-X MCP/Event 연동 문서화 + 엔드포인트
-- [ ] S1: CI/CD 파이프라인 조정 (AIF-REQ-031)
-- [ ] S2: 모니터링 독립화 (AIF-REQ-031)
-- [ ] S3: Turborepo 워크스페이스 정리 (AIF-REQ-031)
-- [ ] S4: 문서 갱신 — Recon-X 관점 (AIF-REQ-031)
+### ✅ Phase 5 — Recon-X MSA 재조정 (AIF-REQ-030, AIF-REQ-031) — Sprint 1 완료
+- [x] M1: 플랫폼 SVC 5개 분리 — 254 files, -21,453줄 (AIF-REQ-030 DONE)
+- [x] M2: D1 바인딩 정리 — 7 Workers wrangler.toml 39 블록 제거
+- [x] M3: LLM 라우팅 전환 — packages/utils/src/llm-client.ts HTTP REST
+- [x] M4: 프론트엔드 정리 — audit, trust, agent-console, generative-ui 제거
+- [x] M5: 리포 리네임 — KTDS-AXBD/Recon-X 완료
+- [x] M6: E2E 테스트 — 11/11 suites PASS, typecheck 13/13 PASS
+- [x] M7: 서비스 연동 인터페이스 — llm-client.ts HTTP REST 인터페이스
+- [x] S1: CI/CD — deploy-services.yml 5개 SVC 제거
+- [x] S2: 모니터링 — health-check.sh 7 Workers 전용
+- [x] S3: Turborepo — pnpm-lock.yaml 경량화
+- [ ] S4: 문서 갱신 — CLAUDE.md/SPEC.md Recon-X 관점 (AIF-REQ-031, 별도 세션)
 
 ---
 
@@ -514,7 +514,7 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-030 | Feature | Infra | P0 | PLANNED | Recon-X MSA 재조정 — 플랫폼 SVC 5개 분리(llm-router/security/governance/notification/analytics), LLM 라우팅 전환, 프론트엔드 정리(20→~10페이지), 리포 리네임 준비, E2E 테스트 조정, 서비스 연동 인터페이스 정의. 참조: `docs/recon-x-restructuring/prd-final.md` |
+| AIF-REQ-030 | Feature | Infra | P0 | DONE | Recon-X MSA 재조정 — 플랫폼 SVC 5개 분리(llm-router/security/governance/notification/analytics), LLM 라우팅 전환, 프론트엔드 정리(20→~10페이지), 리포 리네임 준비, E2E 테스트 조정, 서비스 연동 인터페이스 정의. 참조: `docs/recon-x-restructuring/prd-final.md` |
 | AIF-REQ-031 | Chore | Infra | P1 | PLANNED | Recon-X 부가 작업 — CI/CD 파이프라인 조정, 모니터링 독립화, Turborepo 워크스페이스 정리, 문서 갱신(CLAUDE.md/SPEC.md → Recon-X 관점) |
 
 ---

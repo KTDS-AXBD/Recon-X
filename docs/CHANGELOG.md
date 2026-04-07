@@ -2,6 +2,43 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 마일스톤 회고: v0.7.0 — Pilot Core 완료
+
+### 지표 변화 (v0.6 → v0.7)
+| 지표 | v0.6 | v0.7 | 변화 |
+|------|------|------|------|
+| 소스 파일 | 413 | 331 | **-82** (MSA 경량화) |
+| 테스트 파일 | 140 | 114 | **-26** (분리된 SVC 테스트 제거) |
+| 배포 Workers | 12 | 7 | **-5** (포털로 이관) |
+| Pages | 22 | 22 | 유지 |
+| D1 Migrations | 20 | 21 | +1 |
+| E2E Tests | 46 | 43 | -3 (MSA 반영 조정) |
+| 마일스톤 세션 | - | 5 (196~200) | 27 커밋 |
+
+### 잘된 점
+- **req-interview→PRD→Sprint WT 38분 자동화**: 요구사항 인터뷰부터 구현까지 단일 세션 완주 (세션 197)
+- **MSA 12→7 경량화**: 254 파일, -21,453줄 제거. 플랫폼 SVC 5개 분리로 Recon-X 핵심만 남김
+- **E2E 43/43 안정화**: upload flaky 근본 해결 (APIRequestContext 분리), CI 0 failure
+- **API Gateway 도입**: Hono+JWT+11 Service Bindings. 하이브리드 라우팅으로 단일 진입점 확보
+
+### 개선점
+- **v0.6 코드 잔류**: 분리된 5개 SVC 코드가 services/에 남아있음. 삭제 또는 별도 리포 이전 필요
+- **REQ 소급 등록 지연**: AIF-REQ-028이 구현 완료 후에도 PLANNED 상태로 방치 → 세션 200에서 소급 전환. REQ 상태 동기화 체크 강화 필요
+- **CI E2E flaky 감지 지연**: 로컬 retry 통과로 CI 실패를 늦게 발견. CI 결과를 먼저 확인하는 습관
+
+### 결정 검증
+- ✅ **Cloudflare-native 올인**: Workers+D1+R2+Queues+DO+KV+Pages 전체 스택이 2-org 파일럿에서 안정 검증. 7 Workers 동시 운영 무중단
+- ✅ **pnpm 전환**: bun→pnpm 전환 후 CI frozen-lockfile 이슈 해소, Turborepo 호환 안정
+- ✅ **Gateway 패턴**: 개별 Worker 직접 호출 → Gateway 단일 진입점. CORS/인증 일원화로 운영 단순화
+
+### 다음 마일스톤 방향
+- AIF-REQ-026: Foundry-X 통합 (역공학↔순공학 연결)
+- AIF-REQ-018: 진행 현황 리포트 UX 개선
+- v0.6 잔류 코드 정리 (5개 SVC 아카이브 또는 삭제)
+- Gap Precision 측정 (리뷰어 확보 후)
+
+---
+
 ## 세션 200 — 2026-04-07
 **E2E 테스트 수정 + AIF-REQ-032 DONE 전환**:
 - ✅ Health check: 7 Workers + Gateway + Pages + CORS 전체 200 OK

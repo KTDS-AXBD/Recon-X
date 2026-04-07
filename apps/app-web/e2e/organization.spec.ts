@@ -12,7 +12,7 @@ test.describe("Organization switching", () => {
     // Wait for dashboard stats to load with Miraeasset data
     await page.waitForFunction(() => {
       const cards = document.querySelectorAll(".text-3xl.font-bold");
-      return cards.length >= 4 && ![...cards].some((c) => c.textContent === "...");
+      return cards.length >= 3 && ![...cards].some((c) => c.textContent === "...");
     }, { timeout: 10_000 });
 
     // Capture Miraeasset stats
@@ -25,7 +25,7 @@ test.describe("Organization switching", () => {
     // Wait for stats to reload (briefly show '...' then new values)
     await page.waitForFunction(() => {
       const cards = document.querySelectorAll(".text-3xl.font-bold");
-      return cards.length >= 4 && ![...cards].some((c) => c.textContent === "...");
+      return cards.length >= 3 && ![...cards].some((c) => c.textContent === "...");
     }, { timeout: 10_000 });
 
     // Capture LPON stats

@@ -516,7 +516,7 @@
 |----|------|--------|:--------:|:----:|------|
 | AIF-REQ-030 | Feature | Infra | P0 | DONE | Recon-X MSA 재조정 — 플랫폼 SVC 5개 분리(llm-router/security/governance/notification/analytics), LLM 라우팅 전환, 프론트엔드 정리(20→~10페이지), 리포 리네임 준비, E2E 테스트 조정, 서비스 연동 인터페이스 정의. 참조: `docs/recon-x-restructuring/prd-final.md` |
 | AIF-REQ-031 | Chore | Infra | P1 | DONE | Recon-X 부가 작업 — CI/CD 파이프라인 조정, 모니터링 독립화, Turborepo 워크스페이스 정리, 문서 갱신(CLAUDE.md/SPEC.md → Recon-X 관점) |
-| AIF-REQ-032 | Chore | Infra | P1 | IN_PROGRESS | Recon-X 리브랜딩 정리 — 로컬 디렉토리명 변경(res-ai-foundry→Recon-X), 커스텀 도메인 변경(ai-foundry.minu.best→rx.minu.best), CORS/OpenAPI/vite proxy/deploy-verifier 코드 갱신, Cloudflare Pages 도메인+DNS 전환 |
+| AIF-REQ-032 | Chore | Infra | P1 | DONE | Recon-X 리브랜딩 정리 — 로컬 디렉토리명 변경(res-ai-foundry→Recon-X), 커스텀 도메인 변경(ai-foundry.minu.best→rx.minu.best), CORS/OpenAPI/vite proxy/deploy-verifier 코드 갱신, Cloudflare Pages 도메인+DNS 전환. 세션 200: health check 전체 PASS (7 Workers + Gateway + Pages + CORS) |
 
 ---
 

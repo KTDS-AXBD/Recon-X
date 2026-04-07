@@ -22,26 +22,31 @@ test.describe("Dashboard functional", () => {
     await page.goto("/");
 
     // Wait for loading to finish (stats show '...' while loading)
+    // Dashboard has 3 stats cards: 등록 문서, 검토 대기, 활성 Skill
     await page.waitForFunction(() => {
       const cards = document.querySelectorAll(".text-3xl.font-bold");
-      return cards.length >= 4 && ![...cards].some((c) => c.textContent === "...");
+      return cards.length >= 3 && ![...cards].some((c) => c.textContent === "...");
     }, { timeout: 10_000 });
 
     // Verify stats cards show actual values (not '...')
     const statValues = page.locator(".text-3xl.font-bold");
-    await expect(statValues).toHaveCount(4);
+    await expect(statValues).toHaveCount(3);
 
     // Each stat should contain a number followed by 건 or 개
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 3; i++) {
       const text = await statValues.nth(i).textContent();
       expect(text).toMatch(/\d+(건|개)/);
     }
   });
 
-  test("recent activities section renders", async ({ page }) => {
+  test("quick actions section renders", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("최근 활동")).toBeVisible();
-    await expect(page.getByText("알림")).toBeVisible();
+    await expect(page.getByText("빠른 실행")).toBeVisible();
+    // Verify all 4 quick action links exist
+    await expect(page.locator('a[href="/upload"]').last()).toBeVisible();
+    await expect(page.locator('a[href="/analysis"]').last()).toBeVisible();
+    await expect(page.locator('a[href="/hitl"]').last()).toBeVisible();
+    await expect(page.locator('a[href="/skills"]').last()).toBeVisible();
   });
 });
 

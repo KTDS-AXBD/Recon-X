@@ -29,19 +29,7 @@ const SERVICE_MAP: Record<string, { service: string; port: number }> = {
   graph: { service: "svc-ontology", port: 8704 },
   normalize: { service: "svc-ontology", port: 8704 },
   skills: { service: "svc-skill", port: 8705 },
-  audit: { service: "svc-security", port: 8707 },
-  cost: { service: "svc-governance", port: 8708 },
-  trust: { service: "svc-governance", port: 8708 },
-  prompts: { service: "svc-governance", port: 8708 },
-  "golden-tests": { service: "svc-governance", port: 8708 },
-  "quality-evaluations": { service: "svc-governance", port: 8708 },
-  chat: { service: "svc-governance", port: 8708 },
-  notifications: { service: "svc-notification", port: 8709 },
-  kpi: { service: "svc-analytics", port: 8710 },
-  dashboards: { service: "svc-analytics", port: 8710 },
-  quality: { service: "svc-analytics", port: 8710 },
-  reports: { service: "svc-analytics", port: 8710 },
-  deliverables: { service: "svc-analytics", port: 8710 },
+  // svc-security, svc-governance, svc-notification, svc-analytics → AI Foundry 포털로 이관 (Phase 5)
 };
 
 const DEPLOYED_ORIGIN = "https://rx.minu.best";

@@ -2,6 +2,15 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 199 — 2026-04-07
+**Recon-X 리브랜딩 정리 (AIF-REQ-032)**:
+- ✅ 도메인 변경: `ai-foundry.minu.best` → `rx.minu.best` — CORS, OpenAPI, vite proxy, deploy-verifier 등 11파일 갱신
+- ✅ AIF-REQ-032 등록 (Chore/Infra/P1/IN_PROGRESS)
+- ⏳ 수동 작업 대기: Cloudflare Pages 커스텀 도메인 + DNS CNAME 전환
+- ⏳ 수동 작업 대기: 로컬 디렉토리명 `res-ai-foundry` → `Recon-X` 변경
+
+**검증 결과**: typecheck 14/14 PASS
+
 ## 세션 198 — 2026-04-07
 **API Gateway 배포 + 하이브리드 라우팅 + Pages Function 통합**:
 - ✅ Gateway 배포 (`recon-x-api.ktds-axbd.workers.dev`) + secrets 설정

@@ -399,6 +399,29 @@
 - [x] S3: Turborepo — pnpm-lock.yaml 경량화
 - [x] S4: 문서 갱신 — CLAUDE.md Recon-X 관점 갱신 완료 (AIF-REQ-031 DONE)
 
+### 🔧 Phase 6 — Foundry-X Generative Bridge (AIF-REQ-026 Phase 2+, AIF-REQ-024)
+
+> v0.7.0 이후 다음 마일스톤 (v0.8 가제). 역공학 결과를 Foundry-X 순공학과 실시간 UX로 연결.
+> 범위: REQ-026 Foundry-X 통합 확장 + REQ-024 Generative UI Framework.
+> 2-parallel Sprint 전략 (Batch 3개, merge 순서 Sprint 번호 오름차순).
+
+**Batch 1 (병렬 2):**
+- [ ] Sprint 201 (REQ-026 A1): Working Prototype Generator 확대 — generators 추가(api-spec, screen-def 2종), 테스트 하네스 완성, Foundry-X 핸드오프 포맷 검증. 대상: `services/svc-skill`
+- [ ] Sprint 202 (REQ-024 B1): app-mockup PoC — Sandboxed Widget Renderer(iframe 기반) + Decision Matrix(차트/표/카드 자동 선택). 대상: `apps/app-mockup`, `packages/types/src/ui-widget.ts` 신규
+
+**Batch 2 (병렬 2, Batch 1 merge 후):**
+- [ ] Sprint 203 (REQ-026 A2): Foundry-X meta-tool 확장 + AgentTaskType 추가 — 반제품→코드 생성 핸드오프 tool, skill 검색 고도화. 대상: `services/svc-mcp-server`, `services/svc-skill`
+- [ ] Sprint 204 (REQ-024 B2): AG-UI Protocol + HITL Components — 에이전트↔UI 실시간 통신 + 에이전트 일시정지→사용자 입력→재개 흐름. 대상: `apps/app-mockup`, `packages/types/src/ui-widget.ts`
+
+**Batch 3 (순차, Batch 1+2 merge 후):**
+- [ ] Sprint 205 (통합): app-web Generative Widget ↔ Foundry-X MCP 연동 PoC + Theme Injection — Batch 1+2 산출물을 app-web에 점진 반영, rx.minu.best에 데모 페이지 배포. 대상: `apps/app-web`
+
+**완료 기준 (마일스톤 v0.8):**
+- Working Prototype Generator 5종 generator + Foundry-X 핸드오프 E2E PASS
+- app-mockup PoC 3종 Widget(Sandboxed/Decision Matrix/HITL) 동작
+- app-web /generative-ui 데모 페이지 production 배포
+- AIF-REQ-026 Phase 2 DONE, AIF-REQ-024 DONE
+
 ---
 
 ## 7) Requirements Backlog
@@ -478,7 +501,7 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-024 | Feature | UX | P1 | OPEN | Generative UI Framework — Sandboxed Widget Renderer(iframe 기반 안전 렌더링), AG-UI Protocol(에이전트↔UI 실시간 통신), HITL Components(에이전트 일시정지→사용자 입력), Decision Matrix(시각화 유형 자동 선택), Theme Injection(디자인 시스템 일관성). app-mockup PoC → app-web 점진적 반영. 참조: [CopilotKit/OpenGenerativeUI](https://github.com/CopilotKit/OpenGenerativeUI) |
+| AIF-REQ-024 | Feature | UX | P1 | PLANNED | Generative UI Framework — Sandboxed Widget Renderer(iframe 기반 안전 렌더링), AG-UI Protocol(에이전트↔UI 실시간 통신), HITL Components(에이전트 일시정지→사용자 입력), Decision Matrix(시각화 유형 자동 선택), Theme Injection(디자인 시스템 일관성). app-mockup PoC → app-web 점진적 반영. **Phase 6 Sprint 202/204/205에 배치** (v0.8 마일스톤). 참조: [CopilotKit/OpenGenerativeUI](https://github.com/CopilotKit/OpenGenerativeUI) |
 
 ### Skill 번들링 — LLM 의미 분류 기반 재패키징 (신규 등록)
 

@@ -1,9 +1,10 @@
 /**
- * LLM Enhancer — Haiku tier로 요약 문단 + Gap 코멘터리 생성
+ * LLM Enhancer — OpenRouter 직접 호출로 요약 문단 + Gap 코멘터리 생성
  *
  * Template 생성 후 optional로 호출. 실패해도 문서 생성에 영향 없음.
+ * svc-llm-router를 거치지 않고 OpenRouter API를 직접 호출.
  */
-import { callLlmRouter, type LlmClientEnv } from "@ai-foundry/utils";
+import { callOpenRouter, type OpenRouterEnv } from "@ai-foundry/utils";
 import type { SkillSpecData, SpecSection, SpecType } from "./types.js";
 
 const SYSTEM_PROMPT = `당신은 SI 산출물 분석 전문가입니다. 역공학으로 추출된 데이터를 기반으로 간결하고 정확한 한국어 요약과 분석을 제공합니다.
@@ -44,8 +45,6 @@ ${base}
 }
 
 function buildGapPrompt(data: SkillSpecData, type: SpecType): string {
-  // AI-Ready 점수를 활용한 Gap 분석 프롬프트
-  // scoreSkill은 SkillPackage를 요구하므로, 간이 버전으로 signal 기반 분석
   const signals: string[] = [];
 
   if (type === "business") {
@@ -81,19 +80,19 @@ ${signals.map((s) => `- ${s}`).join("\n")}
 // ── 메인 ────────────────────────────────────────
 
 export async function enhanceWithLlm(
-  env: LlmClientEnv,
+  env: OpenRouterEnv,
   data: SkillSpecData,
   sections: SpecSection[],
   type: SpecType,
 ): Promise<SpecSection[]> {
   try {
     const [summary, gap] = await Promise.allSettled([
-      callLlmRouter(env, "svc-skill", "haiku", buildSummaryPrompt(data, type), {
+      callOpenRouter(env, buildSummaryPrompt(data, type), {
         system: SYSTEM_PROMPT,
         maxTokens: 512,
         temperature: 0.3,
       }),
-      callLlmRouter(env, "svc-skill", "haiku", buildGapPrompt(data, type), {
+      callOpenRouter(env, buildGapPrompt(data, type), {
         system: SYSTEM_PROMPT,
         maxTokens: 512,
         temperature: 0.3,
@@ -102,7 +101,7 @@ export async function enhanceWithLlm(
 
     const enhanced = [...sections];
 
-    // 요약을 overview 섹션 ���에 삽입
+    // 요약을 overview 섹션 뒤에 삽입
     if (summary.status === "fulfilled" && summary.value) {
       enhanced.splice(1, 0, {
         id: `${type.slice(0, 4)}-summary`,

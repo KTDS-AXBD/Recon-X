@@ -24,4 +24,7 @@ export interface Env {
 
   // Secrets (set via `wrangler secret put`)
   INTERNAL_API_SECRET: string;
+
+  // Optional secrets — LLM enhancement skipped if absent
+  OPENROUTER_API_KEY?: string | undefined;
 }

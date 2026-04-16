@@ -1,7 +1,7 @@
 /**
  * Spec Generator — B/T/Q Spec 문서 생성 진입점
  */
-import type { LlmClientEnv } from "@ai-foundry/utils";
+import type { OpenRouterEnv } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
 import { collectSkillSpecData } from "./collector.js";
 import { generateBusinessSpec } from "./generators/business.js";
@@ -28,13 +28,10 @@ export async function generateSpec(
       ? generateTechnicalSpec(data)
       : generateQualitySpec(data);
 
-  // LLM 보강 (optional)
-  if (options?.useLlm !== false) {
-    const llmEnv: LlmClientEnv = {
-      LLM_ROUTER_URL: env.LLM_ROUTER_URL,
-      INTERNAL_API_SECRET: env.INTERNAL_API_SECRET,
-    };
-    sections = await enhanceWithLlm(llmEnv, data, sections, type);
+  // LLM 보강 (optional — OpenRouter 직접 호출)
+  if (options?.useLlm !== false && env.OPENROUTER_API_KEY) {
+    const orEnv: OpenRouterEnv = { OPENROUTER_API_KEY: env.OPENROUTER_API_KEY };
+    sections = await enhanceWithLlm(orEnv, data, sections, type);
   }
 
   // AI-Ready 점수 (B/T/Q 각각)

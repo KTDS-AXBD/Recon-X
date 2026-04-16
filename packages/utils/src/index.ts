@@ -6,3 +6,4 @@ export * from "./logger.js";
 export * from "./rbac.js";
 export * from "./audit.js";
 export * from "./llm-client.js";
+export * from "./openrouter-client.js";

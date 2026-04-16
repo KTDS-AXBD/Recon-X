@@ -2,6 +2,17 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 203 (2026-04-16)
+**Sprint 208 — B/T/Q Spec 문서 생성기 + OpenRouter 연동**:
+- ✅ Plan 문서: `docs/01-plan/features/btq-spec-generator.plan.md`
+- ✅ `spec-gen/` 모듈 8파일 신규 (types, collector, generators/business+technical+quality, llm-enhancer, markdown-renderer, index) — 1,593줄
+- ✅ API: `GET /skills/:id/spec/{business|technical|quality|all}` (?format=json|markdown, ?llm=true|false)
+- ✅ OpenRouter 클라이언트: `packages/utils/src/openrouter-client.ts` — Claude 3 Haiku 직접 호출
+- ✅ Production 배포 + E2E 검증: LPON 3건 Skill B/T/Q 전수 PASS, LLM 보강(AI 요약 + Gap 권고) 동작 확인
+- 📌 다음: Sprint 209 — Org 단위 B/T/Q 집계 + drill-down UI Spec 탭 추가
+
+**검증**: typecheck 14/14 PASS, lint 9/9 PASS, CI/CD Deploy 2회 success
+
 ### 세션 202 (2026-04-16)
 **AIF-REQ-034 Deep Dive 실구현 — Adapter/Technical Gap 해소**:
 - ✅ Sprint 205: adapter-writer + backfill + drill-down API (PR #4, #5 merged)

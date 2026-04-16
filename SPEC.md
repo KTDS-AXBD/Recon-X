@@ -55,12 +55,13 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-04-07
+- **Last Updated**: 2026-04-16
 - **Current Phase**: **Pilot Core 완료** — 5-Stage 역공학 파이프라인 실증 완료. 7 Workers + Gateway + Pages, 2-org 파일럿 (퇴직연금 948건 + 온누리 88건), policies 3,675 / skills 3,924. KPI: API Coverage 95.4%, Table Coverage 100%. REQ 24/32 DONE. E2E 43/43 PASS
 <!-- 마지막 실측 (daily-check 자동 보정 대상) -->
 - **마지막 실측**: 7 Workers, D1 5 DBs (20 migrations, latest 0008), 108 test files on disk
 - **Foundry-X MCP 통합**: ✅ Phase 1-3 완료 — org MCP 2서버 + meta-tool 3종(`foundry_policy_eval`, `foundry_skill_query`, `foundry_ontology_lookup`). 619 tools (616 기존 + 3 meta). Foundry-X AgentTaskType 7종(기존4 + 신규3). SVC_ONTOLOGY binding. PDCA 100%. AIF-REQ-026 IN_PROGRESS
 - **반제품 생성 엔진**: AIF-REQ-026 Phase 2 Sprint 1 완료 — Working Prototype Generator (svc-skill 확장). POST /prototype/generate API, collector(5 SVC) + generators 3종(business-logic/rules-json/terms-jsonld) + fflate ZIP → R2. 262 tests, PDCA 93%. AIF-REQ-027 IN_PROGRESS (별도 pane). D1 0004 production 적용
+- **B/T/Q Spec 문서 생성기**: ✅ Sprint 208 완료 — Template+LLM Hybrid 방식 Spec 조립 레이어. `GET /skills/:id/spec/{type}` API, 3종 생성기(Business/Technical/Quality) + OpenRouter→Haiku 요약+Gap. `spec-gen/` 8파일 1,593줄 + `openrouter-client.ts`. Production 배포+검증 완료 (LPON 3건 B/T/Q 전수 PASS)
 - **Production E2E**: ✅ 8/8 PASS (synthetic) + 7/7 PASS (real-doc) + Batch 3: 7/11 parsed (SCDSA002 4건 → encrypted 상태)
 - **Real Document Pilot**: ✅ 20/26 문서 파싱 완료 (Batch 1: 4건, Batch 2: 9/11건, Batch 3: 7/11건)
 - **Production Data**: policies 3,675 approved (LPON 848 + Miraeasset 2,827), skills 3,924 (LPON 859 + Miraeasset 3,065). 2-org
@@ -436,11 +437,14 @@
 > **진단 결과** (세션 202): LPON 894건 signal 분석 — 664건(74%) api+field+adapter 전무, 230건(26%) partial signal, **894건 전수 adapterHit=false** (skill-builder.ts `adapters: {}` 하드코딩). Technical 4.3%의 근본 원인은 (1) adapter 미부착(전수), (2) 프롬프트 Technical 미추출(74%).
 
 **Batch 1 (Sprint 205 ∥ Sprint 206, 병렬 — 파일 충돌 없음):**
-- [ ] Sprint 205 (REQ-034 A): **Adapter 복구 + Drill-down API** — skill-builder.ts adapter 동기 생성(`toMcpAdapter`/`toOpenApiSpec` → R2 저장 → adapters 필드 주입) + `/admin/backfill-adapters` 기존 894건 재처리 + `GET /admin/skill-detail/:skillId` B/T/Q 원문 분해 API. 대상: `services/svc-skill/src/assembler/`, `services/svc-skill/src/routes/`, `services/svc-skill/src/index.ts`. **KPI**: 894건 전수 adapterHit=true, technical avg ≥0.3
-- [ ] Sprint 206 (REQ-034 B): **Technical Schema + Extraction 프롬프트 강화** — `@ai-foundry/types` ExtractionResult에 `apis[]`, `tables[]`, `dataFlows[]`, `errors[]` 4축 추가(Zod) + svc-extraction structure.ts 프롬프트에 Technical 섹션 additive 추가. 기존 Business 추출 유지. 대상: `packages/types/src/`, `services/svc-extraction/src/prompts/`. **KPI**: 샘플 5건 재추출 시 4축 JSON 생성 확인
+- [x] Sprint 205 (REQ-034 A): **Adapter 복구 + Drill-down API** — skill-builder.ts adapter 동기 생성(`toMcpAdapter`/`toOpenApiSpec` → R2 저장 → adapters 필드 주입) + `/admin/backfill-adapters` 기존 894건 재처리 + `GET /admin/skill-detail/:skillId` B/T/Q 원문 분해 API. 대상: `services/svc-skill/src/assembler/`, `services/svc-skill/src/routes/`, `services/svc-skill/src/index.ts`. **KPI**: 894건 전수 adapterHit=true, technical avg ≥0.3
+- [x] Sprint 206 (REQ-034 B): **Technical Schema + Extraction 프롬프트 강화** — `@ai-foundry/types` ExtractionResult에 `apis[]`, `tables[]`, `dataFlows[]`, `errors[]` 4축 추가(Zod) + svc-extraction structure.ts 프롬프트에 Technical 섹션 additive 추가. 기존 Business 추출 유지. 대상: `packages/types/src/`, `services/svc-extraction/src/prompts/`. **KPI**: 샘플 5건 재추출 시 4축 JSON 생성 확인
 
 **Batch 2 (Sprint 207, Batch 1 merge 후 순차):**
-- [ ] Sprint 207 (REQ-034 C): **Drill-down 페이지 + Assembler 주입 + Before/After** — `/poc/ai-ready/:skillId` 3탭 drill-down(B/T/Q Spec 원문 + 채점 signal) + svc-skill assembler에 Technical 원문 주입(`apis/tables/dataFlows/errors` → SkillPackage) + Before/After 재채점 비교 뷰. 대상: `apps/app-web/src/pages/`, `services/svc-skill/src/assembler/`. **KPI**: LPON AI-Ready passRate ≥50%(현재 23.6%), drill-down에서 B/T/Q 원문 확인
+- [x] Sprint 207 (REQ-034 C): **Drill-down 페이지 + Assembler 주입 + Before/After** — `/poc/ai-ready/:skillId` 3탭 drill-down(B/T/Q Spec 원문 + 채점 signal) + svc-skill assembler에 Technical 원문 주입(`apis/tables/dataFlows/errors` → SkillPackage) + Before/After 재채점 비교 뷰. 대상: `apps/app-web/src/pages/`, `services/svc-skill/src/assembler/`. **KPI**: LPON AI-Ready passRate ≥50%(현재 23.6%), drill-down에서 B/T/Q 원문 확인
+
+**Batch 3 (Sprint 208, Spec 문서 생성기):**
+- [x] Sprint 208 (REQ-034 D): **B/T/Q Spec 문서 생성기** — Template+LLM Hybrid 방식으로 추출 데이터를 사람이 읽을 수 있는 Spec 문서(Business: 업무규칙/프로세스/엔티티/용어사전, Technical: API/ERD/데이터흐름/에러, Quality: 성능/보안/추적성/검증)로 조립. `GET /skills/:id/spec/{business|technical|quality|all}` API (JSON+Markdown). OpenRouter→Claude 3 Haiku로 요약+Gap 코멘터리 생성. 대상: `services/svc-skill/src/spec-gen/` (신규 8파일, 1,593줄), `packages/utils/src/openrouter-client.ts`. **KPI**: LPON 3건 Skill B/T/Q Spec 생성 + LLM 보강 확인
 
 ---
 

@@ -39,6 +39,7 @@ import { handleGetOpenApiAdapter } from "./routes/openapi.js";
 import { handleEvaluateSkill, handleListEvaluations } from "./routes/evaluate.js";
 import { handleBackfillDepth, handleBackfillTrust, handleRebundle, handleBackfillAdapters, handleSkillDetail } from "./routes/admin.js";
 import { handleScoreAiReady } from "./routes/score-ai-ready.js";
+import { handleSkillSpec } from "./routes/spec.js";
 import {
   handleGeneratePrototype,
   handleListPrototypes,
@@ -204,6 +205,15 @@ export default {
           if (denied) return denied;
         }
         return await handleGetSkillStats(request, env);
+      }
+
+      // GET /skills/:id/spec/:type — B/T/Q Spec document generation
+      const specMatch = path.match(/^\/skills\/([^/]+)\/spec\/([^/]+)$/);
+      if (method === "GET" && specMatch) {
+        const specSkillId = specMatch[1];
+        const specType = specMatch[2];
+        if (!specSkillId || !specType) return new Response("Not Found", { status: 404 });
+        return await handleSkillSpec(request, env, specSkillId, specType);
       }
 
       // Match /skills/:id and /skills/:id/download

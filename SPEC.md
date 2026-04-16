@@ -447,7 +447,10 @@
 - [x] Sprint 208 (REQ-034 D): **B/T/Q Spec 문서 생성기** — Template+LLM Hybrid 방식으로 추출 데이터를 사람이 읽을 수 있는 Spec 문서(Business: 업무규칙/프로세스/엔티티/용어사전, Technical: API/ERD/데이터흐름/에러, Quality: 성능/보안/추적성/검증)로 조립. `GET /skills/:id/spec/{business|technical|quality|all}` API (JSON+Markdown). OpenRouter→Claude 3 Haiku로 요약+Gap 코멘터리 생성. 대상: `services/svc-skill/src/spec-gen/` (신규 8파일, 1,593줄), `packages/utils/src/openrouter-client.ts`. **KPI**: LPON 3건 Skill B/T/Q Spec 생성 + LLM 보강 확인
 
 **Batch 4 (Sprint 209, Org 집계 + UI):**
-- [ ] Sprint 209 (REQ-034 E): **Org 단위 B/T/Q 종합 Spec + UI** — Org 전체 skills를 집계하여 종합 Spec 문서 생성(`GET /admin/org-spec/:orgId/:type`). collector.ts 재활용. drill-down UI에 Spec 문서 탭 추가(`poc-ai-ready-detail.tsx`). org-spec 전용 페이지 신규(`/org-spec`). 대상: `services/svc-skill/src/spec-gen/` (org-spec 확장), `services/svc-skill/src/routes/` (admin 라우트), `apps/app-web/src/pages/` (UI). **KPI**: LPON org 종합 B/T/Q Spec 생성 + UI 확인
+- [x] Sprint 209 (REQ-034 E): **Org 단위 B/T/Q 종합 Spec + UI** — Org 전체 skills를 집계하여 종합 Spec 문서 생성(`GET /admin/org-spec/:orgId/:type`). collector.ts 재활용. drill-down UI에 Spec 문서 탭 추가(`poc-ai-ready-detail.tsx`). org-spec 전용 페이지 신규(`/org-spec`). 대상: `services/svc-skill/src/spec-gen/` (org-spec 확장), `services/svc-skill/src/routes/` (admin 라우트), `apps/app-web/src/pages/` (UI). **KPI**: LPON org 종합 B/T/Q Spec 생성 + UI 확인. **PR #7 merged, Match Rate 100%**
+
+**Batch 5 (Sprint 210, AI-Ready 채점기 + PoC 리포트):**
+- [ ] Sprint 210 (REQ-034 F): **AI-Ready 6기준 일괄 채점기 + PoC 리포트** — LPON 859개 skill 대상 AI-Ready 6기준(completeness/consistency/testability/implementability/traceability/adaptability) 일괄 채점 스크립트 + 결과 리포트 페이지. Tacit Interview Agent 포맷 명세 + Handoff 패키지 검증 포맷 명세. 4/17 10:00 보고 PoC 준비. 대상: `services/svc-skill/src/` (채점 로직), `apps/app-web/src/pages/` (리포트 UI). **KPI**: LPON 전체 skill 6기준 채점 완료, 완결성 ≥80%, 6기준 통과율 ≥90%
 
 ---
 

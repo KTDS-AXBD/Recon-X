@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 204 (2026-04-16)
+**Sprint 209~210 — Org B/T/Q Spec + AI-Ready 채점기 + 인프라 개선**:
+- ✅ Sprint 209 (PR #7): Org 단위 B/T/Q 종합 Spec API + UI (`/org-spec` 페이지, drill-down Spec 탭) — +1,111줄
+- ✅ Sprint 210 (PR #8): AI-Ready 6기준 채점기 보정 + PoC 리포트 강화 + Tacit/Handoff 포맷 명세 — +953줄
+- ✅ 마크다운 렌더링 수정: `<pre>` raw 출력 → `MarkdownContent` 컴포넌트 (org-spec, poc-ai-ready-detail)
+- ✅ Org Spec UX: 탭 진입 시 자동 로딩 + 마크다운 다운로드 버튼
+- ✅ E2E: `/org-spec`, `/poc/ai-ready` 라우트 커버리지 추가 (47/47 PASS, 100% 커버리지)
+- ✅ Gap Analysis: Sprint 209 100%, Sprint 210 95%, 종합 97.5%
+- ✅ 인프라: `_sprint_ensure_monitor()` 글로벌 fallback + `sprint-watch-daemon.sh` 자동 Gist 모니터
+
+**검증 결과**: typecheck PASS, E2E 47/47 PASS
+
 ### 세션 203 (2026-04-16)
 **Sprint 208 — B/T/Q Spec 문서 생성기 + OpenRouter 연동**:
 - ✅ Plan 문서: `docs/01-plan/features/btq-spec-generator.plan.md`

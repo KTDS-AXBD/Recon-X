@@ -36,7 +36,7 @@
 - 세션 196~198: API Gateway(Hono+JWT) + 11 Service Bindings + 하이브리드 라우팅 완성
 - 세션 199: 도메인 `ai-foundry.minu.best` → `rx.minu.best` 리브랜딩 (AIF-REQ-032)
 - 세션 200: Pilot Core 종료 선언 (REQ 24/32 DONE, E2E 43/43, 0 flaky), AIF-REQ-028 소급 DONE, v0.7.0 태그 + 회고
-- 세션 201 (2026-04-16): AIF-REQ-034 Decode-X Deep Dive PRD(82/100) + PoC 채점기 구현/배포 + LPON 894건 실측 → "B 91.8%, T 4.3%, Q 27% — Technical 강화가 핵심 Gap" 정량 확인. archive/phase5-separated-svcs 태그로 분리 5 SVC 보존. eslint/harness-kit 블록 해소.
+- 세션 201 (2026-04-16): AIF-REQ-034 Decode-X Deep Dive PRD(82/100) + PoC 채점기 구현/배포 + LPON 894건 실측 → "B 91.8%, T 4.3%, Q 27% — Technical 강화가 핵심 Gap" 정량 확인. archive/phase5-separated-svcs 태그로 분리 5 SVC 보존. eslint/harness-kit 블록 해소. 브라우저 대시보드 rx.minu.best/poc/ai-ready 배포.
 
 ## 인프라 상태 (v0.7.0 기준 스냅샷)
 

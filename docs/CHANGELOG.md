@@ -52,6 +52,7 @@
 - ✅ lint 복구: `@axbd/harness-kit` 제거 + 기존 unused var 6곳 fix
 - ✅ svc-skill-production@`cc2f9d29` 배포 + LPON 894건 채점 (83.5초)
 - ✅ archive tag `archive/phase5-separated-svcs` → `344fed3` (분리 5 SVC 소스 보존)
+- ✅ app-web `/poc/ai-ready` 대시보드 추가 (Recharts 기반 4카드 + 6기준 바차트 + BTQ + 샘플 테이블), rx.minu.best/poc/ai-ready 배포
 
 ### PoC 결과 (핵심 수치)
 - 전체 AI-Ready pass rate: **23.6%** (211/894)

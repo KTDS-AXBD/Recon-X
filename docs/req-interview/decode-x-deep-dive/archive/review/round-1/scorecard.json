@@ -1,0 +1,167 @@
+{
+  "round": 1,
+  "timestamp": "2026-04-15T23:38:54.408Z",
+  "total": 79,
+  "verdict": "추가 검토 권장",
+  "emoji": "🔄",
+  "item1": {
+    "score": 20,
+    "max": 20,
+    "reason": "초안 검토 — 스킵(만점)",
+    "skipped": true,
+    "totalIssues": 73,
+    "weightedIssues": 97,
+    "density": 18.7,
+    "severityBreakdown": {
+      "flaws": 12,
+      "gaps": 27,
+      "risks": 34,
+      "weighted": 97,
+      "raw": 73
+    }
+  },
+  "item2": {
+    "score": 15,
+    "max": 30,
+    "details": [
+      {
+        "name": "ChatGPT",
+        "verdict": "Conditional",
+        "ratio": 0.5
+      },
+      {
+        "name": "Gemini",
+        "verdict": "Conditional",
+        "ratio": 0.5
+      },
+      {
+        "name": "DeepSeek",
+        "verdict": "Conditional",
+        "ratio": 0.5
+      }
+    ],
+    "readyPercent": 50,
+    "count": 3
+  },
+  "item3": {
+    "score": 27,
+    "max": 30,
+    "details": [
+      {
+        "name": "핵심 문제 정의",
+        "max": 5,
+        "grade": "충실",
+        "matchedKeywords": [
+          "as-is",
+          "to-be",
+          "시급",
+          "현재",
+          "목표",
+          "현재 상태",
+          "목표 상태",
+          "문제"
+        ],
+        "score": 5
+      },
+      {
+        "name": "사용자/이해관계자",
+        "max": 5,
+        "grade": "충실",
+        "matchedKeywords": [
+          "니즈",
+          "역할",
+          "사용 환경",
+          "사용자",
+          "이해관계자",
+          "주 사용자",
+          "기술 수준"
+        ],
+        "score": 5
+      },
+      {
+        "name": "핵심 기능 범위",
+        "max": 5,
+        "grade": "충실",
+        "matchedKeywords": [
+          "p0",
+          "must",
+          "핵심",
+          "must have",
+          "기능",
+          "hitl"
+        ],
+        "score": 5
+      },
+      {
+        "name": "Out-of-scope",
+        "max": 4,
+        "grade": "충실",
+        "matchedKeywords": [
+          "제외",
+          "scope",
+          "제외 범위"
+        ],
+        "score": 4
+      },
+      {
+        "name": "KPI/성공 기준",
+        "max": 6,
+        "grade": "최소",
+        "matchedKeywords": [
+          "kpi"
+        ],
+        "score": 3
+      },
+      {
+        "name": "MVP 기준",
+        "max": 5,
+        "grade": "충실",
+        "matchedKeywords": [
+          "[ ]",
+          "최소",
+          "mvp"
+        ],
+        "score": 5
+      }
+    ]
+  },
+  "item4": {
+    "score": 17,
+    "max": 20,
+    "details": [
+      {
+        "name": "사용자 관점",
+        "max": 7,
+        "grade": "최소",
+        "matchedKeywords": [
+          "사용 환경"
+        ],
+        "score": 4
+      },
+      {
+        "name": "기술 관점",
+        "max": 7,
+        "grade": "충실",
+        "matchedKeywords": [
+          "기술 스택",
+          "api",
+          "인프라",
+          "프론트엔드",
+          "백엔드"
+        ],
+        "score": 7
+      },
+      {
+        "name": "비즈니스 관점",
+        "max": 6,
+        "grade": "충실",
+        "matchedKeywords": [
+          "비용",
+          "예산",
+          "사업"
+        ],
+        "score": 6
+      }
+    ]
+  }
+}

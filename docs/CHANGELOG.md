@@ -39,6 +39,39 @@
 
 ---
 
+## 세션 201 — 2026-04-16
+
+**AIF-REQ-034 Decode-X Deep Dive — PRD + PoC 완료** (보고: 2026-04-17 10:00)
+
+### 수행
+- ✅ `/ax:req-interview` 전 과정 (인터뷰 5파트 → PRD v1 → API 검토 Round 1~2 → Phase 5 정리)
+- ✅ PRD 최종 스코어 **82/100** (R2, 3 AI Conditional, 10/26 오픈이슈 정리)
+- ✅ 6기준 채점기 설계 + 재설계(Completeness B/T/Q는 adapters 의존 제거 → 정책 텍스트 기반)
+- ✅ 구현: `scoring/{ai-ready.ts, keywords.ts, ai-ready.test.ts}` + `routes/score-ai-ready.ts` (818줄 신규)
+- ✅ packages/types: `AiReadyScore` Zod 스키마 + 6기준 상수
+- ✅ lint 복구: `@axbd/harness-kit` 제거 + 기존 unused var 6곳 fix
+- ✅ svc-skill-production@`cc2f9d29` 배포 + LPON 894건 채점 (83.5초)
+- ✅ archive tag `archive/phase5-separated-svcs` → `344fed3` (분리 5 SVC 소스 보존)
+
+### PoC 결과 (핵심 수치)
+- 전체 AI-Ready pass rate: **23.6%** (211/894)
+- 6기준: MR 100% / SC 96% / **T 38.5%** / TR 96% / **C 3.1%** / HR 100%
+- BTQ: **B=91.8% / T=4.3% / Q=27.0%** pass
+- 결론: "B는 잘 뽑는데 T가 거의 없다" → Technical extraction 강화가 정식 구현 최우선
+
+### 검증 결과
+- ✅ typecheck 14/14
+- ✅ lint 9/9 (harness-kit import 제거 + 6곳 fix 포함)
+- ✅ tests 332/332 (svc-skill 신규 15 케이스 포함)
+
+### SPEC / REQ / TD
+- REQ-034 PLANNED 등록 (P0)
+- TD 변경 없음
+
+### 다음 세션 후보
+- 4/17 10시 보고 → 승인 시 REQ-034 정식 구현 착수 (Technical extraction 강화 우선)
+- PoC 남은 논의: Skill Package 역호환 방식 (기존 사용자 조사)
+
 ## 세션 200 — 2026-04-07
 **E2E 테스트 수정 + AIF-REQ-032 DONE 전환**:
 - ✅ Health check: 7 Workers + Gateway + Pages + CORS 전체 200 OK

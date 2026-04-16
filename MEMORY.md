@@ -15,6 +15,7 @@
 
 | REQ | 우선순위 | 요지 |
 |-----|:--------:|------|
+| AIF-REQ-034 | P0 | **Decode-X Deep Dive** — 3종 Spec Schema + Tacit Interview Agent + Handoff 패키지 검증. PoC 완료(LPON 894건 pass rate 23.6%, T=10.5% 확정 Gap), 4/17 10시 보고 → 승인 후 정식 구현. `docs/req-interview/decode-x-deep-dive/prd-final.md` |
 | AIF-REQ-026 | P1 | Foundry-X 통합 — AI Foundry↔Foundry-X 양방향 제품군 통합. Phase 1-3 MCP 완료, Phase 2 Sprint 1(반제품 생성) 완료. 후속 Sprint 미확정 |
 | AIF-REQ-018 | P1 | 진행 현황 리포트 UX 개선 — 3단계 구조 + accordion + 시각화 |
 | AIF-REQ-002 | P3 | Anthropic vs OpenAI extraction 품질 비교 (크레딧 충전 대기) |
@@ -35,7 +36,7 @@
 - 세션 196~198: API Gateway(Hono+JWT) + 11 Service Bindings + 하이브리드 라우팅 완성
 - 세션 199: 도메인 `ai-foundry.minu.best` → `rx.minu.best` 리브랜딩 (AIF-REQ-032)
 - 세션 200: Pilot Core 종료 선언 (REQ 24/32 DONE, E2E 43/43, 0 flaky), AIF-REQ-028 소급 DONE, v0.7.0 태그 + 회고
-- 이후 세션: v0.7.0 이후 첫 작업 세션 (현재)
+- 세션 201 (2026-04-16): AIF-REQ-034 Decode-X Deep Dive PRD(82/100) + PoC 채점기 구현/배포 + LPON 894건 실측 → "B 91.8%, T 4.3%, Q 27% — Technical 강화가 핵심 Gap" 정량 확인. archive/phase5-separated-svcs 태그로 분리 5 SVC 보존. eslint/harness-kit 블록 해소.
 
 ## 인프라 상태 (v0.7.0 기준 스냅샷)
 

@@ -38,6 +38,7 @@ import { handleExportCc } from "./routes/export-cc.js";
 import { handleGetOpenApiAdapter } from "./routes/openapi.js";
 import { handleEvaluateSkill, handleListEvaluations } from "./routes/evaluate.js";
 import { handleBackfillDepth, handleBackfillTrust, handleRebundle } from "./routes/admin.js";
+import { handleScoreAiReady } from "./routes/score-ai-ready.js";
 import {
   handleGeneratePrototype,
   handleListPrototypes,
@@ -92,6 +93,11 @@ export default {
       // POST /admin/rebundle — LLM-based skill bundling
       if (method === "POST" && path === "/admin/rebundle") {
         return await handleRebundle(request, env, ctx);
+      }
+
+      // POST /admin/score-ai-ready — AIF-REQ-034 AI-Ready 6기준 일괄 채점
+      if (method === "POST" && path === "/admin/score-ai-ready") {
+        return await handleScoreAiReady(request, env);
       }
 
       // ── Prototype (Working Prototype Generator) ──

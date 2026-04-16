@@ -136,6 +136,61 @@ export const EvaluateBenchmarkResultSchema = z.object({
 
 export type EvaluateBenchmarkResult = z.infer<typeof EvaluateBenchmarkResultSchema>;
 
+// ── AI-Ready 6기준 채점 (REQ-034 Deep Dive PoC) ─────────────────────
+
+export const AI_READY_CRITERIA = [
+  "machineReadable",
+  "semanticConsistency",
+  "testable",
+  "traceable",
+  "completeness",
+  "humanReviewable",
+] as const;
+
+export type AiReadyCriterion = (typeof AI_READY_CRITERIA)[number];
+
+export const CriterionScoreSchema = z.object({
+  score: z.number().min(0).max(1),
+  pass: z.boolean(),
+  signals: z.record(z.union([z.number(), z.boolean(), z.string()])),
+});
+export type CriterionScore = z.infer<typeof CriterionScoreSchema>;
+
+export const AiReadyScoreSchema = z.object({
+  skillId: z.string().uuid(),
+  domain: z.string(),
+  criteria: z.object({
+    machineReadable: CriterionScoreSchema,
+    semanticConsistency: CriterionScoreSchema,
+    testable: CriterionScoreSchema,
+    traceable: CriterionScoreSchema,
+    completeness: CriterionScoreSchema.extend({
+      btq: z.object({
+        business: z.number().min(0).max(1),
+        technical: z.number().min(0).max(1),
+        quality: z.number().min(0).max(1),
+      }),
+    }),
+    humanReviewable: CriterionScoreSchema,
+  }),
+  overall: z.number().min(0).max(1),
+  passAiReady: z.boolean(),
+  failedCriteria: z.array(z.string()),
+});
+export type AiReadyScore = z.infer<typeof AiReadyScoreSchema>;
+
+// Pass thresholds per criterion (must match scoring/ai-ready.ts)
+export const AI_READY_THRESHOLDS: Record<AiReadyCriterion, number> = {
+  machineReadable: 0.9,
+  semanticConsistency: 0.7,
+  testable: 0.7,
+  traceable: 0.8,
+  completeness: 0.67,
+  humanReviewable: 0.6,
+};
+
+export const AI_READY_OVERALL_THRESHOLD = 0.8;
+
 // ── CC Skill Export (REQ-025) ─────────────────────────────────────────
 
 export const ExportCcRequestSchema = z.object({

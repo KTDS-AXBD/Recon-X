@@ -2,6 +2,26 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 209 (2026-04-20)
+**Phase 0 Day 3 Closure — 1인 겸임 체제 재정의 후 조기 종료 + REQ-035 IN_PROGRESS 전환**:
+- ✅ `/ax:session-start "Day 3 FX PM 지정 요청"`: MEMORY.md 자동 로딩 + SPEC.md §1~§5+§7+§8+§10 선택 읽기. Pane baseline 스냅샷 생성. Stale monitor 없음 (Foundry-X-309 MERGED, monitor 비어있음).
+- ✅ **사용자 결정**: FX PM 지정 완료 — Sinclair 겸임 (`sinclairseo@gmail.com`). Phase 0 완료 선언 방향 확정 (AskUserQuestion 2회).
+- ✅ **Phase 0 재정의 정책**: "1인 체제로 재정의 후 완료" 채택 — 9조건 DONE 1(C1) + WAIVED 2(R1/R3, 1인 체제 전제 불요) + DEFERRED 6(C2/C3/R2/T1~T3, Phase 1/2 중 재가동). Gate 성격 전환: 조직 승인 Gate → Phase 1 Sprint 3 말 기술 점검 Gate.
+- ✅ **신규 문서**: `docs/req-interview/decode-x-v1.2/phase-0-closure-report.md` v1.0 (245줄) — 1인 체제 재정의 근거, 9조건 상태 재분류, 세션별 의사결정 기록, 리스크 보드 이관(P0-R* → P1-R*), Sprint 1~5 Backlog 초안, 원설계 대비 변경 요약 부록 포함.
+- ✅ **phase-0-kickoff.md v1.4**: Closure 반영 상태로 전환. §4.1 "1인 체제 Gate 재정의" 섹션 추가, §6.5 Progress Tracker 9조건 상태 전면 갱신 + Day 3 수행 내역 추가, 문서 이력 v1.4.
+- ✅ **SPEC.md §1 Current Phase 갱신**: "Phase 0 Week 1 Day 2 진행" → "Phase 0 Closure 완료, Phase 1 착수 준비". FX PM 지정 완료 병기, Closure/Kickoff 문서 연결.
+- ✅ **SPEC.md §7 AIF-REQ-035**: PLANNED → **IN_PROGRESS**. Phase 0 조기 종료 + 재정의 근거를 테이블 본문에 반영. Gate Review 변경 병기.
+- ✅ **MEMORY session_context**: sliding window 갱신 (세션 206 제거, 세션 209 추가). 활성 맥락을 "Phase 0 Week 1 Day 2"에서 "Phase 1 착수 준비 + Sprint 1~5 Backlog 초안"으로 교체.
+- ✅ **Phase 1 착수일 단축**: 원계획 2026-05-16 → **2026-04-21** (3.5주 단축).
+- ✅ **TaskCreate 4건** 진행: (1) Closure Report, (2) phase-0-kickoff v1.4, (3) SPEC §1/§7, (4) MEMORY session_context — 전건 completed.
+
+**검증 결과**:
+- ✅ 코드 변경 없음 (문서 3종만 변경), typecheck/lint/test 영향 없음
+- ✅ SPEC.md 실측 수치 변동 없음 (7 Workers / 20 migrations latest 0008 / 110 test files 유지)
+- ✅ CLAUDE.md Status 블록 Phase 0 Closure 상태 반영
+
+---
+
 ### 세션 208 (2026-04-18)
 **Phase 0 Day 2 — C1 MoU Q1 Plumb 버전 확정 + v0.2 작성**:
 - ✅ `/ax:daily-check` 환경 점검: 환경 양호, stale sprint signal 1건 자동 삭제, 플러그인 drift=0, SPEC 수치 실측 일치 (7 Workers, 20 migrations, latest 0008)

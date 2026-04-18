@@ -4,10 +4,11 @@
 **기반 PRD**: `docs/req-interview/decode-x-v1.2/prd-v2.md` (v1.3)
 **작성일**: 2026-04-18
 **작성자**: Sinclair + Claude (Round 1~2 AI 검토 반영)
-**상태**: ✅ **승인·착수** — 본부장 검토 "진행" 결정 (2026-04-18 세션 207)
+**상태**: ✅ **Closure 완료 (v1.4)** — 1인 겸임 체제 재정의 후 조기 종료 (2026-04-20 세션 209). 상세 근거: `phase-0-closure-report.md` v1.0
 **Phase 0 Day 1**: 2026-04-18 (즉시 착수, 초기 계획 2026-04-25 대비 1주 앞당김)
-**Gate Review (Day 28)**: 2026-05-15 (±3일 Buffer)
-**Phase 1 Go/No-Go 결정일**: 2026-05-16
+**Phase 0 종료일**: 2026-04-20 (Day 3, 조기 종료 — 원계획 Day 28 대비 25일 단축)
+**~~Gate Review (Day 28)~~**: ~~2026-05-15 (±3일 Buffer)~~ → **Phase 1 Sprint 3 말 기술 점검으로 성격 변경** (세션 209)
+**Phase 1 착수일**: 2026-04-21 (~~2026-05-16~~에서 3.5주 단축)
 
 ---
 
@@ -109,6 +110,21 @@ Day 28 (2026-05-15) │ Executive Sponsor Kick-off Gate Review + Phase 1 Go/No-G
 - C1 Foundry-X MoU 또는 C2 고객사 데이터 접근 미체결
 - T1 Foundry-X E2E 실패로 R13(Foundry-X 버전 스큐) Blocker 승격
 
+### 4.1 1인 체제 Gate 재정의 (v1.4, 2026-04-20)
+
+> 원설계 GO 기준은 12인 팀 체제 전제. Closure 시점(세션 209)에 1인 겸임 체제로 재정의:
+
+**GO (Phase 1 착수)** — Closure 시점 판정:
+- ✅ 실행 체제 확정 (Sinclair 1인 겸임, FX PM 동일인)
+- ✅ 기 확보 자산(LPON/퇴직연금)으로 PoC 데이터 충분
+- ✅ 기술 기반(AIF-REQ-026 MCP + AIF-REQ-034 Deep Dive) Phase 1 착수 전 준비 완료
+- ✅ DEFERRED 6건 각각 Phase 1/2 내 재가동 시점 명시 (Closure Report §2)
+- ✅ Mission Pivot 리스크(R4 결정적 생성) T3를 Phase 1 필수 PoC로 편입
+
+**재평가 Gate (Phase 1 중간)** — 원 Day 28 Gate의 대체:
+- **Phase 1 Sprint 3 말** (2026-06-01): T1 녹색 + T3 2종 이상 PoC 성공 여부 평가
+- 미달 시 Phase 2 진입 전 추가 Gate 트리거
+
 ---
 
 ## 5. 산출물 인벤토리 (Phase 0 Closure Report 동봉)
@@ -157,21 +173,26 @@ Day 28 (2026-05-15) │ Executive Sponsor Kick-off Gate Review + Phase 1 Go/No-G
 
 > Week 단위 갱신. 9개 조건 현황 한눈에 파악.
 
-### 9개 조건 상태 현황판
+### 9개 조건 상태 현황판 (Closure 시점, 2026-04-20)
 
-| # | 조건 | 담당 | 상태 | 시작 | 예정 완료 | Blocker |
-|---|------|------|:----:|:----:|:---------:|--------|
-| C1 | Foundry-X MoU 체결 | Decode-X Lead × FX PM | 🔄 IN_PROGRESS | 2026-04-18 | 2026-04-24 | Foundry-X PM 지정 대기 (Plumb 버전은 Day 2에 `FX-SPEC-002 v1.0 @ e5c7260`으로 확정) |
-| C2 | 고객사 데이터 접근 권한 서명 | 본부장 + 고객사 CISO | ⬜ TODO | - | 2026-05-01 | 법무 접촉 선행 필요 |
-| C3 | 법무·CISO 검토 완료 | InfoSec + 고객사 법무 | ⬜ TODO | - | 2026-05-01 | 법무 검토 평균 2~3주 |
-| R1 | Domain Archeologist 1 FTE 확보 | HR + 본부장 | ⬜ TODO | - | 2026-05-08 | 15년차+ SME 희소 |
-| R2 | LLM 예산·프라이빗 모델 PoC | 재무 + Decode-X Lead | ⬜ TODO | - | 2026-05-08 | 자가호스트 인프라 비용 |
-| R3 | 핵심 팀 12명 확정 | 본부장 + HR | ⬜ TODO | - | 2026-05-15 | - |
-| T1 | Foundry-X Plumb E2E 1건 녹색 | Platform × FX VCO | ⬜ TODO | - | 2026-05-01 | AIF-REQ-026 Phase 1-3 완료 |
-| T2 | 프로토타입 Shadow Mode 인프라 | Platform | ⬜ TODO | - | 2026-05-08 | - |
-| T3 | 결정적 생성 3종 PoC | Harness + LA | ⬜ TODO | - | 2026-05-15 | - |
+> **1인 겸임 체제 재정의 반영**. 상세 근거: `phase-0-closure-report.md` §2.
+> 원설계는 12인 팀 전제 → 현실(Sinclair 1인)에 맞춰 DONE/WAIVED/DEFERRED로 재분류.
 
-**범례**: ⬜ TODO / 🔄 IN_PROGRESS / ✅ DONE / ❌ BLOCKED / ⏭️ DEFERRED
+| # | 조건 | 담당 | 상태 | 근거 / 재가동 시점 |
+|---|------|------|:----:|---------------------|
+| C1 | Foundry-X MoU 체결 | Decode-X Lead × FX PM | ✅ **DONE** | FX PM = Sinclair(sinclairseo@gmail.com) 겸임 확정. MoU v0.2 내부 기준 문서로 유지, self-sign. Plumb 계약 `FX-SPEC-002 v1.0 @ e5c7260` 고정 |
+| C2 | 고객사 데이터 접근 권한 서명 | 본부장 + 고객사 CISO | ⏭️ **DEFERRED** | Phase 2 착수 2주 전 재가동. 현 자산(LPON 859 skills + 퇴직연금)으로 Phase 1 PoC 충분 |
+| C3 | 법무·CISO 검토 완료 | InfoSec + 고객사 법무 | ⏭️ **DEFERRED** | C2와 동기화 (Phase 2 진입 전) |
+| R1 | Domain Archeologist 1 FTE 확보 | HR + 본부장 | ❎ **WAIVED** | 1인 체제 — Sinclair가 DA 역할 겸임. Tacit Interview Agent(AIF-REQ-034)로 SME 의존도 완화 |
+| R2 | LLM 예산·프라이빗 모델 PoC | 재무 + Decode-X Lead | ⏭️ **DEFERRED** | Phase 1 Sprint 2. 현 OpenRouter + 4-provider fallback 운영 중, 예산 상한은 사용량 누적 후 조정 |
+| R3 | 핵심 팀 12명 확정 | 본부장 + HR | ❎ **WAIVED** | 1인 체제 유지. Phase 2 확장 시 재산정 |
+| T1 | Foundry-X Plumb E2E 1건 녹색 | Platform × FX VCO | ⏭️ **DEFERRED** | Phase 1 Sprint 1 첫 과업. AIF-REQ-026 Phase 1-3 MCP 통합 완료 기반 |
+| T2 | 프로토타입 Shadow Mode 인프라 | Platform | ⏭️ **DEFERRED** | Phase 1 Sprint 2~3 |
+| T3 | 결정적 생성 3종 PoC | Harness + LA | ⏭️ **DEFERRED** | Phase 1 Sprint 3~4 필수 PoC (Mission Pivot 리스크 R4 대응 핵심) |
+
+**범례**: ⬜ TODO / 🔄 IN_PROGRESS / ✅ DONE / ❎ WAIVED (1인 체제 전제 불요) / ⏭️ DEFERRED (Phase 1/2 중 재가동) / ❌ BLOCKED
+
+**충족 분포**: DONE 1 + WAIVED 2 + DEFERRED 6 + OPEN 0 → **1인 체제 Gate 기준 GO**
 
 ### Day 1 (2026-04-18, 세션 207) 수행 내역
 
@@ -192,9 +213,7 @@ Day 28 (2026-05-15) │ Executive Sponsor Kick-off Gate Review + Phase 1 Go/No-G
 **Week 1 Actions (2026-04-19 ~ 04-24)**:
 - ✅ C1 MoU 초안 v0.1 작성 — `docs/contracts/foundry-x-mou.v0.1-draft.md` (Open Questions 7건 포함)
 - ✅ **Day 2 (2026-04-19, 세션 208)**: Q1 Plumb 버전 확정 조사 — Foundry-X 레포 조사로 실제 계약 문서(`FX-SPEC-002 plumb-output-contract.md v1.0` @ commit `e5c7260`, 2026-03-16) 확인. v0.1의 "v8 기준" 표기는 Foundry-X PRD(`FX-SPEC-PRD-V8`)와의 혼동이었음을 정정. MoU v0.2 내부 정리판 작성 → `docs/contracts/foundry-x-mou.v0.2-draft.md` (Q1 해소, §3.1 상세화, §4.2 Frozen Baseline에 commit SHA 병기, §6.3 No-Go 조건 정정)
-- 🔄 C1 다음 단계 (Day 3~5): Foundry-X PM 지정 요청 → v0.3 협상판(Q2~Q7 해소) → 서명 대기
-- 🔄 T1 Plumb PoC 준비 (AIF-REQ-026 MCP 통합 상태 점검 + 샘플 Skill 1건 선정)
-- 🔄 C2/C3 고객사 법무 선행 접촉 (평균 2~3주 리스크 완화, P0-R1 선제 대응)
+- ✅ **Day 3 (2026-04-20, 세션 209)**: **Phase 0 Closure 선언** — Foundry-X PM 지정 완료(Sinclair 겸임, `sinclairseo@gmail.com`)로 C1 Blocker 최종 해소. 1인 겸임 체제 현실에 맞춰 9조건을 DONE 1 + WAIVED 2 + DEFERRED 6으로 재정의. Gate 기준을 "조직 승인 Gate"에서 "Phase 1 Sprint 3 말 기술 점검 Gate"로 전환. Closure Report v1.0 작성 → `phase-0-closure-report.md`. AIF-REQ-035 PLANNED → **IN_PROGRESS** 전환. Phase 1 착수일 2026-05-16 → **2026-04-21** (3.5주 단축)
 
 ### 리스크 보드 (Phase 0 내부)
 
@@ -246,8 +265,9 @@ Day 28 (2026-05-15) │ Executive Sponsor Kick-off Gate Review + Phase 1 Go/No-G
 
 ## 문서 이력
 
+- **v1.4 (2026-04-20, 세션 209 Day 3)**: **Phase 0 Closure 반영** — 상태 "Closure 완료"로 전환, 1인 겸임 체제 재정의로 9조건 DONE 1 / WAIVED 2 / DEFERRED 6 분류. §4.1 1인 체제 Gate 재정의 섹션 추가. §6.5 Progress Tracker에 Day 3 수행 내역(PM 지정 Sinclair 겸임, Closure Report v1.0 작성, REQ-035 IN_PROGRESS 전환) 반영. 관련 신규 문서: `phase-0-closure-report.md` v1.0 (Sinclair + Claude)
 - **v1.3 (2026-04-19, 세션 208 Day 2)**: §6.5 Progress Tracker에 Day 2 수행 내역 반영 — C1 Q1 Plumb 버전 확정 조사 완료 (`FX-SPEC-002 v1.0 @ e5c7260`), MoU v0.2 내부 정리판 작성. C1 Blocker에서 Plumb 버전 항목 제거 (Foundry-X PM 지정만 잔여) (Sinclair + Claude)
 - **v1.2 (2026-04-18, 세션 207 Day 1)**: §6.5 Progress Tracker 신설 — 9개 조건 상태 현황판, Day 1 수행 내역(PRD v1.3 + 검토 2라운드 + SPEC REQ-035 + TD-13~15 + infra-selfcheck 9/9), Week 1 Actions, 리스크 보드(P0-R1~R5) (Sinclair + Claude)
 - **v1.1 (2026-04-18, 세션 207)**: 본부장 "진행" 결정 반영 — 상태 "승인·착수", Day 1=2026-04-18, Gate Review 2026-05-15 확정. SPEC AIF-REQ-035 PLANNED 사전 등록 연계 (Sinclair + Claude)
 - **v1.0 (2026-04-18)**: 초안 — Round 1~2 AI 검토 Conditional 조건을 Phase 0 실행 체크리스트로 구체화 (Sinclair + Claude)
-- **다음 갱신**: Week 1 말 (2026-04-24) C1 MoU 초안 + T1 Plumb PoC 결과 반영 (v1.3)
+- **다음 갱신**: Phase 1 Sprint 1 착수 후 (2026-04-21~) — 세션별 진척 대신 `phase-0-closure-report.md` + Sprint Backlog 문서로 이관

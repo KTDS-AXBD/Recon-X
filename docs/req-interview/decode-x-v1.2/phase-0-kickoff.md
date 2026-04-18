@@ -161,7 +161,7 @@ Day 28 (2026-05-15) │ Executive Sponsor Kick-off Gate Review + Phase 1 Go/No-G
 
 | # | 조건 | 담당 | 상태 | 시작 | 예정 완료 | Blocker |
 |---|------|------|:----:|:----:|:---------:|--------|
-| C1 | Foundry-X MoU 체결 | Decode-X Lead × FX PM | 🔄 IN_PROGRESS | 2026-04-18 | 2026-04-24 | Foundry-X PM 지정 + Plumb major 버전 확정 대기 |
+| C1 | Foundry-X MoU 체결 | Decode-X Lead × FX PM | 🔄 IN_PROGRESS | 2026-04-18 | 2026-04-24 | Foundry-X PM 지정 대기 (Plumb 버전은 Day 2에 `FX-SPEC-002 v1.0 @ e5c7260`으로 확정) |
 | C2 | 고객사 데이터 접근 권한 서명 | 본부장 + 고객사 CISO | ⬜ TODO | - | 2026-05-01 | 법무 접촉 선행 필요 |
 | C3 | 법무·CISO 검토 완료 | InfoSec + 고객사 법무 | ⬜ TODO | - | 2026-05-01 | 법무 검토 평균 2~3주 |
 | R1 | Domain Archeologist 1 FTE 확보 | HR + 본부장 | ⬜ TODO | - | 2026-05-08 | 15년차+ SME 희소 |
@@ -191,7 +191,8 @@ Day 28 (2026-05-15) │ Executive Sponsor Kick-off Gate Review + Phase 1 Go/No-G
 
 **Week 1 Actions (2026-04-19 ~ 04-24)**:
 - ✅ C1 MoU 초안 v0.1 작성 — `docs/contracts/foundry-x-mou.v0.1-draft.md` (Open Questions 7건 포함)
-- 🔄 C1 다음 단계: Foundry-X PM 지정 요청 + v0.2 협상 착수 (Plumb major 버전·Sync Meeting 일정 확정)
+- ✅ **Day 2 (2026-04-19, 세션 208)**: Q1 Plumb 버전 확정 조사 — Foundry-X 레포 조사로 실제 계약 문서(`FX-SPEC-002 plumb-output-contract.md v1.0` @ commit `e5c7260`, 2026-03-16) 확인. v0.1의 "v8 기준" 표기는 Foundry-X PRD(`FX-SPEC-PRD-V8`)와의 혼동이었음을 정정. MoU v0.2 내부 정리판 작성 → `docs/contracts/foundry-x-mou.v0.2-draft.md` (Q1 해소, §3.1 상세화, §4.2 Frozen Baseline에 commit SHA 병기, §6.3 No-Go 조건 정정)
+- 🔄 C1 다음 단계 (Day 3~5): Foundry-X PM 지정 요청 → v0.3 협상판(Q2~Q7 해소) → 서명 대기
 - 🔄 T1 Plumb PoC 준비 (AIF-REQ-026 MCP 통합 상태 점검 + 샘플 Skill 1건 선정)
 - 🔄 C2/C3 고객사 법무 선행 접촉 (평균 2~3주 리스크 완화, P0-R1 선제 대응)
 
@@ -245,6 +246,7 @@ Day 28 (2026-05-15) │ Executive Sponsor Kick-off Gate Review + Phase 1 Go/No-G
 
 ## 문서 이력
 
+- **v1.3 (2026-04-19, 세션 208 Day 2)**: §6.5 Progress Tracker에 Day 2 수행 내역 반영 — C1 Q1 Plumb 버전 확정 조사 완료 (`FX-SPEC-002 v1.0 @ e5c7260`), MoU v0.2 내부 정리판 작성. C1 Blocker에서 Plumb 버전 항목 제거 (Foundry-X PM 지정만 잔여) (Sinclair + Claude)
 - **v1.2 (2026-04-18, 세션 207 Day 1)**: §6.5 Progress Tracker 신설 — 9개 조건 상태 현황판, Day 1 수행 내역(PRD v1.3 + 검토 2라운드 + SPEC REQ-035 + TD-13~15 + infra-selfcheck 9/9), Week 1 Actions, 리스크 보드(P0-R1~R5) (Sinclair + Claude)
 - **v1.1 (2026-04-18, 세션 207)**: 본부장 "진행" 결정 반영 — 상태 "승인·착수", Day 1=2026-04-18, Gate Review 2026-05-15 확정. SPEC AIF-REQ-035 PLANNED 사전 등록 연계 (Sinclair + Claude)
 - **v1.0 (2026-04-18)**: 초안 — Round 1~2 AI 검토 Conditional 조건을 Phase 0 실행 체크리스트로 구체화 (Sinclair + Claude)

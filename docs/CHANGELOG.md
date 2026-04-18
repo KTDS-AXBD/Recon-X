@@ -2,6 +2,25 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 208 (2026-04-18)
+**Phase 0 Day 2 — C1 MoU Q1 Plumb 버전 확정 + v0.2 작성**:
+- ✅ `/ax:daily-check` 환경 점검: 환경 양호, stale sprint signal 1건 자동 삭제, 플러그인 drift=0, SPEC 수치 실측 일치 (7 Workers, 20 migrations, latest 0008)
+- ✅ `/ax:session-start` 컨텍스트 복원: AIF-REQ-035 PLANNED + Phase 0 Day 2 확인, C1 MoU v0.1 Open Questions 7건 중 Q1 우선 선택
+- ✅ **Q1 조사**: Foundry-X 레포(`KTDS-AXBD/Foundry-X`) `gh api` 조회로 `docs/specs/plumb-output-contract.md` 실체 확인 → `code: FX-SPEC-002`, `version: 1.0`, `system-version: 0.2.0`, commit `e5c7260` (2026-03-16, 생성 후 미수정)
+- ✅ **핵심 발견**: v0.1의 "major 버전(v8 기준) 고정" 표기는 Foundry-X 전체 PRD(`FX-SPEC-PRD-V8_foundry-x.md`)와 계약 자체 버전을 혼동한 것. 실제 계약은 `FX-SPEC-002 v1.0` 단일 revision
+- ✅ **MoU v0.2 신규 작성**: `docs/contracts/foundry-x-mou.v0.2-draft.md` (12KB) — §3.1 호환성 규칙 원문 인용(필드 추가=호환/제거=MAJOR), §4.2 Frozen Baseline에 commit SHA 병기, §6.3 No-Go Condition을 계약 MAJOR 변경 정의에 맞춰 정정, §3.2에 Plumb Error Contract(`FX-SPEC-003`) 병행 관리 추가, §11 Q1 해소 체크
+- ✅ **Phase 0 Kick-off v1.3**: §6.5 Progress Tracker에 Day 2 수행 내역 반영, C1 Blocker에서 Plumb 버전 항목 제거 (Foundry-X PM 지정만 잔여)
+- ✅ `/ax:req-manage` REQ-026 상태 점검: P1 IN_PROGRESS 유지, Phase 2 완료 조건 중 Sprint 202 AgentResume stub 실구현만 잔여. `agent.ts:164-181` stub 코드로 확인
+- ✅ `/ax:req-integrity check`: 5항목 검증 결과 — Step 1(Issue) N/A 정책, Step 2/3/5 OK, Step 4 minor drift 1건(MEMORY v0.1 vs 실제 v0.2, 본 세션 종료로 해소)
+- ✅ SPEC.md §1 Current Phase 갱신: "Phase 0 Day 1 착수" → "Phase 0 Week 1 Day 2 진행" (Q1 확정 결과 병기)
+- ✅ SPEC.md Last Updated: 2026-04-16 → 2026-04-18
+
+**검증 결과**:
+- ✅ Turbo typecheck 14/14 cached (61ms, FULL TURBO)
+- ✅ Foundry-X 레포 접근 OK (gh auth: Sinclair-Seo, read:org/repo/gist scopes)
+- ⚠️ `read:project` scope 부족으로 GitHub Project 3-way 검증은 생략 (정책상 Decode-X는 SPEC SSOT만 사용하므로 영향 없음)
+- ✅ Week 1 Day 3~5 계획: Foundry-X PM 지정 요청 → v0.3 협상판(Q2~Q7) → 서명 (2026-04-24 목표)
+
 ### 세션 207 (2026-04-18)
 **Decode-X v1.2 개발기획서 req-interview Full Cycle + Phase 0 Day 1 착수**:
 - ✅ PRD 준비: `docs/Decode-X_개발기획서_v1.2.md` (1,441줄, Mission Pivot + Foundry-X 통합) → `docs/req-interview/decode-x-v1.2/prd-v1.md` 이관

@@ -13,7 +13,7 @@
 - **Goal**: SI 산출물 + 소스코드를 역공학하여 도메인 지식을 추출하고, 새 프로젝트의 반제품(Working Prototype)으로 재패키징
 - **Positioning**: 역공학(기존 산출물 분석) → 순공학(새 프로젝트 부트스트래핑) 양방향 엔진. Foundry-X(에이전트 협업 플랫폼)와 결합하여 완전한 소프트웨어 개발 파이프라인 구성
 - **Domain Pilot**: 퇴직연금 + 온누리상품권
-- **Current Phase**: **Phase 0 Day 1 착수** (2026-04-18, AIF-REQ-035 PLANNED) — Decode-X v1.3 본 개발 준비 단계. Gate Review 2026-05-15. 선행 Pilot Core 완료 (5-Stage 역공학 파이프라인 실증, 2-org 파일럿, REQ 25/35 DONE)
+- **Current Phase**: **Phase 0 Week 1 Day 2 진행** (Day 1=2026-04-18, AIF-REQ-035 PLANNED) — Decode-X v1.3 본 개발 준비 단계. C1 Q1 Plumb 버전 확정(`FX-SPEC-002 v1.0 @ e5c7260`), MoU v0.2 내부 정리판 작성. Gate Review 2026-05-15. 선행 Pilot Core 완료 (5-Stage 역공학 파이프라인 실증, 2-org 파일럿, REQ 25/35 DONE)
 - **Foundry-X 연동**: AIF-REQ-026 (P1, IN_PROGRESS) — [KTDS-AXBD/Foundry-X](https://github.com/KTDS-AXBD/Foundry-X). Phase 0 C1 MoU 체결 예정 (2026-04-24)
 - **Decode-X v1.3 본 개발**: AIF-REQ-035 (P0, PLANNED) — Mission Pivot(AI-Centric 체질 전환) + Foundry-X 역할 분담. PRD: `docs/req-interview/decode-x-v1.2/prd-v2.md`, Phase 0 설계서: `docs/req-interview/decode-x-v1.2/phase-0-kickoff.md`
 
@@ -58,7 +58,7 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-04-16
+- **Last Updated**: 2026-04-18
 - **Current Phase**: **Pilot Core 완료** — 5-Stage 역공학 파이프라인 실증 완료. 7 Workers + Gateway + Pages, 2-org 파일럿 (퇴직연금 948건 + 온누리 88건), policies 3,675 / skills 3,924. KPI: API Coverage 95.4%, Table Coverage 100%. REQ 24/32 DONE. E2E 47/47 PASS
 <!-- 마지막 실측 (daily-check 자동 보정 대상) -->
 - **마지막 실측**: 7 Workers, D1 5 DBs (20 migrations, latest 0008), 110 test files on disk, E2E 10 specs 47 tests

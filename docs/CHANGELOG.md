@@ -2,6 +2,28 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 207 (2026-04-18)
+**Decode-X v1.2 개발기획서 req-interview Full Cycle + Phase 0 Day 1 착수**:
+- ✅ PRD 준비: `docs/Decode-X_개발기획서_v1.2.md` (1,441줄, Mission Pivot + Foundry-X 통합) → `docs/req-interview/decode-x-v1.2/prd-v1.md` 이관
+- ✅ Round 1 3-AI 검토 (OpenRouter 경유, 39.5초): ChatGPT Conditional / Gemini Ready / DeepSeek Conditional, Scorecard 76/100, Ambiguity 0.15
+- ✅ Claude 직접 보강 `prd-v2.md` v1.3 (부록 C 페르소나·이해관계자 / D MVP·Phase 0 Kick-off / E 운영·보안·HITL, +180줄)
+- ✅ Round 2 검토: Scorecard 76→68 하락 (파서 한계, ax-plugin TD-15), 실질 3-AI 긍정 평가
+- ✅ Phase 0 Kick-off 설계서 `phase-0-kickoff.md` v1.0→v1.1→v1.2: 9개 조건(C1~T3) + 타임라인(04-18~05-15) + Progress Tracker
+- ✅ 본부장 "진행" 결정 → Phase 0 Day 1 착수 (2026-04-18, Gate Review 2026-05-15)
+- ✅ SPEC.md §1 Current Phase 갱신: "Phase 4 Sprint 2 완료" → "Phase 0 Day 1 착수 (AIF-REQ-035 PLANNED)"
+- ✅ SPEC.md §3 Architecture Baseline 갱신: 12 Workers → 7 Workers (MSA 재조정 반영 + 코드 잔존 명시)
+- ✅ SPEC.md §7 AIF-REQ-035 PLANNED 사전 등록 (Decode-X v1.3 본 개발)
+- ✅ SPEC.md §8 TD-13/14/15 등록 (ax-plugin 업스트림 이슈 3건)
+- ✅ C1 Foundry-X MoU 초안 v0.1: `docs/contracts/foundry-x-mou.v0.1-draft.md` (Open Questions 7건 포함)
+- ✅ Plugin 자율점검 `/ax:infra-selfcheck`: 9/9 PASS
+- ✅ 3-way 정합성 `/ax:req-integrity`: 5 항목 중 Step 1a는 정책(Issue 미사용), Step 3/4 WARN 2건 drift 감지 → SPEC 수동 갱신으로 해소
+- ✅ ax-plugin 업스트림 이슈 3건 제출: [#2](https://github.com/KTDS-AXBD/ax-plugin/issues/2) Six Hats proxy, [#3](https://github.com/KTDS-AXBD/ax-plugin/issues/3) apply 토큰, [#4](https://github.com/KTDS-AXBD/ax-plugin/issues/4) scorecard 부록 파서
+
+**검증 결과**:
+- ✅ PRD review API 3-AI 병렬 호출 성공 (39.5s + 43.1s)
+- ✅ Plugin cache drift=0, skills 25/25, 3-way 정합성 4건 drift는 문서 기록 지연형(기능 장애 아님)
+- ✅ Week 1 Actions: C1 MoU 초안 ✅, 다음 단계 FX PM 지정 + Plumb major 버전 확정
+
 ### 세션 206 (2026-04-18)
 **GOV-001 문서 위생 정리 + 인프라 점검**:
 - ✅ Plugin 자율점검 (`/ax:infra-selfcheck`): 9항목 중 8 PASS, C8 WARN 4건 감지

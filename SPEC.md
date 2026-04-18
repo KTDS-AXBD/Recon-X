@@ -13,8 +13,9 @@
 - **Goal**: SI 산출물 + 소스코드를 역공학하여 도메인 지식을 추출하고, 새 프로젝트의 반제품(Working Prototype)으로 재패키징
 - **Positioning**: 역공학(기존 산출물 분석) → 순공학(새 프로젝트 부트스트래핑) 양방향 엔진. Foundry-X(에이전트 협업 플랫폼)와 결합하여 완전한 소프트웨어 개발 파이프라인 구성
 - **Domain Pilot**: 퇴직연금 + 온누리상품권
-- **Current Phase**: Phase 4 Sprint 2 완료 (2-org 파일럿)
-- **Foundry-X 연동**: AIF-REQ-026 (P1, IN_PROGRESS) — [KTDS-AXBD/Foundry-X](https://github.com/KTDS-AXBD/Foundry-X)
+- **Current Phase**: **Phase 0 Day 1 착수** (2026-04-18, AIF-REQ-035 PLANNED) — Decode-X v1.3 본 개발 준비 단계. Gate Review 2026-05-15. 선행 Pilot Core 완료 (5-Stage 역공학 파이프라인 실증, 2-org 파일럿, REQ 25/35 DONE)
+- **Foundry-X 연동**: AIF-REQ-026 (P1, IN_PROGRESS) — [KTDS-AXBD/Foundry-X](https://github.com/KTDS-AXBD/Foundry-X). Phase 0 C1 MoU 체결 예정 (2026-04-24)
+- **Decode-X v1.3 본 개발**: AIF-REQ-035 (P0, PLANNED) — Mission Pivot(AI-Centric 체질 전환) + Foundry-X 역할 분담. PRD: `docs/req-interview/decode-x-v1.2/prd-v2.md`, Phase 0 설계서: `docs/req-interview/decode-x-v1.2/phase-0-kickoff.md`
 
 ---
 
@@ -35,11 +36,13 @@
 
 ## 3) Architecture Baseline
 
-- 6-Layer System + 5-Stage Pipeline + 12 Workers (10 SVC + Queue Router + MCP Server)
-- Infra: Cloudflare Workers/Queues/DO/D1/R2/KV + AI Gateway + Neo4j Aura
+- 6-Layer System + 5-Stage Pipeline + **7 Workers** (5 Pipeline SVC + Queue Router + MCP Server)
+- **Phase 5 MSA 재조정 완료** (AIF-REQ-030/031/032 DONE): 플랫폼 SVC 5개(llm-router/security/governance/notification/analytics)를 AI Foundry 포털로 분리 이관. Decode-X 레포에는 코드가 잔존(12 svc-* 디렉토리)하나 배포·운영 범위는 7 Workers 전용
+- LLM 호출은 `packages/utils/src/llm-client.ts` HTTP REST로 외부 svc-llm-router 경유 (서비스 바인딩 아님)
+- Infra: Cloudflare Workers/Queues/DO/D1(5 DBs)/R2/KV + AI Gateway + Neo4j Aura
 - LLM Tiering: Opus / Sonnet-Haiku / Workers AI
 
-참고 문서: `CLAUDE.md`, `docs/AI_Foundry_PRD_TDS_v0.6.docx`
+참고 문서: `CLAUDE.md`, `docs/AI_Foundry_PRD_TDS_v0.7.4.docx`, `docs/AI_Foundry_Identity.md`, `docs/AX-BD-MSA-Restructuring-Plan.md`, `docs/req-interview/decode-x-v1.2/prd-v2.md` (v1.3 Mission Pivot)
 
 ---
 
@@ -573,6 +576,12 @@
 | AIF-REQ-033 | Chore | Infra | P1 | DONE | **Decode-X 리브랜딩** — Recon-X(Reconnaissance) → Decode-X(Decoding) 프로젝트 정체성 재정의. **범위**: (1) GitHub 리포 KTDS-AXBD/Recon-X → KTDS-AXBD/Decode-X (완료, push redirect로 확인), (2) 로컬 git remote URL 갱신 (완료), (3) 프로젝트 정체성 파일(CLAUDE.md/SPEC.md/MEMORY.md/README.md/package.json) 갱신, (4) docs/recon-x-restructuring/ → docs/decode-x-restructuring/ 디렉토리 rename (git mv), (5) 로컬 워킹 디렉토리 /home/sinclair/work/axbd/Recon-X/ → Decode-X/ rename. **범위 제외**(infrastructure 보존): Cloudflare Worker 이름(recon-x-api 유지), 배포 URL, service binding, DO script_name. 역사적 PDCA 기록(docs/CHANGELOG.md, 기존 DONE REQ 설명)은 보존 |
 | AIF-REQ-034 | Feature | Pipeline | P0 | IN_PROGRESS | **Decode-X Deep Dive** — Deep Dive v0.3 문서 기반 Spec 완결성 심화. **3 Must Have**: (1) B/T/Q 3종 Spec Schema + AI-Ready 6기준 자동 채점기, (2) Tacit Interview Agent, (3) Handoff 패키지 검증. **KPI**: 완결성 ≥80%, 6기준 통과율 ≥90%. **Out-of-scope**: KG Relationship Registry(→REQ-023), Ontology MCP, Foundry-X Orchestrator, 외부 파일럿. **PoC (2026-04-17 10:00 보고, 1명, 18h)**: LPON 859개 skill 6기준 일괄 채점 스크립트 + 리포트 + B/T/Q 샘플 20건 매핑. Tacit/Handoff는 포맷 명세만. **참조**: `docs/req-interview/decode-x-deep-dive/prd-final.md` (R2 82/100). **오픈 이슈**: 역호환(외부 Skill 사용자 조사 후 결정), 정식 구현 범위는 PoC 보고 승인 후 |
 
+### Decode-X v1.3 본 개발 (Mission Pivot + Foundry-X 통합, 신규 등록)
+
+| ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
+|----|------|--------|:--------:|:----:|------|
+| AIF-REQ-035 | Feature | Pipeline | P0 | PLANNED | **Decode-X v1.3 본 개발** — Decode-X 개발기획서 v1.2 + v1.3 부록 C/D/E 기반 12개월 본 개발. **Mission Pivot**: "100% Copy Machine" 폐기 → AI-Centric 체질 전환. **Foundry-X 역할 분담**: Decode-X=Input Plane 생산자 / Foundry-X=Process-Output Plane 오케스트레이터. **범위**: 5 Phase(Phase 0 준비 4주 + Phase 1 PoC 10주 + Phase 2 파일럿 12주 + Phase 3 도메인 확장 16주 + Phase 4 GTM 8주). **MVP 스코프**: 전자온누리상품권 1개 도메인, Tier-A 6개 핵심 서비스(예산/충전/구매/결제/환불/선물 + 각 취소), Java/Spring 스택. **Phase 0 Day 1**: 2026-04-18 (본부장 "진행" 결정, 세션 207), **Gate Review**: 2026-05-15 Day 28. **Phase 0 전제 조건 9건**: 계약(C1 Foundry-X MoU, C2 고객사 데이터, C3 법무·CISO) + 리소스(R1 DA 1 FTE, R2 LLM 예산·프라이빗 모델, R3 팀 12명) + 기술(T1 Plumb E2E, T2 Shadow Mode, T3 결정적 생성 PoC). **Gate 통과 시 IN_PROGRESS 전환**, 미달 시 연장·중단. **KPI**: Tier-A 행위 동등성 ≥95%, Empty Slot Fill ≥70%, AI-Ready ≥75%, Foundry-X Readiness ≥80%, Reviewer Eff ≤2분, Input Completeness ≥0.75. **참조**: `docs/req-interview/decode-x-v1.2/prd-v2.md` (v1.3), `docs/req-interview/decode-x-v1.2/phase-0-kickoff.md` (v1.1, 승인·착수). 3-AI 검토 R1 76점/R2 68점 + Ambiguity 0.15 (PRD Ready, Conditional 조건은 Phase 0 실행 영역) |
+
 ---
 
 ## 8) Risks & Constraints
@@ -605,8 +614,12 @@
 | ~~TD-10~~ | `services/*/wrangler.toml` `[env.production]` | ✅ 전 서비스 production 서비스 바인딩 + DO script_name에 `-production` 접미사 추가 (9개 서비스, 33건) | 해소 (세션 151) | 2026-03-08 |
 | ~~TD-11~~ | `svc-policy/src/prompts/policy.ts` | ✅ POL-PENSION-* 도메인 코드 하드코딩 → DOMAIN_CONFIGS 동적화 | 해소 (세션 141) | 2026-03-08 |
 | ~~TD-12~~ | `svc-ontology` Neo4j Aura | ✅ 3,880건 ontology neo4j_graph_id NULL → backfill 완료 | 해소 (세션 136b) | 2026-03-08 |
+| TD-13 | ax-marketplace `req-interview/scripts/review-api.mjs` L1110 `callWithRetryDebate` | **Six Hats 모드가 `--proxy openrouter` 미지원** — 개별 provider API 키만 체크하고 OpenRouter 폴백 누락. 해결안: `callWithRetry`와 동일 패턴으로 `openrouterKey` 파라미터 + `useOpenRouter` 분기 추가. 업스트림 이슈: [KTDS-AXBD/ax-plugin#2](https://github.com/KTDS-AXBD/ax-plugin/issues/2) | Six Hats 토론 사용 불가 (세션 207 Decode-X v1.3 검토 중 발견) | 2026-04-18 |
+| TD-14 | ax-marketplace `req-interview/scripts/review-api.mjs` `--mode apply` | **73KB+ PRD에서 `max_tokens` 제한으로 LLM 응답 잘림** (73KB→17KB, 변경 마커 0건). 해결안: (a) apply 모드에서 `maxOutputTokens` 동적 확대 + streaming/chunked 처리, (b) 큰 PRD는 섹션별 분할 apply 파이프라인. 업스트림 이슈: [KTDS-AXBD/ax-plugin#3](https://github.com/KTDS-AXBD/ax-plugin/issues/3) | 대형 PRD 자동 반영 실패 (세션 207 Decode-X v1.3 검토 중 발견) | 2026-04-18 |
+| TD-15 | ax-marketplace `req-interview/scripts/review-api.mjs` 스코어카드 항목 3 파서 | **`### 부록 C. 사용자 페르소나` 형식 미매칭** — 부록 하위 섹션(사용자/이해관계자/MVP/Out-of-scope)이 스코어카드 키워드 매처에 잡히지 않아 실제 내용 충족에도 "최소" 판정 유지. 해결안: 매처에 `### 부록 [A-Z]\. (.+)` 패턴 추가 + 키워드 탐색 범위 전체 문서로 확장. 업스트림 이슈: [KTDS-AXBD/ax-plugin#4](https://github.com/KTDS-AXBD/ax-plugin/issues/4) | Round 2 76→68 점수 역행의 주 원인 (세션 207 Decode-X v1.3 검토 중 발견) | 2026-04-18 |
 
 > **Note**: TD-10 범위 확대 — 원래 svc-queue-router만 등록했으나, 실제로는 9개 서비스(svc-mcp-server 제외) 전체 production 서비스 바인딩이 default env를 참조하는 동일 이슈 확인 → 일괄 수정
+> **Note**: TD-13/14/15는 **외부 리포(ax-marketplace)** 이슈 — ax plugin 업스트림으로 PR 또는 이슈 전달 필요. 로컬 Decode-X 리포 코드 수정은 아님
 
 ### 가정 (Assumptions)
 

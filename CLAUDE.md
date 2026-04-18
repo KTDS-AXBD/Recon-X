@@ -20,6 +20,8 @@ Output: Dev Spec Package (API 명세 + 테이블 정의 + Gap 리포트)
 Full product requirements: `docs/AI_Foundry_PRD_TDS_v0.7.4.docx`. 정체성 재정의: `docs/AI_Foundry_Identity.md`. Built by KTDS AX BD팀. Pilot domain: 퇴직연금 + 온누리상품권.
 
 > **Status**: Phase 5 완료 (MSA 재조정). **7 Workers** + Pages 배포. 플랫폼 SVC 5개 분리 완료 (llm-router/security/governance/notification/analytics → AI Foundry 포털). 2-org 파일럿. LLM HTTP REST 전환 (`packages/utils/src/llm-client.ts`). 상세 수치는 SPEC.md §2 참조.
+>
+> **v1.3 Phase 0 착수** (2026-04-18, 세션 207): AIF-REQ-035 PLANNED — Decode-X 개발기획서 v1.2/v1.3 Mission Pivot(AI-Centric 체질 전환) + Foundry-X 통합. Gate Review 2026-05-15. 참조: `docs/req-interview/decode-x-v1.2/prd-v2.md`, `docs/req-interview/decode-x-v1.2/phase-0-kickoff.md`
 > 
 > **GitHub**: `KTDS-AXBD/Decode-X`. "AI Foundry"는 상위 포털 플랫폼 이름으로 승격. 인프라(Worker 이름 `recon-x-api` 등)는 배포 식별자 유지.
 

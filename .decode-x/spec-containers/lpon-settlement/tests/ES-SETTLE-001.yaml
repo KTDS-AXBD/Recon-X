@@ -1,0 +1,57 @@
+---
+emptySlotId: ES-SETTLE-001
+title: 정산 배치 멱등성 — 테스트 계약
+sprint: 214c
+taxonomy: E4
+sourceMarker: DOC_ONLY
+---
+
+scenarios:
+  - id: TC-SIDEM-001
+    name: 신규 기간 배치 실행 성공
+    given:
+      periodStart: "2026-04-01"
+      periodEnd: "2026-04-30"
+      existingCalcStatus: null  # 없음
+    when: batch_004_runs
+    then:
+      - calcCreated: true
+      - calcStatus: "running"
+      - batchRunIdGenerated: true
+      - eventEmitted: "BatchStarted"
+
+  - id: TC-SIDEM-002
+    name: 완료된 기간 재실행 시 스킵
+    given:
+      periodStart: "2026-03-01"
+      periodEnd: "2026-03-31"
+      existingCalcStatus: "completed"
+    when: batch_004_runs
+    then:
+      - calcStatus: "completed"  # 변경 없음
+      - eventEmitted: "BatchSkipped"
+      - batchActuallyRan: false
+
+  - id: TC-SIDEM-003
+    name: 실패 기간 재실행 허용
+    given:
+      periodStart: "2026-02-01"
+      periodEnd: "2026-02-28"
+      existingCalcStatus: "failed"
+    when: batch_004_runs
+    then:
+      - calcStatus: "running"
+      - newBatchRunIdGenerated: true
+      - batchActuallyRan: true
+
+  - id: TC-SIDEM-004
+    name: 실행 중인 배치 감지 후 대기
+    given:
+      periodStart: "2026-04-01"
+      periodEnd: "2026-04-30"
+      existingCalcStatus: "running"
+    when: batch_004_runs
+    then:
+      - batchActuallyRan: false
+      - waitTriggered: true
+      - alertAfterMaxRetries: true

@@ -1,0 +1,36 @@
+# Provenance — POL-LPON-SETTLE-001
+# 출처 추적 (FX-SPEC-002 specToTest 검증)
+
+skillId: POL-LPON-SETTLE-001
+extractedAt: "2026-04-20T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 214c (AIF-REQ-035 Phase 2 D3)"
+
+sources:
+  - type: reverse-engineering
+    path: "반제품-스펙/pilot-lpon-cancel/01-business-logic.md"
+    section: "시나리오 6: 정산 (Settlement)"
+    businessRules: [BL-031, BL-032, BL-033, BL-034, BL-035, BL-036]
+    confidence: 0.85
+    sourceMarker: DOC_ONLY
+    note: "BL-031~036 문서 기반 추출. 소스코드(/settlement/*.java) 직접 확인 불가. BL-036 '[미정의]' 슬롯 Fill."
+
+  - type: ai-foundry-policy-db
+    source: db-policy (production)
+    policyCount: 6
+    domain: LPON-SETTLE
+    note: "POL-PENSION-CT/CL 계열 6건 (BL 크로스 레퍼런스)."
+
+inputCompleteness:
+  sInput: 0.85
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 0.85    # BL-031~036 6종, DOC_ONLY — 소스 미확인
+    testCoverage: 0.82     # 3 Empty Slot × 3~4 TC = 10 시나리오
+    provenanceLink: 0.85   # DOC_ONLY — 문서 링크 있으나 소스 링크 없음
+  notes:
+    - "DOC_ONLY: BL-031~036 문서 존재, 소스코드 직접 접근 불가"
+    - "BL-036 '[미정의]' Fill: feeReflected Y/N 분기 기준 추정 정의"
+    - "Phase 3에서 BATCH_004 소스 추출 후 DIVERGENCE 검증 필요"
+
+handoffTarget: Foundry-X
+handoffVersion: "FX-SPEC-002 v1.0"

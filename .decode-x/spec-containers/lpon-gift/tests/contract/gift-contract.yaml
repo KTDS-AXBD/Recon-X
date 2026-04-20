@@ -1,0 +1,52 @@
+---
+contractId: POL-LPON-GIFT-001
+title: LPON 선물 도메인 Handoff 계약
+version: "1.0.0"
+sprint: 214c
+handoffTarget: Foundry-X
+specVersion: "FX-SPEC-002 v1.0"
+sourceMarker: SOURCE_MISSING
+---
+
+domain:
+  name: lpon-gift
+  description: 온누리상품권 선물하기 (P2P 이전) 서비스
+  language: Java/Spring (추정)
+  database: D1 (Cloudflare)
+
+emptySlots:
+  - id: ES-GIFT-001
+    filled: true
+    confidence: 0.72
+    testCount: 4
+  - id: ES-GIFT-002
+    filled: true
+    confidence: 0.72
+    testCount: 5
+  - id: ES-GIFT-003
+    filled: true
+    confidence: 0.72
+    testCount: 4
+
+completeness:
+  rules: 6           # BL-G001~G006
+  emptySlotsFilled: 3
+  tests: 13          # 총 TC
+  runbooks: 3
+  provenanceLinked: true
+
+aiReadyCriteria:
+  completeness: PASS        # BL 6종 condition/criteria/outcome 완비
+  clarity: PASS             # 모호한 표현 없음
+  executability: PASS       # SQL 힌트 포함
+  testability: PASS         # TC 13건
+  traceability: CONDITIONAL # SOURCE_MISSING — 소스 직접 링크 없음
+  operability: PASS         # runbook 3건
+
+overallScore: 5/6           # traceability CONDITIONAL
+aiReadyGrade: Conditional   # 70% 목표 초과 (83%)
+
+notes:
+  - "SOURCE_MISSING: 선물 도메인 문서 부재로 추정 기반 Fill"
+  - "Phase 3에서 /gift/*.java 소스 추출 후 DIVERGENCE 검증 필요"
+  - "FX-SPEC-002 v1.0 바인딩 — 결제 E2E 완료 후 선물 E2E 확장 예정"

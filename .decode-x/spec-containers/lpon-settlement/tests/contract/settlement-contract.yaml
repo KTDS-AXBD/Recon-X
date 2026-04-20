@@ -1,0 +1,52 @@
+---
+contractId: POL-LPON-SETTLE-001
+title: LPON 정산 도메인 Handoff 계약
+version: "1.0.0"
+sprint: 214c
+handoffTarget: Foundry-X
+specVersion: "FX-SPEC-002 v1.0"
+sourceMarker: DOC_ONLY
+---
+
+domain:
+  name: lpon-settlement
+  description: 온누리상품권 정산 배치 처리 (BATCH_004)
+  language: Java/Spring (추정)
+  database: D1 (Cloudflare)
+
+emptySlots:
+  - id: ES-SETTLE-001
+    filled: true
+    confidence: 0.85
+    testCount: 4
+  - id: ES-SETTLE-002
+    filled: true
+    confidence: 0.85
+    testCount: 4
+  - id: ES-SETTLE-003
+    filled: true
+    confidence: 0.85
+    testCount: 4
+
+completeness:
+  rules: 6           # BL-031~036
+  emptySlotsFilled: 3
+  tests: 12          # 총 TC
+  runbooks: 3
+  provenanceLinked: true
+
+aiReadyCriteria:
+  completeness: PASS        # BL 6종 condition/criteria/outcome 완비
+  clarity: PASS             # 모호한 표현 제거 (BL-036 [미정의] 해소)
+  executability: PASS       # SQL 힌트 포함
+  testability: PASS         # TC 12건
+  traceability: PASS        # DOC_ONLY — 문서 링크 명시 (pilot-lpon-cancel §시나리오6)
+  operability: PASS         # runbook 3건
+
+overallScore: 6/6           # 100%
+aiReadyGrade: Ready         # 목표 70% 초과 (100%)
+
+notes:
+  - "DOC_ONLY: BL-031~036 문서 기반, 소스코드 직접 확인 불가"
+  - "BL-036 [미정의] → ES-SETTLE-002에서 feeReflected Y/N 기준 정의"
+  - "Phase 3에서 BATCH_004 소스 추출 후 DIVERGENCE 검증 필요"

@@ -1,0 +1,60 @@
+---
+emptySlotId: ES-GIFT-001
+title: 선물 만료 처리 — 테스트 계약
+sprint: 214c
+taxonomy: E4
+sourceMarker: SOURCE_MISSING
+---
+
+scenarios:
+  - id: TC-GEXP-001
+    name: TTL 만료 후 발송자 잔액 자동 복원
+    given:
+      giftId: "gift-exp-001"
+      status: "pending"
+      expiresAt: "2026-04-13T00:00:00+09:00"  # 7일 전 생성
+      amount: 50000
+      senderBalance: 100000
+    when: batch_expiry_job_runs
+    then:
+      - giftStatus: "expired"
+      - senderBalanceRestored: true
+      - senderBalance: 150000
+      - ledgerEntryType: "refund_sender"
+      - eventEmitted: "GiftExpired"
+
+  - id: TC-GEXP-002
+    name: 만료 배치 + 수락 요청 동시 처리 (경쟁 조건 방지)
+    given:
+      giftId: "gift-exp-002"
+      status: "pending"
+      expiresAt: "past"
+      concurrentAcceptRequest: true
+    when: batch_and_accept_concurrent
+    then:
+      - exactlyOneWins: true
+      - noDoubleRefund: true
+      - finalStatus: ["expired", "accepted"]  # 어느 쪽이든 단일 결과
+
+  - id: TC-GEXP-003
+    name: 이미 수락된 선물은 만료 처리 불가
+    given:
+      giftId: "gift-exp-003"
+      status: "accepted"
+      expiresAt: "past"
+    when: batch_expiry_job_runs
+    then:
+      - giftStatus: "accepted"  # 변경 없음
+      - senderBalanceRestored: false
+      - eventEmitted: null
+
+  - id: TC-GEXP-004
+    name: 취소된 선물은 만료 처리 스킵
+    given:
+      giftId: "gift-exp-004"
+      status: "canceled"
+      expiresAt: "past"
+    when: batch_expiry_job_runs
+    then:
+      - giftStatus: "canceled"  # 변경 없음
+      - senderBalanceRestored: false

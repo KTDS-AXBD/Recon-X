@@ -1,0 +1,36 @@
+# Provenance — POL-LPON-GIFT-001
+# 출처 추적 (FX-SPEC-002 specToTest 검증)
+
+skillId: POL-LPON-GIFT-001
+extractedAt: "2026-04-20T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 214c (AIF-REQ-035 Phase 2 D3)"
+
+sources:
+  - type: reverse-engineering
+    path: "SPEC.md §2"
+    section: "도메인별 분류 — 선물(42)"
+    businessRules: [BL-G001, BL-G002, BL-G003, BL-G004, BL-G005, BL-G006]
+    confidence: 0.72
+    sourceMarker: SOURCE_MISSING
+    note: "반제품-스펙/pilot-lpon-cancel 문서에 선물 시나리오 없음. db-policy 42건 존재 확인 (SPEC.md §2). /gift/* API 엔드포인트군 미문서화 (LLM confirmed). P2P 잔액 이전 흐름 + 충전 유사 패턴으로 추정 Fill."
+
+  - type: ai-foundry-policy-db
+    source: db-policy (production)
+    policyCount: 42
+    domain: LPON-GIFT
+    note: "LPON 선물 관련 정책 42건. 소스 문서 직접 접근 불가 — db-policy 건수만 확인."
+
+inputCompleteness:
+  sInput: 0.72
+  deficiencyFlag: true
+  components:
+    rulesCoverage: 0.72    # 추정 BL 6종, 직접 소스 확인 불가 → 신뢰도 0.72
+    testCoverage: 0.80     # 3 Empty Slot × 3~4 TC = 9~12 시나리오
+    provenanceLink: 0.72   # 출처 마커 SOURCE_MISSING — 소스 직접 링크 없음
+  notes:
+    - "SOURCE_MISSING: 선물 시나리오 문서 부재 → 충전 유사 패턴 추정 Fill"
+    - "Phase 3에서 실 소스코드(/gift/*.java) 추출 시 DIVERGENCE 검증 필요"
+    - "Empty Slot 3건 Fill: ES-GIFT-001(만료), ES-GIFT-002(취소), ES-GIFT-003(원자성)"
+
+handoffTarget: Foundry-X
+handoffVersion: "FX-SPEC-002 v1.0"

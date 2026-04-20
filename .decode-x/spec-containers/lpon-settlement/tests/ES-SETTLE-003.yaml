@@ -1,0 +1,59 @@
+---
+emptySlotId: ES-SETTLE-003
+title: 배치 부분 재처리 범위 — 테스트 계약
+sprint: 214c
+taxonomy: E4
+sourceMarker: DOC_ONLY
+---
+
+scenarios:
+  - id: TC-SRESTART-001
+    name: 배치 실패 후 미처리 건만 재처리
+    given:
+      calcId: "calc-restart-001"
+      calcStatus: "failed"
+      totalTxCount: 100
+      processedCount: 60     # 60건 완료
+      unprocessedCount: 40   # 40건 미완료
+    when: batch_004_restarts
+    then:
+      - reprocessedCount: 40  # 미처리 건만
+      - alreadyProcessedTouched: false  # 완료 건 재처리 없음
+      - finalCalcStatus: "completed"
+
+  - id: TC-SRESTART-002
+    name: 모든 건 완료 후 재실행 → 스킵
+    given:
+      calcId: "calc-restart-002"
+      calcStatus: "failed"
+      processedCount: 100
+      unprocessedCount: 0
+    when: batch_004_restarts
+    then:
+      - reprocessedCount: 0
+      - calcStatus: "completed"
+      - eventEmitted: "BatchSkipped"
+
+  - id: TC-SRESTART-003
+    name: 건별 커밋으로 중간 장애 시 손실 최소화
+    given:
+      calcId: "calc-restart-003"
+      calcStatus: "running"
+      txCount: 10
+      failsAtTx: 5   # 5번째 건에서 장애
+    when: batch_fails_mid_execution
+    then:
+      - processedCount: 4     # 4건 완료 후 장애
+      - calcStatus: "failed"
+      - reprocessOnRestartCount: 6   # 5~10번째 건 재처리
+
+  - id: TC-SRESTART-004
+    name: 신규 batch_run_id 생성 확인 (재실행 구분)
+    given:
+      calcId: "calc-restart-004"
+      calcStatus: "failed"
+      previousBatchRunId: "run-old-001"
+    when: batch_004_restarts
+    then:
+      - newBatchRunIdGenerated: true
+      - newBatchRunId: "!= run-old-001"  # 이전과 다른 ID

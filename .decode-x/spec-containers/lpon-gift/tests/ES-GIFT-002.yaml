@@ -1,0 +1,68 @@
+---
+emptySlotId: ES-GIFT-002
+title: 선물 발송 취소 가능 시점 — 테스트 계약
+sprint: 214c
+taxonomy: E5
+sourceMarker: SOURCE_MISSING
+---
+
+scenarios:
+  - id: TC-GCANCEL-001
+    name: pending 상태 선물 취소 성공
+    given:
+      giftId: "gift-cancel-001"
+      status: "pending"
+      amount: 30000
+      senderBalance: 70000
+    when: sender_cancels_gift
+    then:
+      - giftStatus: "canceled"
+      - senderBalance: 100000
+      - ledgerEntryType: "refund_sender"
+      - eventEmitted: "GiftCanceled"
+      - responseStatus: 200
+
+  - id: TC-GCANCEL-002
+    name: 이미 수락된 선물 취소 시도 → 422
+    given:
+      giftId: "gift-cancel-002"
+      status: "accepted"
+    when: sender_cancels_gift
+    then:
+      - giftStatus: "accepted"  # 변경 없음
+      - senderBalanceChanged: false
+      - responseStatus: 422
+      - errorCode: "GIFT_ALREADY_ACCEPTED"
+
+  - id: TC-GCANCEL-003
+    name: 이미 만료된 선물 취소 시도 → 422
+    given:
+      giftId: "gift-cancel-003"
+      status: "expired"
+    when: sender_cancels_gift
+    then:
+      - responseStatus: 422
+      - errorCode: "GIFT_ALREADY_EXPIRED"
+
+  - id: TC-GCANCEL-004
+    name: 이미 취소된 선물 재취소 → 멱등성 200
+    given:
+      giftId: "gift-cancel-004"
+      status: "canceled"
+    when: sender_cancels_gift
+    then:
+      - responseStatus: 200
+      - giftStatus: "canceled"
+      - senderBalanceChanged: false
+
+  - id: TC-GCANCEL-005
+    name: 취소 + 수락 동시 요청 (경쟁 조건)
+    given:
+      giftId: "gift-cancel-005"
+      status: "pending"
+      concurrentAcceptRequest: true
+    when: cancel_and_accept_concurrent
+    then:
+      - exactlyOneWins: true
+      - noDoubleBalance: true
+      - finalStatus: ["canceled", "accepted"]

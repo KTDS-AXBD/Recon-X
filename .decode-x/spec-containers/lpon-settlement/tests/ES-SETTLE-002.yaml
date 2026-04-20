@@ -1,0 +1,54 @@
+---
+emptySlotId: ES-SETTLE-002
+title: 정산수수료 반영 여부 — 테스트 계약
+sprint: 214c
+taxonomy: E5
+sourceMarker: DOC_ONLY
+---
+
+scenarios:
+  - id: TC-SFEE-001
+    name: fee_reflected=Y 시 수수료 차감 후 정산
+    given:
+      calcId: "calc-fee-001"
+      feeReflected: "Y"
+      feeRate: 0.0150
+      grossAmount: 1000000
+    when: settlement_fee_calculated
+    then:
+      - netAmount: 985000       # 1,000,000 × (1 - 0.015)
+      - feeAmount: 15000        # 1,000,000 × 0.015
+      - summaryUpdated: true
+
+  - id: TC-SFEE-002
+    name: fee_reflected=N 시 전액 정산
+    given:
+      calcId: "calc-fee-002"
+      feeReflected: "N"
+      grossAmount: 1000000
+    when: settlement_fee_calculated
+    then:
+      - netAmount: 1000000      # 수수료 없음
+      - feeAmount: 0
+      - summaryUpdated: true
+
+  - id: TC-SFEE-003
+    name: fee_reflected=NULL 시 에러 + 건 스킵
+    given:
+      calcId: "calc-fee-003"
+      feeReflected: null
+    when: settlement_fee_calculated
+    then:
+      - errorCode: "INVALID_FEE_FLAG"
+      - itemSkipped: true
+      - batchContinued: true    # 전체 배치는 계속
+
+  - id: TC-SFEE-004
+    name: fee_reflected 이외 값 처리
+    given:
+      calcId: "calc-fee-004"
+      feeReflected: "X"
+    when: settlement_fee_calculated
+    then:
+      - errorCode: "INVALID_FEE_FLAG"
+      - itemSkipped: true

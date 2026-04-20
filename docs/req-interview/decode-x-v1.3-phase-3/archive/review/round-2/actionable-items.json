@@ -1,0 +1,407 @@
+{
+  "generated": "2026-04-20T23:37:40.582Z",
+  "totalItems": 66,
+  "byType": {
+    "flaw": 3,
+    "gap": 13,
+    "risk": 47
+  },
+  "items": [
+    {
+      "type": "flaw",
+      "source": "ChatGPT",
+      "text": "**문제→해결→성공이 “1:1” 대응되지 않는 부분**이 있습니다.",
+      "severity": "high"
+    },
+    {
+      "type": "flaw",
+      "source": "ChatGPT",
+      "text": "**성공 기준의 수치(예: 3건 이상 DIVERGENCE)**가 왜 그 수치인지 논거가 약합니다(일부 근거 있으나, 더 “비즈니스 영향” 관점에서 강화 필요).",
+      "severity": "high"
+    },
+    {
+      "type": "flaw",
+      "source": "ChatGPT",
+      "text": "**운영/유지보수 플로우**가 일부 구체화됐으나, QA/승인 이후 “실제 서비스 영향”까지 명확히 닫혀 있지 않습니다(실 서비스 장애/rollback 절차 등).",
+      "severity": "high"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**문제→해결→성공이 “1:1” 대응되지 않는 부분**이 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**성공 기준의 수치(예: 3건 이상 DIVERGENCE)**가 왜 그 수치인지 논거가 약합니다(일부 근거 있으나, 더 “비즈니스 영향” 관점에서 강화 필요).",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**운영/유지보수 플로우**가 일부 구체화됐으나, QA/승인 이후 “실제 서비스 영향”까지 명확히 닫혀 있지 않습니다(실 서비스 장애/rollback 절차 등).",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**운영/배포 실패 시 서비스 영향/데이터 정합성 복구 시나리오**",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**예상 장애/이슈 발생 시 Escalation 체계**",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**실제 운영환경에서의 “테스트→배포→운영” 간격**",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**Security/Compliance 점검**",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**1인 체제 병목**: 병렬/상호의존 작업에서 병목이 예상됩니다. 특히 Cross-repo PR, QA, 본부장/Foundry-X 리뷰, 장애 시 조치 등에서 동시 처리 불가 리스크가 큽니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**Cross-repo PR deadlock**: Foundry-X 쪽 협업자 부재/리소스 미확보, merge 프로토콜 불일치 등으로 M-2가 지연/실패할 수 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**LLM 비용 예측 실패**: 실제 자동 채점(5,214건) 시 LLM 모델 호출 수, rate limit, 장애, 비용 초과 발생 가능성 많습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**Tree-sitter WASM 호환성**: PoC 실패 가능성, 메모리 leak, 퍼포먼스 저하 등으로 S-3가 무기한 지연될 수 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**QA/검수/승인 프로세스 미비**: 수기 검수/자동화 병행이 현실적으로 지켜지지 않으면 품질 보장 실패, 검증 과정에서 누락/오류 가능성.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**운영 데이터 정합성/rollback 미흡**: 실 운영 데이터에 잘못 반영될 경우, 복구 비용/시간이 대폭 증가할 수 있음.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**인력 1명(겸임) 체제의 리스크**가 과소평가됐습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**Cross-repo PR 및 외부 시스템 연동**에서 Foundry-X 팀의 “협업 리소스 확보”가 전제인데, 담당자의 실질적 가용성·우선순위 합의가 사전 확보되어야 실현 가능합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**Tree-sitter PoC, LLM 자동 채점(5,214건), QA/로그 검증 등**은 실제로 해보면 예상보다 시간이 더 걸릴 수 있습니다(특히 1인 체제 + LLM rate limit/장애 발생 시).",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**QA/승인/배포/rollback 절차**가 문서화만 되어 있고, 실제 책임자(승인권자)·의사결정 SLA가 합의되었는지 불분명합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**운영/배포 실패 시 서비스 영향/데이터 정합성 복구 시나리오**",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**예상 장애/이슈 발생 시 Escalation 체계**",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**실제 운영환경에서의 “테스트→배포→운영” 간격**",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**Security/Compliance 점검**",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**1인 체제 병목**: 병렬/상호의존 작업에서 병목이 예상됩니다. 특히 Cross-repo PR, QA, 본부장/Foundry-X 리뷰, 장애 시 조치 등에서 동시 처리 불가 리스크가 큽니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**Cross-repo PR deadlock**: Foundry-X 쪽 협업자 부재/리소스 미확보, merge 프로토콜 불일치 등으로 M-2가 지연/실패할 수 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**LLM 비용 예측 실패**: 실제 자동 채점(5,214건) 시 LLM 모델 호출 수, rate limit, 장애, 비용 초과 발생 가능성 많습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**Tree-sitter WASM 호환성**: PoC 실패 가능성, 메모리 leak, 퍼포먼스 저하 등으로 S-3가 무기한 지연될 수 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**QA/검수/승인 프로세스 미비**: 수기 검수/자동화 병행이 현실적으로 지켜지지 않으면 품질 보장 실패, 검증 과정에서 누락/오류 가능성.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**운영 데이터 정합성/rollback 미흡**: 실 운영 데이터에 잘못 반영될 경우, 복구 비용/시간이 대폭 증가할 수 있음.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**본부장 리뷰 D-Day 및 Foundry-X 담당자/PO의 실질적 리소스/우선순위 합의**가 Sprint Plan 이전에 확보되어야 합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**QA/검수/승인 프로세스(자동화+수기)의 실제 책임자/승인권자와 SLA**가 명확하게 문서화·합의되어야 합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**Tree-sitter WASM PoC**가 Sprint 착수 전 1주내 성공적으로 완료되어야 하며, 실패 시 즉시 대체 전략이 의사결정되어야 합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**LLM 자동 채점(5,214건) 시 비용/속도/장애 이슈 발생 시의 fallback 플랜**(샘플링 전환, 수기 검수, 모델 전환 등)이 사전 합의되어야 합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**Cross-repo PR 운영 프로토콜**(merge 순서, deadlock시 조치, 컨택포인트 등)이 문서화되고, 양팀이 서면/Slack 등으로 합의해야 합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "verdict",
+      "source": "ChatGPT",
+      "text": "Conditional",
+      "severity": "info"
+    },
+    {
+      "type": "risk",
+      "source": "Gemini",
+      "text": "사실 확인\n\nPRD에 포함된 가정이나 수치 중 검증이 필요한 것들은 다음과 같습니다.\n\n*   **\"자가보고 99.7% vs 독립 검증 95.6%의 -4.1%p drift\" 원인:** \"수동 평가·실증 증거 부족\"이라고 명시되었으나, 이 4.1%p의 구체적인 원인 분석(어떤 유형의 오류에서 발생했는지, LLM의 한계인지, 평가 기준의 모호성인지 등)이 더 ",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "Gemini",
+      "text": "사용자 관점\n\n**주 사용자 (Foundry-X 팀)의 솔루션 수용 가능성:**\nFoundry-X 팀은 Decode-X의 실질적인 수혜자이므로, 그들의 니즈가 명확히 반영되어야 합니다. PRD에서는 Foundry-X 팀의 주요 니즈를 잘 파악하고 있습니다.\n\n*   **(1) AgentResume 신뢰도:** 실구현을 통해 Orchestrator 세션 복구",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "Gemini",
+      "text": "**Foundry-X 팀과의 공식적인 협업 합의 및 프로세스 문서화:** M-2 (TD-25) 및 S-2 (AgentResume) 착수 전에 Foundry-X 팀의 리소스 가용성, 교차 PR/배포 동기화 프로토콜, 책임 범위 등에 대한 **공식적인 합의서 또는 MOU가 체결**되어야 합니다. 이는 오픈 이슈 6, 7의 해결과 직결됩니다. 1인 개발 체제에서",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "Gemini",
+      "text": "**Tree-sitter WASM PoC 완료 및 대안 마련:** S-3 (Tree-sitter 기반 Java 파서) 착수 전 Cloudflare Workers 환경에서의 Tree-sitter WASM 모듈 호환성 PoC가 **성공적으로 완료**되어야 합니다. 만약 실패할 경우, 기능 범위 재조정(S-3 제외 또는 다른 파서 기술 도입)에 대한 **구체적인",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "Gemini",
+      "text": "**AI-Ready 6기준 평가의 설명 가능성(Explainability) 강화:** LLM이 AI-Ready 6기준에 따라 코드를 평가할 때, 단순히 점수만 제시하는 것이 아니라 **왜 그러한 점수가 나왔는지에 대한 상세한 근거와 설명(예: 특정 코드 라인, 특정 패턴 등)**을 자동으로 추출하고 리포팅하는 기능이 강화되어야 합니다. 이는 Foundry-",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "Gemini",
+      "text": "**LLM 비용 관리 전략 구체화:** \"일 $30 한도 가드\"는 필수적이지만, S-1 (AI-Ready 자동 채점기)의 전수 채점 목표($50~$100 예상)와 상충될 가능성이 있습니다. 이 한도를 초과하지 않으면서 목표를 달성할 수 있는 **구체적인 샘플링 전략, 프롬프트 최적화, 모델 선택 기준(Opus/Haiku 트레이드오프)** 등이 Plan 단계",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "Gemini",
+      "text": "**QA/검수 및 Rollback/Failover 플랜의 상세화:** PRD에서는 QA/검수, Rollback/Failover 플랜을 언급하고 있으나, 1인 개발 체제에서 이 모든 프로세스를 어떻게 효율적으로 수행할지에 대한 **구체적인 체크리스트, 자동화 스크립트, 그리고 비상 연락망/에스컬레이션 절차**가 문서화되고 검증되어야 합니다. 특히 금융 시스템",
+      "severity": "medium"
+    },
+    {
+      "type": "verdict",
+      "source": "Gemini",
+      "text": "Conditional",
+      "severity": "info"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**긍정적 요소**:",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**Tree-sitter WASM 호환성**: Cloudflare Workers의 WASM 제한(메모리 128MB)에서 Java grammar 파싱 가능성 미검증",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**LLM 비용 폭증**: 5,214점 채점 시 Opus 기준 $100+ 예상. 샘플링 전략 없으면 예산 초과 리스크",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**교차 PR deadlock**: Decode-X ↔ Foundry-X 동시 변경 시 버전 불일치 가능성 높음",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**개선 필요 항목**:",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**비동기 작업 처리**: 대량 LLM 호출(S-1) 시 Queue 기반 병렬화 미고려 → Workers 10ms CPU 제한 위험",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**데이터 정합성**: `handoff_jobs` INSERT(idempotency)가 트랜잭션 보장 없음. 동시 요청 시 중복 row 가능",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**모니터링 부재**: DIVERGENCE 마커 발행 현황을 실시간 추적할 감사 로그 시스템 미구축",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**과소평가된 요소**:",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**Java 파서 전환(S-3)**: regex → Tree-sitter는 AST 재구성 필요. 기존 하드코딩 로직(TC-REFUND-002)과 충돌 가능성",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**AgentResume 세션 복구(S-2)**: Foundry-X Orchestrator 상태 동기화 프로토콜 미정의. 분산 트랜잭션 문제 발생 가능",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**자동 채점(S-1)**: 6기준 평가를 위한 프롬프트 엔지니어링 복잡도. False Positive/Negative율 15% 초과 시 수동 검수 필요",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**최우선 리스크 3건**:",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**Tree-sitter WASM 메모리 오버플로**: Java 대용량 소스 파싱 시 OOM 발생 → PoC 없이 S-3 진입 금지",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**교차 PR deadlock**: M-2에서 양측 리포지토리 동시 변경 필요 → merge 순서 프로토콜 필수",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**LLM 비용 폭주**: 일 $30 한도에서 S-1 20%만 실행해도 초과 가능 → 채점 배치를 주간 단위로 분할 필요",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**Tree-sitter WASM PoC 완료**: S-3 계획 수립 전 Workers 환경에서 Java grammar 로드/파싱 검증",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**교차 PR 프로토콜 정의**: M-2에서 Foundry-X 팀과 merge 순서/충돌 해결 절차 명문화",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**LLM 비용 가드레일**: 일일 한도 초과 시 자동 중단/샘플링 전환 로직 구현",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**전제조건**: Tree-sitter WASM PoC 성공 + 교차 PR 프로토콜 합의 + LLM 비용 제어장치 구현 완료 시에만 착수 권장",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**즉시 조치 필요**: Phase 3 Sprint 1을 WASM PoC/프로토콜 정의 전용으로 할당, 이후 본 개발 진행",
+      "severity": "medium"
+    },
+    {
+      "type": "verdict",
+      "source": "DeepSeek",
+      "text": "Conditional",
+      "severity": "info"
+    }
+  ]
+}

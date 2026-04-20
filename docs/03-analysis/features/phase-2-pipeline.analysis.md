@@ -4,7 +4,7 @@ title: Phase 2 본 개발 종합 통합 Gap Analysis (Sprint 211~216)
 version: 1.0
 status: Active
 category: ANALYSIS
-system-version: 0.2.0
+system-version: 0.7.0
 created: 2026-04-20
 updated: 2026-04-20
 author: Sinclair Seo

@@ -42,3 +42,146 @@ inputCompleteness:
     - "BL-027(계좌오류 재처리) — [미정의] → ES-REFUND-003"
     - "BL-029(강제환불 기준) — [미정의] → ES-REFUND-004"
     - "BL-028(제외금액 공식) — PoC에서 0으로 하드코딩 → ES-REFUND-005"
+
+# -----------------------------------------------------------------------------
+# Divergence Markers — Source-First Reconciliation
+# -----------------------------------------------------------------------------
+# AIF-REQ-035 Phase 3 F354 (TD-24, 세션 218, 2026-04-21)
+# Phase 2 M-3 "Source-First Reconciliation" 완결 — spec(rules) vs source(code) drift를
+# 공식 DIVERGENCE 마커로 승격. BL-level divergence는 reconcile.ts의 API-level 엔진
+# scope 밖이므로 수동 큐레이션 + TC 감사 로그 링크로 입증. Phase 3에서 BL-level
+# divergence 자동 검출 엔진 확장 검토 예정 (TD-27 AI-Ready 자동 채점기와 통합 가능).
+# -----------------------------------------------------------------------------
+divergenceMarkers:
+  - marker: DIVERGENCE
+    ruleId: BL-024
+    ruleName: "미사용 상품권 7일 이내 전액 환불 기간 체크"
+    scope: business-rule
+    severity: HIGH
+    specReference:
+      doc: "반제품-스펙/pilot-lpon-cancel/working-version/rules/business-logic.md"
+      section: "시나리오 4: 환불 — BL-024"
+      expected: "구매 후 7일 이내 환불 요청 → 전액 환불 처리. 7일 초과 시 환불 불가."
+    sourceReference:
+      file: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/refund.ts"
+      function: "processRefundRequest"
+      lines: "38-101"
+      actual: "payment.createdAt 기반 기간 계산 및 7일 경과 검증 로직 전무. BL-020(rfndPsbltyYn)은 L60 주석만 있을 뿐 실제 체크 미구현."
+    divergenceReason: "spec-source drift: spec defines 7-day window check for UNUSED_FULL refund; source code lacks any period validation."
+    auditEvidence:
+      - testId: TC-REFUND-002
+        testName: "UNUSED_FULL + 7일 초과 → 환불 거부"
+        contractFile: ".decode-x/spec-containers/lpon-refund/tests/contract/refund-contract.yaml"
+        expectedOutcome: "refund_rejected: true, error_code: FULL_REFUND_PERIOD_EXPIRED"
+        actualOutcome: "refund succeeded (WRONG_OUTCOME)"
+        reportLocation: "scripts/roundtrip-verify/last-report.json:182-187"
+        failReason: "WRONG_OUTCOME"
+    status: OPEN
+    recommendation: "Phase 3 이후 Working Prototype refund 구현 시 BL-024 기간 체크 로직 추가. payment.createdAt 대비 7일 경과 여부 판정 + FULL_REFUND_PERIOD_EXPIRED 에러 반환."
+
+  - marker: DIVERGENCE
+    ruleId: BL-028
+    ruleName: "환불 제외금액 공식 적용"
+    scope: business-rule
+    severity: MEDIUM
+    specReference:
+      doc: "반제품-스펙/pilot-lpon-cancel/working-version/rules/business-logic.md"
+      section: "시나리오 4: 환불 — BL-028"
+      expected: "입금액 = 환불요청액 − 제외금액 (캐시백·할인보전·가맹점 수수료 등)"
+    sourceReference:
+      file: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/refund.ts"
+      function: "processRefundRequest"
+      lines: "80-82"
+      actual: "exclusionAmount = 0 하드코딩 (PoC 주석 명시: 'BL-028: 제외금액 산정 (현 PoC에서는 0)'). 캐시백·할인보전·수수료 계산 로직 전무."
+    divergenceReason: "spec-source drift: spec defines explicit exclusion calculation; source hard-codes 0 for PoC simplicity."
+    auditEvidence:
+      - testId: TC-REFUND-006
+        testName: "제외금액 산정 후 입금액 계산"
+        contractFile: ".decode-x/spec-containers/lpon-refund/tests/contract/refund-contract.yaml"
+        expectedOutcome: "deposit_amount: 44500, exclusion_amount: 5500"
+        actualOutcome: "PASS by harness construction (comparator TD-22 8-keys silent PASS) — no real calculation verification"
+        reportLocation: "scripts/roundtrip-verify/last-report.json (TC-REFUND-006 passed=true, silent)"
+        failReason: "HARNESS_SILENT_PASS — 실 검증 필요 (Phase 3 F359 TD-22에서 교체 예정)"
+        relatedEdgeSpec: "ES-REFUND-005"
+    status: OPEN
+    recommendation: "Phase 3 이후 Working Prototype에 ES-REFUND-005 edge spec 기반 제외금액 공식 구현. F359(TD-22) comparator 실 D1 조회 교체로 검증 갭 보완."
+
+  - marker: DIVERGENCE
+    ruleId: BL-026
+    ruleName: "캐시백·할인보전 금액 환불 불가 + 포인트 전환 대안"
+    scope: business-rule
+    severity: MEDIUM
+    specReference:
+      doc: "반제품-스펙/pilot-lpon-cancel/working-version/rules/business-logic.md"
+      section: "시나리오 4: 환불 — BL-026"
+      expected: "캐시백 및 할인보전 금액 환불 시 현금 환불 불가. [미정의: 포인트 전환 등 대안 검토 필요] → ES-REFUND-002"
+    sourceReference:
+      file: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/refund.ts"
+      function: "processRefundRequest, approveRefund"
+      lines: "N/A"
+      actual: "캐시백/할인보전 식별 + 거부 + 대안 로직 모두 부재."
+    divergenceReason: "spec-source drift: spec flags BL-026 as '[미정의]' and punts to ES-REFUND-002 edge spec; source has no implementation."
+    auditEvidence:
+      - testId: N/A
+        note: "BL-026 대응 contract scenario 미작성 (TC-REFUND 시나리오 1~6은 caseback/discount 경로 미커버)."
+        relatedEdgeSpec: "ES-REFUND-002"
+        edgeSpecFile: ".decode-x/spec-containers/lpon-refund/tests/ES-REFUND-002.yaml"
+    status: OPEN
+    recommendation: "ES-REFUND-002 edge spec 확정 (포인트 전환 정책) → 구현 → 신규 TC-REFUND-CB-xxx 추가."
+
+  - marker: DIVERGENCE
+    ruleId: BL-029
+    ruleName: "유효기간 만료 상품권 환불 원칙 거부 + 강제환불 예외"
+    scope: business-rule
+    severity: MEDIUM
+    specReference:
+      doc: "반제품-스펙/pilot-lpon-cancel/working-version/rules/business-logic.md"
+      section: "시나리오 4: 환불 — BL-029"
+      expected: "유효기간 만료 상품권 환불 요청 시 원칙적으로 거부. 단, 강성 민원 시 강제환불 기능 활용. → ES-REFUND-004"
+    sourceReference:
+      file: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/refund.ts"
+      function: "processRefundRequest"
+      lines: "N/A"
+      actual: "유효기간 체크, 만료 거부, 강제환불 플로우 모두 부재."
+    divergenceReason: "spec-source drift: spec defines EXPIRED refund policy with ADMIN override; source has no expiry handling."
+    auditEvidence:
+      - testId: N/A
+        note: "BL-029 대응 contract scenario 미작성. expiredDate 필드 사용 경로 없음."
+        relatedEdgeSpec: "ES-REFUND-004"
+        edgeSpecFile: ".decode-x/spec-containers/lpon-refund/tests/ES-REFUND-004.yaml"
+    status: OPEN
+    recommendation: "ES-REFUND-004 edge spec 확정 (만료 거부 + ADMIN 강제환불 경로) → 구현 → TC-REFUND-EXP-xxx 추가."
+
+  - marker: DIVERGENCE
+    ruleId: BL-027
+    ruleName: "계좌 오류 시 환불계좌 재등록 또는 고객센터 수기 접수"
+    scope: business-rule
+    severity: LOW
+    specReference:
+      doc: "반제품-스펙/pilot-lpon-cancel/working-version/rules/business-logic.md"
+      section: "시나리오 4: 환불 — BL-027"
+      expected: "환불계좌 오류 발생 시 소비자가 (a) 계좌 재등록 또는 (b) 고객센터 수기 접수로 환불 처리. → ES-REFUND-003"
+    sourceReference:
+      file: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/refund.ts"
+      function: "approveRefund"
+      lines: "130-135"
+      actual: "계좌 미등록 시 status=MANUAL_REQUIRED 설정 + E422 에러 반환만 구현. 재등록 플로우 또는 수기 접수 후속 로직 없음."
+    divergenceReason: "spec-source partial: source implements only the flag-setting branch; re-registration/manual-intake follow-up logic missing."
+    auditEvidence:
+      - testId: N/A
+        note: "BL-027 대응 contract scenario 미작성. refund_accounts 없는 케이스에서 MANUAL_REQUIRED 상태 도달까지는 도달하나 복구 경로 테스트 부재."
+        relatedEdgeSpec: "ES-REFUND-003"
+        edgeSpecFile: ".decode-x/spec-containers/lpon-refund/tests/ES-REFUND-003.yaml"
+    status: OPEN
+    recommendation: "ES-REFUND-003 edge spec 확정 (재등록 API + 수기 접수 트리거) → 구현 → TC-REFUND-ACCT-xxx 추가."
+
+divergenceSummary:
+  totalMarkers: 5
+  bySeverity:
+    HIGH: 1     # BL-024 (실 TC 실패 증거 보유)
+    MEDIUM: 3   # BL-026, BL-028, BL-029
+    LOW: 1      # BL-027
+  auditEvidenceCoverage: "1/5 with live TC failure (TC-REFUND-002). 1/5 with silent-PASS harness gap (TC-REFUND-006, TD-22). 3/5 with ES edge spec backing only."
+  publishedAt: "2026-04-21T08:40:00+09:00"
+  publishedBy: "Decode-X Sprint 218 F354 (TD-24)"
+  kpiCompliance: "≥3 DIVERGENCE markers (Phase 3 KPI) — 5건 발행으로 충족"

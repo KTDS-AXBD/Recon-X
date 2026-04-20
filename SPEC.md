@@ -489,7 +489,7 @@
 > **착수일**: 2026-04-21 (세션 218)
 
 **Sprint 218 (True Must, Week 1):**
-- [ ] F354 (AIF-REQ-035 Phase 3 M-1, **P0**): **TD-24 DIVERGENCE 공식 마커 발행** — `reconcile` 엔진 LPON refund 실 실행 → `docs/poc/sprint-214b/lpon-refund/provenance.yaml`에 DIVERGENCE 마커 추가 + TC-REFUND-002 감사 로그 링크. M-3 달성률 85→95%. 예상 1h
+- [x] F354 ✅ (AIF-REQ-035 Phase 3 M-1, **P0**, 세션 218): **TD-24 DIVERGENCE 공식 마커 발행** — `.decode-x/spec-containers/lpon-refund/provenance.yaml`에 `divergenceMarkers` 섹션 신규 발행 (5건: BL-024 HIGH + BL-026/028/029 MEDIUM + BL-027 LOW). BL-024는 TC-REFUND-002 WRONG_OUTCOME 감사 로그 직접 링크(`scripts/roundtrip-verify/last-report.json:182-187`). BL-028은 `refund.ts:80-82` hard-coded `exclusionAmount = 0`과 TD-22 silent PASS 교차 언급. BL-026/029는 ES edge spec 링크, BL-027은 `approveRefund:130-135` 부분 구현 명시. KPI "≥3건 DIVERGENCE" 5건으로 충족. reconcile 엔진(API-level) 대비 BL-level divergence는 수동 큐레이션 + ES edge spec 링크 방식 채택 — Phase 3 이후 자동 검출 확장 검토. 경로 공식화: PRD 문서상 `docs/poc/sprint-214b/lpon-refund/` → 실제 `.decode-x/spec-containers/lpon-refund/`
 - [ ] F355 (AIF-REQ-035 Phase 3 M-2, **P0**): **TD-25 Foundry-X Production E2E 증거 수집** — Decode-X Production → Foundry-X Production `POST /prototype-jobs` 실 호출 + `handoff_jobs` row 생성 확인 + 로그/스크린샷 캡처. Tier-A 6서비스 모두 반복. Cross-repo PR 포함. 예상 2h + Foundry-X 2~4h
 - [ ] F360 (AIF-REQ-035 Phase 3 S-5, P3): **TD-20/21/23 Phase 2 작연 정리** — Sprint 215 retroactive Plan/Design(0.5h) + gift/settlement provenance FX-SPEC 버전 drift 수정(0.1h) + `rfndPsbltyYn` 하드코딩 해결(1h). 총 1.6h
 

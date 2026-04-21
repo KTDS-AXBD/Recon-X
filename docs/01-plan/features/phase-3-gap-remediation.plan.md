@@ -215,13 +215,15 @@ related:
 |:-----:|:----:|-------|:----:|:----:|:----:|
 | 223 | S225 (autopilot) | **G-2** PR #24 E2E fix + TD-41 신규 | 4h 14m | 없음 | ✅ 완료 (`c49d2ef`) |
 | - | S227 | **G-1 Phase 1** dry-run baseline + Root Cause 진단 | 1h 실측 | 없음 | ✅ 완료 (세션 227, `reports/ai-ready-baseline-2026-04-21.json`) |
-| 225 | - | **G-1 Phase 2** ~~Empty Slot Fill~~ → **converter.ts 패치 (P1~P5)** + dry-run 재측정 | **0.5~1 Sprint** | Phase 1 결과 | 📋 PLANNED (시나리오 C 확정, 전략 전환) |
-| 226 | - | **G-1 Phase 3** Packaging + /handoff/submit × 7 + 증빙 리포트 | 0.5 Sprint | Phase 2 7/7 PASS 확인 | 📋 PLANNED |
-| 227~228 | - | **G-3 Phase 1** AI-Ready PoC 80건 | 1 Sprint | 독립 (G-1 Phase 3 후 권장) | 📋 PLANNED |
-| 229~230 | - | **G-3 Phase 2** 전수 5,214건 + API | 1 Sprint | PoC 정확도 ≥ 80% | 📋 PLANNED |
-| 231+ | - | **TD-41** CF Access mock E2E 재작성 | 1~2 Sprint | 후순위 | 📋 PLANNED |
+| 225 | S229 (autopilot) | **G-1 Phase 2** ~~Empty Slot Fill~~ → **converter.ts 패치 (P1~P5)** + dry-run 재측정 | **15m 실측** | Phase 1 결과 | ✅ 완료 (PR #26 `710eaca`, 7/7 PASS mean 0.916) |
+| 226 | - | **AIF-REQ-036 S3 M-UX-3** Engineer Workbench + Provenance Inspector + AXIS Tier 2 + Admin + F391/F392 | 1 Sprint | Sprint 225 완료 | 📋 PLANNED (← Sprint 225 이관) |
+| 227 | - | **AIF-REQ-036 Should M-UX-4** AXIS Tier 3 + Guest/Demo | 0.5 Sprint 체력 여유 시 | Sprint 226 완료 | 📋 PLANNED (← Sprint 226 이관) |
+| **228** | - | **G-1 Phase 3** Packaging × 7 + /handoff/submit × 7 + D1 조회 + AIF-ANLS-031 증빙 리포트 | 0.5 Sprint (~3.5h) | Phase 2 7/7 PASS ✅ | 📋 PLANNED (F397~F400 신규 등록 세션 230) |
+| 229~230 | - | **G-3 Phase 1** AI-Ready PoC 80건 | 1 Sprint | 독립 (G-1 Phase 3 후 권장) | 📋 PLANNED |
+| 231~232 | - | **G-3 Phase 2** 전수 5,214건 + API | 1 Sprint | PoC 정확도 ≥ 80% | 📋 PLANNED |
+| 233+ | - | **TD-41** CF Access mock E2E 재작성 | 1~2 Sprint | 후순위 | 📋 PLANNED (Sprint 226 F392와 통합 가능) |
 
-**남은 작업 총 ~~4~5~~ → 3~4 Sprint (1~1.5주)**. converter 패치 전략 전환으로 -1 Sprint 단축. 본부장 리뷰 D-Day 임박 시 G-3 Phase 2 + TD-41은 Phase 4 이관 허용 (PRD §4.2).
+**남은 작업 총 ~~4~5~~ → 3~4 Sprint (1~1.5주)**. converter 패치 전략 전환으로 -1 Sprint 단축. Sprint 226(M-UX-3) + Sprint 227(M-UX-4) 점유로 G-1 Phase 3는 Sprint 228로 재배치(세션 230 AskUserQuestion 확정). 본부장 리뷰 D-Day 임박 시 G-3 Phase 2 + TD-41은 Phase 4 이관 허용 (PRD §4.2).
 
 ---
 

@@ -91,7 +91,7 @@ interface RawPolicy {
 
 function parseRulesMarkdown(content: string): RawPolicy[] {
   const policies: RawPolicy[] = [];
-  const tableRowRe = /^\|\s*(BP-\d{3})\s*\|([^|]+)\|([^|]+)\|([^|]+)\|([^|]*)\|/;
+  const tableRowRe = /^\|\s*((?:BL|BP|BB|BG|BS)-[A-Z]?\d{3})\s*\|([^|]+)\|([^|]+)\|([^|]+)\|([^|]*)\|/;
 
   for (const line of content.split("\n")) {
     const m = line.match(tableRowRe);

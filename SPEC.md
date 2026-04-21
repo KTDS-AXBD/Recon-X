@@ -556,6 +556,7 @@
 - [x] F395 (AIF-PLAN-037 G-1 Phase 2 검증, **P0**, Sprint 225, `2c6dee5`): **converter.test.ts 업데이트 + baseline-2 산출** ✅ — 기존 테스트 84 lines 신규 assertion 추가 + `reports/ai-ready-baseline-2-2026-04-21.json` 127 lines 산출. **7/7 PASS mean 0.916**. G-1 Phase 3 즉시 착수 가능
 
 **Sprint 226 (S3 — M-UX-3 Engineer Workbench, 📋 PLANNED, ← Sprint 225 이관):**
+- [ ] F396 (AIF-REQ-036 위생 선행, **P1**, Sprint 226 첫 항목, 1.5h): **Gap-1 root 중복 5건 정리 + Sidebar 라우트 정합성 점검** — Sprint 224 soft-archive 5건(`pages/{analysis,benchmark,poc-ai-ready,poc-ai-ready-detail,poc-phase-2-report}.tsx`)이 root + `_archived/` 양쪽 존재 → `_archived/` 일원화(root 5건 삭제). `apps/app-web/src/app.tsx` redirect 5건 유지 검증. `Sidebar.tsx` 6 그룹(Dashboard + Executive/Extract/Verify/Deliver/Admin) 14 링크 중 실재 라우트 매칭률 100% 확인. typecheck + lint + E2E smoke PASS 후 이어서 F391/F379 착수
 - [ ] F379 (AIF-REQ-036 M-UX-3, **P0**, Sprint 226, 6h): **Engineer Workbench Split View** — 좌 Spec / 우 재구성 마크다운 + section 앵커 스크롤. 원본 소스 줄 하이라이트는 Out-of-Scope(F364 별도). KPI-2 ≤ 3 클릭 목표
 - [ ] F380 (AIF-REQ-036 M-UX-3, **P0**, Sprint 226, 4h): **Provenance Inspector** — 우측 drawer + Provenance 그래프 탐색. F391 API 응답 소비
 - [ ] F381 (AIF-REQ-036 M-UX-3, **P1**, Sprint 226, 4h): **AXIS DS Tier 2 `@axis-ds/react` 8종 교체** — Button/Card/Tabs/Dialog/Input/Select/Tooltip/Badge shadcn 래퍼 교체. 교체율 ≥ 80% 목표
@@ -563,7 +564,7 @@
 - [ ] F387 (AIF-REQ-036 R2 전이 S220~221, **P1**, Sprint 226, 3h): **Role별 Audit Log 설계 + Admin 페이지 노출** — 역할 매트릭스(Analyst/Reviewer/Developer/Client/Executive) audit log 스키마 + 필터/검색 UI
 - [ ] F388 (AIF-REQ-036 R2 전이 S221, **P1**, Sprint 226, 2h): **Section-only Fallback 실사용자 파일럿** — 3명 인터뷰 + 체감 측정. RP-7(ChatGPT 지적) 조기 검증
 - [ ] F391 (AIF-REQ-036 M-UX-3, **P0**, Sprint 226, 3h): **`GET /skills/:id/provenance/resolve` API 신설 (svc-skill)** — R2 + D1 + spec-container path/section 1회 집약. F379/F380 백엔드
-- [ ] F392 (AIF-REQ-036 M-UX-3, **P0**, Sprint 226, 4h): **QA/E2E 자동화** — Playwright + smoke + regression. KPI-3 통과율 ≥ 95%
+- [ ] F392 (AIF-REQ-036 M-UX-3, **P0**, Sprint 226, 4h): **QA/E2E 자동화 + TD-41 해소** — Playwright `page.route()` + msw로 `CF_Authorization` cookie 주입 + `/auth/me` stub → 기존 `auth.setup.ts`/`rbac.spec.ts`/functional spec 10건 `test.describe.skip` 해제. smoke + regression + KPI-3 통과율 ≥ 95%. **TD-41 해소 증거로 CI E2E pass count 1 → 47 복원 확인**
 
 **Sprint 227 (Should — M-UX-4, 📋 PLANNED 체력 여유 시, ← Sprint 226 이관):**
 - [ ] F383 (AIF-REQ-036 Should, **P2**, Sprint 227, 8h): **AXIS DS Tier 3: 도메인 특화 컴포넌트 3종 PR 생성** — SpecSourceSplitView/ProvenanceInspector/StageReplayer를 `IDEA-on-Action/AXIS-Design-System` 레포에 재활용 가능한 형태로 기여

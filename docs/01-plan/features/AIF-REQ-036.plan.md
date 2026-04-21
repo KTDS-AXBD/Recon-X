@@ -327,11 +327,90 @@ S219 내 독립 작업 3그룹 (의존성 없음):
 
 ## 10. Next Steps
 
-1. [ ] **Design 문서 작성**: `/pdca design AIF-REQ-036` — Split View 데이터 플로우, OAuth 시퀀스, Provenance Resolve API 스키마, AXIS DS 교체 매핑 상세
-2. [ ] **SPEC.md §6 Phase 9 F-item 공식 등록** (F370~F392, 15건)
-3. [ ] **Sprint 219 WT 생성**: `/ax:sprint 219` (선행 3종 Day 0 체크 + autopilot)
-4. [ ] **R2 Sprint 전이 9건 Task 등록** (TaskCreate로 추적)
-5. [ ] **AXIS DS + CF Access 선행 2건 승인 프로세스 개시**
+1. [x] ~~Design 문서 작성~~ ✅ 세션 225 (`18035c0` + S2 역동기화 `db1febd`)
+2. [x] ~~SPEC.md §6 Phase 9 F-item 공식 등록~~ ✅ 세션 226 (`1ed08c5`, 15건 F370~F392 + 세션 229 F396 신규)
+3. [x] ~~Sprint 219 WT 생성~~ → 번호 재배치 완료: Sprint 223(S1 ✅ MERGED `c49d2ef`) / Sprint 224(S2 ✅ MERGED `a475a77`) / Sprint 226(S3 📋) / Sprint 227(S4 📋)
+4. [ ] **Sprint 226 WT 생성** (세션 229 결정): `/ax:sprint 226` — autopilot 범위 F396 → F391 → F379/F380 → F381/F382/F387 → F388 → F392(TD-41 포함). §11.2 Follow-up Plan 참조
+5. [ ] **Sprint 227 WT 생성** (Sprint 226 DONE 후): `/ax:sprint 227` — F383 AXIS DS Tier 3 + F384 Guest/Demo
+6. [ ] **AXIS DS + CF Access 선행 2건 승인 프로세스 개시** (여전히 미착수, S3 Tier 2 교체 착수 전 승인 필수)
+
+---
+
+## 11. Follow-up Plan (세션 229, 2026-04-21)
+
+> **Trigger**: Sprint 223 + 224 MERGED 이후 "메뉴 개편 후속 작업 계획" 사용자 요청. Sprint 225는 AIF-PLAN-037 G-1 Phase 2(converter.ts 패치)로 점유되어 AIF-REQ-036 S3 → Sprint 226, Should → Sprint 227로 이관된 배치를 확정한다.
+
+### 11.1 진행 현황 스냅샷
+
+| Sprint | Milestone | F-items | PR | 상태 |
+|--------|-----------|---------|----|----|
+| 223 | M-UX-1 인증/기반 | F370~F374, F385, F389 (7건) | #24 `c49d2ef` | ✅ MERGED (Match 94%) |
+| 224 | M-UX-2 Executive View | F375~F378, F386, F390 + F374 실 분기 (6+1건) | #25 `a475a77` | ✅ MERGED (autopilot 97% / gap-detector 96%) |
+| 225 | ← 번호 재배치 (G-1 Phase 2 converter.ts) | F393/F394/F395 (3건, AIF-PLAN-037) | #26 `710eaca` | ✅ MERGED (AIF-REQ-036 외부) |
+| **226** | **M-UX-3 Engineer Workbench** | **F396 + F379~F382, F387, F388, F391, F392 (9건)** | — | **📋 PLANNED (Next)** |
+| **227** | **Should M-UX-4** | **F383, F384 (2건)** | — | **📋 PLANNED 확정 포함** |
+
+### 11.2 Sprint 226 범위 확정 (메뉴 개편 후속 핵심)
+
+**배치 원칙**: 위생 → API 백엔드 → UX 전면 → 운영(Admin/Audit/파일럿) → QA/E2E(TD-41 해소)
+
+**Wave 1 — 위생 선행 (1.5h)**
+- [ ] **F396 (신규, P1)**: Gap-1 root 중복 5건 정리 + Sidebar 라우트 정합성 점검
+  - `apps/app-web/src/pages/{analysis,benchmark,poc-ai-ready,poc-ai-ready-detail,poc-phase-2-report}.tsx` root 5건 삭제 (`_archived/` 일원화)
+  - `app.tsx` redirect 5건 유지 검증 (런타임 정상 보존)
+  - `Sidebar.tsx` 6 그룹 14 링크 실재 라우트 매칭률 100% 검증 (`/executive/overview`, `/executive/evidence`, `/export`, `/upload`, `/source-upload`, `/hitl`, `/fact-check`, `/gap-analysis`, `/skills`, `/specs`, `/api-console`, `/ontology`, `/settings`, `/mockup`, `/guide`)
+  - typecheck + lint + E2E smoke PASS 후 다음 Wave로 진행
+  - **이후 Wave에서 Sidebar 재점검 트리거**: F382 Admin + F387 Audit Log + F388 파일럿 등록 시 Admin 그룹 확장
+
+**Wave 2 — 백엔드 API (3h, 단독 선행)**
+- [ ] **F391 (P0)**: `GET /skills/:id/provenance/resolve` — svc-skill에 신설. R2 `.skill.json` + D1 `policies`/`terms` + spec-container `provenance.yaml` path/section 1회 집약. F379/F380가 소비
+
+**Wave 3 — UX 전면 (10h, 핵심 경험)**
+- [ ] **F379 (P0)**: Engineer Workbench Split View — 좌 Spec / 우 재구성 마크다운 section 앵커 스크롤
+- [ ] **F380 (P0)**: Provenance Inspector — 우측 drawer + 그래프 탐색 (F391 응답 소비)
+- [ ] **F381 (P1)**: AXIS DS Tier 2 — `@axis-ds/react` 8종(Button/Card/Tabs/Dialog/Input/Select/Tooltip/Badge) shadcn 래퍼 교체 (교체율 ≥ 80%)
+
+**Wave 4 — 운영(Admin/Audit/파일럿) (9h)**
+- [ ] **F382 (P0)**: Admin 기본 — Users CRUD + Organization + Health + Usage Dashboard
+- [ ] **F387 (P1)**: Role별 Audit Log 설계 + Admin 페이지 노출 (5 역할 매트릭스)
+- [ ] **F388 (P1)**: Section-only Fallback 실사용자 파일럿 — 3명 인터뷰 + 체감 측정 (RP-7 조기 검증)
+
+**Wave 5 — QA/E2E + TD-41 해소 (4h)**
+- [ ] **F392 (P0)**: Playwright + smoke + regression + **TD-41 해소 통합**
+  - Playwright `page.route()` + msw로 `CF_Authorization` cookie 주입 + `/auth/me` stub
+  - `auth.setup.ts` + `auth.spec.ts` + `rbac.spec.ts` + 8 functional spec `test.describe.skip` 해제
+  - KPI-3 통과율 ≥ 95%
+  - **성공 증거**: CI E2E pass count 1 → 47 복원
+
+**총 예상**: 27.5h (기존 S3 26h + F396 1.5h), 1 Sprint 범위 내
+
+### 11.3 Sprint 227 범위 확정 (Should M-UX-4)
+
+사용자 승인: Sprint 226 DONE 후 체력 여유 전제로 **계획 문서에 확정 포함**. AXIS DS 외부 기여는 Foundry-X/Launch-X/Eval-X 확장 전 선제 레퍼런스 확보 기회.
+
+- [ ] **F383 (P2)**: AXIS DS Tier 3 — 도메인 특화 컴포넌트 3종(`SpecSourceSplitView`, `ProvenanceInspector`, `StageReplayer`)을 `IDEA-on-Action/AXIS-Design-System` 레포에 재활용 가능한 형태로 기여 PR (8h)
+- [ ] **F384 (P2)**: Guest/Demo 모드 — 읽기 전용 데이터 모드, 외부 데모/영업용 (4h)
+
+**실패/중단 조건**: Sprint 226 Match Rate < 85% → 227 보류 + 227 범위를 Sprint 228로 이관. AXIS DS 레포 기여 채널 미성숙 → F383 skeleton PR만 열고 머지는 F383b로 분리.
+
+### 11.4 DoD 갱신 (§4.1 덮어쓰기)
+
+Sprint 226 완료 기준 (기존 "S221 완료 시" → "Sprint 226 완료 시"):
+- [ ] KPI-1 본부장 3분 테스트 PASS (10건 샘플)
+- [ ] KPI-2 Split View 클릭 ≤ 3 (10건 샘플)
+- [ ] KPI-3 QA/E2E 95% 통과 + **E2E pass count 47 복원**
+- [ ] Legacy Feature Flag (`?legacy=1`) 삭제 가능 상태 (스모크 PASS 후 Sprint 227 초 삭제)
+- [ ] Production 배포 완료 (Cloudflare Pages + Access)
+- [ ] AXIS DS 핵심 컴포넌트 교체율 ≥ 80% (Tier 2)
+- [ ] **페이지 수 확정**: root 중복 5건 삭제 후 실 페이지 23개 (28 - 5) → Sprint 226 구현 완료 후 재판정(목표 ≤ 14 Sidebar 노출)
+- [ ] SPEC.md §7 AIF-REQ-036 IN_PROGRESS → Sprint 227 DONE 후 전환
+
+### 11.5 착수 지시 (다음 세션)
+
+1. `git status` clean 확인 (세션 229 편집: SPEC.md + 본 Plan doc)
+2. `/ax:sprint 226` → WT 생성 → `.sprint-context`에 F_ITEMS=F396+F391+F379+F380+F381+F382+F387+F388+F392 명시
+3. autopilot 범위 주입: 본 §11.2 Wave 1~5 순서 준수
+4. Gate: Wave 1 완료 후 typecheck/lint/smoke PASS, Wave 5 완료 후 CI E2E 47/47 복원 확인
 
 ---
 
@@ -340,3 +419,4 @@ S219 내 독립 작업 3그룹 (의존성 없음):
 | Version | Date | Changes | Author |
 |---------|------|---------|--------|
 | 0.1 | 2026-04-21 | 초안 — PRD v0.3 기반 Plan 작성, F-item 15건 제안, Sprint 219~222 분해, R2 전이 9건 F-item 매핑 | Sinclair |
+| 0.2 | 2026-04-21 (세션 229) | Sprint 223/224 MERGED 반영 + §11 Follow-up Plan 추가 (Sprint 226 9 F-item 확정 — F396 신규 위생 + TD-41을 F392에 통합, Sprint 227 Should 확정 포함) + §10 Next Steps 체크 갱신 | Sinclair |

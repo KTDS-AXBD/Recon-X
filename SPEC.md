@@ -503,11 +503,12 @@
 - [ ] F359 (AIF-REQ-035 Phase 3 S-4, P2, 체력 여유 시): **TD-22 comparator 8 keys silent PASS 교체** — `scripts/roundtrip-verify/comparator.ts:168-177` 하드코딩 → 실 D1 조회로 교체. round-trip 신뢰도 보강. 예상 2h
 - [ ] F356-A (AIF-REQ-035 Phase 3 S-1 Phase 1, P1, 체력 여유 시): **AI-Ready 6기준 자동 채점기 Phase 1 (스크립트 + 샘플링)** — LPON 80건 × 6기준 = 480 점수 PoC. LLM 비용 가드 (일 $30) 포함. 스키마/프롬프트 확정
 
-**Sprint 220 (Should Have 2차, Week 3):**
-- [ ] F356-B (AIF-REQ-035 Phase 3 S-1 Phase 2, P1): **AI-Ready 자동 채점기 전수 배치** — LPON 859 skill + Fill 9건 = 5,214 점수 배치. `/ai-ready/evaluate` API 엔드포인트 + 구조 점수 출력 JSON. 30분 이내 완료 목표
-- [ ] F357 (AIF-REQ-035 Phase 3 S-2, P1): **Sprint 202 AgentResume 실구현** — `services/svc-mcp-server/src/routes/agent.ts:164-181` stub → 실구현. Foundry-X Orchestrator 세션 복구 프로토콜 정의. AIF-REQ-026 Phase 2 잔여 종결. P95 2s + 성공률 95% SLA
+**Sprint 220 (Infra 위생 집중 — CI D1 migration workflow, Week 3):**
+- [ ] F366 (TD-35 해소, **P1**, Sprint 220 단독 주력): **CI D1 migration workflow 자동화** — TD-35 "Staging 방치"(svc-skill-staging 2026-04-16 이후 미배포, db-skill-staging skills 테이블 자체 없음, 0001_init.sql부터 미적용) + TD-38 "0006 production 수동 적용" 패턴 반복 방지. (1) `.github/workflows/deploy-services.yml`에 D1 migration step 추가 — main push 시 staging 자동 `wrangler d1 migrations apply`, release tag 시 production 수동 승인 후 적용, (2) `scripts/db-init-staging.sh` 신설 — 5 D1 DB(ingestion/structure/policy/ontology/skill) 일괄 0001~latest 적용, (3) migration drift 감지 (local `.sql` 파일 ↔ `d1_migrations` 테이블 비교, PR CI step), (4) E2E smoke test staging 포함 (최소 `/health` + `/skills/from-spec-container` 401 응답). 성공 기준: staging svc-skill `/skills/from-spec-container` 200 응답 + db-skill-staging skills 테이블 존재 + PR CI에서 migration drift 감지 가능. 예상 1 Sprint.
 
 **Sprint 221+ (Should Have 3차, Week 4+, 체력 여유 시):**
+- [ ] F356-B (AIF-REQ-035 Phase 3 S-1 Phase 2, P1, Sprint 220 → 221+ 이관): **AI-Ready 자동 채점기 전수 배치** — LPON 859 skill + Fill 9건 = 5,214 점수 배치. `/ai-ready/evaluate` API 엔드포인트 + 구조 점수 출력 JSON. 30분 이내 완료 목표
+- [ ] F357 (AIF-REQ-035 Phase 3 S-2, P1, Sprint 220 → 221+ 이관): **Sprint 202 AgentResume 실구현** — `services/svc-mcp-server/src/routes/agent.ts:164-181` stub → 실구현. Foundry-X Orchestrator 세션 복구 프로토콜 정의. AIF-REQ-026 Phase 2 잔여 종결. P95 2s + 성공률 95% SLA
 - [ ] F358 (AIF-REQ-035 Phase 3 S-3, P1): **TD-28 Tree-sitter 기반 Java 파서** — regex CLI → Tree-sitter. Workers 호환성 PoC(1주) 선행 → WASM/native 바인딩 결정 → CLI 이관 + 테스트. PRD↔Code silent drift 해소. 예상 2~3 Sprint
 - [ ] F361 (AIF-REQ-035 Phase 3 S-6, P3): **TD-26 Java 파서 공용 모듈 추출** — `svc-ingestion/parsing/java-*.ts` + `scripts/java-ast/runner.ts` → `packages/utils/src/java-parsing/` 공용화. F358(Tree-sitter)과 자연 통합
 - [ ] F364 (AIF-REQ-036 provenance v2, **P2**, Phase 4+ 이관 후보): **Provenance v2 — sourceLineRange 스키마 확장 + 상류 파이프라인 라인 추적** — 세션 221 AIF-REQ-036 Provenance 실측에서 **sourceLineRange 필드 스키마 부재(채움률 0% 확정)** 판명. `PolicySchema.source.lineRange: {start, end}` 추가 + `svc-ingestion` 청크 분할 시 라인 오프셋 보존 + `svc-extraction`/`svc-policy` LLM 프롬프트에 라인 정보 주입 + `svc-skill/converter.ts` 라인 정보 유지 + D1 마이그레이션(skills 또는 `skill_source_lines` 신규 테이블). 기존 3,924 skill 재생성 또는 점진 마이그레이션 전략 필요. AIF-REQ-036 MVP에서 "원본 소스 줄 하이라이트" 요구 제거로 분리. 보고서: `docs/03-analysis/features/provenance-coverage-2026-04-21.md`. 예상 2~3 Sprint
@@ -518,6 +519,8 @@
 **실패/중단 조건**: Sprint 218 말에 F354 또는 F355a 미완 → Phase 3 범위 재협상 또는 aborting. F355b/F362는 Sprint 219~220 이관(M-2b/M-2c Should). LLM 비용 일일 한도 초과 3회 이상 → S-1 샘플링 전환. Cross-repo merge 48h 지연 → F355b mock 하네스로 전환.
 
 > **세션 218 재정의 (2026-04-21)**: F355 사전 조사 결과 6중 갭 발견으로 분할. MVP 임계값 = F354 + F355a (도구 정리 + 갭 명세 보고서). M-2 본질("Foundry-X Production E2E 실 호출 6/6")은 F355b + F362 완결로 Sprint 219~220 달성 예정. 분석: `docs/03-analysis/features/sprint-218-f355-gap-analysis.md`
+
+> **세션 222 재편 (2026-04-21)**: Sprint 219~221 과정에서 production "자가보고 vs 실측" 갭 6건 연속 발견(TD-33~38). 그중 **TD-35(Staging 환경 방치, P1) + migration 자동 파이프라인 부재**가 production 드리프트의 근원 — M-2 KPI Production E2E 실 검증을 쌓기 전에 인프라 위생 선행 필수. Sprint 220 scope = **F366 CI D1 migration workflow 단독**으로 재편. 기존 F356-B(AI-Ready 전수 배치) + F357(AgentResume)은 Sprint 221+로 이관. 이유: Should Have 진도보다 Production 신뢰성 회복이 M-2 KPI 본질에 선행.
 
 ---
 

@@ -14,19 +14,23 @@
 - Commits: `4a8352c feat(g-1-phase-1): AI-Ready baseline 실측 + converter.ts 전략 전환` (script+plan+reports 3 files, +330/-43, main push).
 
 ### 세션 226 (2026-04-21)
-**Sprint 224 ✅ autopilot 완주 — AIF-REQ-036 S2 M-UX-2 Executive View (Match 97% + CI green)**:
-- ✅ **Sprint 224 WT + autopilot 자체 완결 (19분 17초)**: `/ax:sprint 224 --manual` → ccs --model sonnet + autopilot full cycle. **Match Rate 97%** (19/20 설계 항목 일치). 17 files, 3,316 insertions. 구현/테스트/커밋/push 완료. PR #25 생성.
-- ✅ **7 F-item DONE**: F374 (Feature Flag 실 분기, `?legacy=1`) + F375 (ExecutiveOverview 4 Group 요약 위젯) + F376 (FoundryXTimeline 6서비스 round-trip) + F377 (Archive soft-archive 방침 전환) + F378 (Evidence 3탭 허브) + F386 (Compliance 뱃지) + F390 (CF Web Analytics beacon).
-- ✅ **Design 역동기화 (commit `db1febd`)**: F377 hard delete → soft archive 정책 변경을 Design doc §2.2에 즉시 기록. PDCA gap 처리 규칙(Design에 사유 기록) 준수. 히스토리 보존 + 롤백 비용 최소화.
-- ✅ **CI 전 단계 green (PR #25, run 24724324098)**: E2E Tests ✅ (52 tests, 52s) + Typecheck & Test ✅ (1m11s) + Migration Sequence Check ✅ (5s).
-- ✅ **Master 독립 검증**: gap-detector Agent가 Design vs Code 재검증 → **96% Match Rate** (autopilot 97% vs Master 96% ±1% 신뢰도 확보, 메타 검증 성공).
-- ⏳ **autopilot pr-lookup 실패 3회차**: Sprint 217 / Sprint 225 / **Sprint 224** 연속 재현. autopilot 자체는 완결하나 session-end pr-lookup step에서 "no PR found" 오류. Master에서 수동 `gh pr create` 복구 경로 (정상 패턴, feedback memory 등록 후보).
-- ⏸️ **Gap-1 (Minor)**: soft-archive 파일 root 중복 — 5개 원본 파일이 root + `_archived/` 양쪽 존재 (복사, 버전 관리 아님). 런타임은 redirect로 정상, IDE 노이즈만. Sprint 225 착수 전 정리 권고.
-- ⏸️ **TD-41 이월**: CF Access JWT mock E2E 복원 (Sprint 223 이월, Sprint 225 F392 QA/E2E 단계에서 처리).
-- 📌 **교훈 3종**: (a) Design 역동기화 원칙 성공 사례 — soft-archive 정책 전환을 Design에 즉시 기록, PDCA gap 처리 규칙 준수. (b) Match Rate 메타 검증 정착 — autopilot + gap-detector 양측 일치로 품질 보증. (c) autopilot pr-lookup 실패는 정상 패턴 — session-end 단계 feedback memory 등록 후보.
-- 📌 **차기 Sprint (225, S3 M-UX-3)**: F379 Split View + F380 Provenance Inspector + F381 AXIS DS Tier 2 + F382 Admin 기본 + F391 provenance/resolve API + F392 QA/E2E. 선행: TD-41 E2E 복원 (2~3h).
-- Commits: autopilot 자체 `f36cf23` + `db1febd` (Design 역동기화) + push → PR #25 (OPEN, CI green).
-- **관련 문서**: `docs/04-report/features/sprint-224-AIF-REQ-036-S2.report.md` (완료 보고서 신규 생성).
+**Sprint 224 ✅ MERGED — AIF-REQ-036 S2 M-UX-2 Executive View 완결 (PR #25 `a475a77`, Match 97%/96% + CI green + squash merge)**:
+- ✅ **SPEC §6 Phase 9 선등록 (Master `1ed08c5`)**: F370~F392 15건 공식 등록. Sprint 223(S1 DONE 7건) + Sprint 224(S2 6건 IN_PROGRESS → DONE) + 이관 구조 정립. AIF-REQ-036 PLANNED → IN_PROGRESS 전환. Plan §10 Next Steps #2 해소.
+- ✅ **Sprint 224 WT autopilot 자체 완결 (19분 17초)**: `bash -i -c "sprint 224"` → ccs --model sonnet + `/ax:sprint-autopilot`. **Match Rate 97%**. 17 files, 3,316 insertions. 구현/테스트/커밋/push 완료.
+- ✅ **6 F-item DONE (+ F374 S1 연계 실 분기)**: F375 ExecutiveOverview 4 Group 요약 위젯 + F376 FoundryXTimeline 6서비스 round-trip + F377 Archive soft-archive 방침 전환 + F378 Evidence 3탭 허브 + F386 Compliance 뱃지 + F390 CF Web Analytics beacon + F374 Feature Flag 실 분기(`?legacy=1` → Dashboard / 기본 → Executive Overview).
+- ✅ **F377 Design 역동기화 (commit `db1febd`)**: hard delete → soft archive 정책 변경을 Design doc §2.2에 즉시 기록. PDCA gap 처리 규칙(Design에 사유 기록) 준수. 히스토리 보존 + 롤백 비용 최소화. **원칙 정착 사례**.
+- ✅ **CI 전 단계 green (PR #25, run 24724324098)**: E2E Tests ✅ (47 tests, 52s) + Typecheck & Test ✅ (1m11s) + Migration Sequence Check ✅ (5s).
+- ✅ **Master gap-detector 독립 검증 (96%)**: autopilot 97% vs Master 96% **±1% 일치** → 메타 검증 성공. 7/7 F-item PASS.
+- ✅ **Master report-generator (`e073864`)**: `docs/04-report/features/sprint-224-AIF-REQ-036-S2.report.md` 신규 (374줄, AIF-RPT-224, 12 sections).
+- ✅ **Squash merge `a475a77`**: `gh pr merge 25 --squash --delete-branch` → main (CI green으로 `--admin` 불필요). Cleanup 완료(tmux kill + worktree remove + 로컬/원격 sprint/224 삭제 + signal STATUS=MERGED archive + Monitor b6jebrvos TaskStop).
+- 🔄 **Master `/loop` dynamic mode**: Monitor(persistent, 45s poll) + ScheduleWakeup(25m fallback) → STATUS=FAILED (pr-lookup) 감지 → 복구 → STATUS=MERGED 감지 → terminal state → gap-detector + report-generator + merge 자동 연쇄. 세션 225 패턴 재현.
+- ⏳ **autopilot pr-lookup 실패 3회차**: Sprint 217 / Sprint 225 / **Sprint 224** 연속 재현 → Master 수동 `gh pr create` 복구가 정상 fallback 패턴. feedback memory 승격 후보(3회 재현 = 조건 초과).
+- ⏸️ **Gap-1 Minor**: soft-archive 파일 root 중복 (pages/analysis.tsx 등 5개가 root + `_archived/` 양쪽 존재, redirect로 런타임 정상, IDE 노이즈만). Sprint 226 착수 전 정리 권고.
+- ⏸️ **TD-41 이월**: CF Access JWT mock E2E 복원 → Sprint 226 F392 QA/E2E 통합 이관.
+- 🔀 **Sprint 번호 재배치 (parallel pane 세션 227 AIF-PLAN-037 G-1 Phase 1 개입)**: Sprint 225 = converter.ts 패치(F393/F394/F395). AIF-REQ-036 S3 M-UX-3 → Sprint 226 이관(F379/F380/F381/F382/F387/F388/F391/F392). Should M-UX-4 → Sprint 227 이관(F383/F384).
+- 📌 **교훈 3종**: (a) Design 역동기화 원칙 성공 사례 — soft-archive 정책 전환을 Design에 즉시 기록. (b) Match Rate 메타 검증 정착 — autopilot + gap-detector 양측 일치로 품질 보증. (c) autopilot pr-lookup 실패는 정상 fallback 패턴 — feedback memory 승격 후보.
+- 📌 **차기 Sprint (226, S3 M-UX-3, ← Sprint 225 이관)**: F379 Split View + F380 Provenance Inspector + F381 AXIS DS Tier 2 + F382 Admin + F387 Audit Log + F388 실사용자 파일럿 + F391 provenance API + F392 QA/E2E. 선행: Gap-1 정리 + TD-41 E2E 복원(2~3h).
+- Commits: `1ed08c5` (Phase 9 선등록) → `abfdc0e`/`db1febd` (WT feat + Design 역동기화) → `e073864` (AIF-RPT-224 보고서) → **`a475a77` (PR #25 squash merged → main)**.
 
 ### 세션 225 (2026-04-21)
 **Sprint 223 ✅ MERGED — AIF-REQ-036 S1 OAuth + IAM 재편 + Guest 온보딩 완결 (R1/R2 자동화 + Plan+Design + autopilot + admin merge)**:

@@ -412,6 +412,72 @@ Sprint 226 완료 기준 (기존 "S221 완료 시" → "Sprint 226 완료 시"):
 3. [x] ~~autopilot 주입 + Wave 1~5~~ ✅ 세션 229 Match 100% self-reported
 4. [~] Gate: Wave 1~4 PASS / Wave 5 F392 skeleton DONE but TD-41 완전 해소 실패 → Sprint 227 F401 이관
 
+### 11.7 F401 PoC 설계 — CF Access E2E Mock (세션 229, 2026-04-22)
+
+**배경**: Sprint 226 F392가 `test.describe.skip` 15개를 해제한 후 CF Access mock이 CI 환경에서 미작동 → 37/45 E2E fail → F392 skeleton DONE + TD-41 완전 해소를 F401로 분리.
+
+**3 후보 비교** (AskUserQuestion 세션 229):
+
+| 기준 | A. ?demo=1 bypass | B. Playwright addCookies + server bypass | C. auth.setup e2e-issue-token |
+|------|-------------------|------------------------------------------|-------------------------------|
+| 구현 | Server middleware 1곳 + Playwright goto 수정 | Cookie 주입 + JWT verify skip | 신규 endpoint + D1 user seed + storageState |
+| 복잡도 | 낮음 | 중간 | 높음 |
+| Production-like | 낮음 (우회 경로) | 중간 (JWT 경로 타되 검증 skip) | 높음 (OAuth 재현) |
+| PoC 시간 | 30분 | 1h | 2h+ |
+| Production 리스크 | env flag 누락 시 노출 | env flag 누락 시 노출 + test-jwt 유출 | env flag 누락 + DEMO_USERS 패턴 재출현 |
+| Sprint 223 반례 | 없음 | 없음 | DEMO_USERS 폐기(F389)와 유사 패턴 |
+
+**선정: A — `?demo=1` bypass endpoint + CI 전용 env flag** (세션 229 사용자 확정).
+
+**근거**:
+1. 가장 짧은 구현 시간 — Sprint 226 F392 복잡한 접근 실패 후 단순화 원칙 적용
+2. Production 빌드에 dead code 포함 단점 < 안정성 이점
+3. env flag 2중 가드(`DEMO_MODE` + query param)로 실수 노출 리스크 낮음
+4. Sprint 227 다른 F-item(F383/F384) 체력 여유 확보
+
+**A 접근 구현 범위**:
+- **Server** (`apps/app-web/src/worker` or auth middleware):
+  ```ts
+  if (env.DEMO_MODE === '1' && url.searchParams.get('demo') === '1') {
+    return stubUser({ email: 'e2e@test', role: 'analyst', orgId: 'LPON' })
+  }
+  return verifyCfAccessJwt(cookie)  // prod path unchanged
+  ```
+- **Playwright** (`apps/app-web/e2e/auth.setup.ts`):
+  ```ts
+  await page.goto('/?demo=1')
+  await page.context().storageState({ path: 'e2e/.auth/user.json' })
+  ```
+  → 기존 10 spec이 storageState 재사용 (spec 개별 수정 최소)
+- **CI config** (`.github/workflows/ci.yml` E2E job only):
+  ```yaml
+  - name: Run E2E tests
+    env:
+      DEMO_MODE: '1'
+    run: cd apps/app-web && pnpm test:e2e
+  ```
+- **Production 가드**: `wrangler.toml`의 `[env.production.vars]`에 **`DEMO_MODE` 키 자체 미정의** (기본값 없음). staging env도 동일.
+- **Smoke 검증** (`.github/workflows/post-deploy-smoke.yml` or 기존 deploy-services.yml 확장):
+  ```bash
+  RESP=$(curl -o /dev/null -w "%{http_code}" https://decode-x-production.url/?demo=1)
+  if [ "$RESP" = "200" ]; then
+    echo "❌ FATAL: DEMO_MODE leaked to production"
+    exit 1
+  fi
+  ```
+
+**성공 조건 (DoD)**:
+- [ ] CI E2E pass count **1 → 45** 복원
+- [ ] Production `/?demo=1` smoke가 stub user 반환 시 CI fail
+- [ ] `wrangler.toml` production/staging env에 `DEMO_MODE` 미정의 확인
+- [ ] F392 KPI-3(≥95% 통과율) 달성 증거 확보
+
+**실패/롤백 조건**:
+- PoC 30분에 A 접근이 막히면 B로 전환 (2순위)
+- B도 실패 시 F401을 분할: (i) server bypass 최소 구현 + (ii) auth.setup 개편 분리
+
+---
+
 ### 11.6 Sprint 226 MERGED 결과 (세션 229, 2026-04-22)
 
 - **PR #27 `4d35270`** squash merged (autopilot 20분 4초 자체 완결 + Master 복구 ~15분)

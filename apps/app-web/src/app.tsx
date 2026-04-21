@@ -29,6 +29,7 @@ const GuidePage = lazy(() => import("./pages/guide"));
 const SettingsPage = lazy(() => import("./pages/settings"));
 const SourceUploadPage = lazy(() => import("./pages/source-upload"));
 const FactCheckPage = lazy(() => import("./pages/fact-check"));
+const GapAnalysisPage = lazy(() => import("./pages/gap-analysis"));
 const SpecCatalogPage = lazy(() => import("./pages/spec-catalog"));
 const SpecDetailPage = lazy(() => import("./pages/spec-detail"));
 const ExportCenterPage = lazy(() => import("./pages/export-center"));
@@ -36,6 +37,10 @@ const MockupPage = lazy(() => import("./pages/mockup"));
 const PocReportPage = lazy(() => import("./pages/poc-report"));
 const OrgSpecPage = lazy(() => import("./pages/org-spec"));
 const NotFoundPage = lazy(() => import("./pages/not-found"));
+// F379/F380: Engineer Workbench (S221 / Sprint 226)
+const EngineerWorkbenchPage = lazy(() => import("./pages/engineer/workbench"));
+// F382/F387: Admin 기본
+const AdminPage = lazy(() => import("./pages/admin"));
 // F377: 5 Archive 페이지 제거됨 — analysis, benchmark, poc-ai-ready, poc-ai-ready-detail, poc-phase-2-report
 // 구 경로는 /executive/overview redirect 처리 (404 방지)
 
@@ -109,11 +114,19 @@ function AppRoutes() {
       <Route path="/api-console" element={<P><ApiConsolePage /></P>} />
       <Route path="/guide" element={<P><GuidePage /></P>} />
       <Route path="/fact-check" element={<P><FactCheckPage /></P>} />
+      <Route path="/gap-analysis" element={<P><GapAnalysisPage /></P>} />
       <Route path="/specs" element={<P><SpecCatalogPage /></P>} />
       <Route path="/specs/:id" element={<P><SpecDetailPage /></P>} />
       <Route path="/export" element={<P><ExportCenterPage /></P>} />
       <Route path="/mockup" element={<P><MockupPage /></P>} />
       <Route path="/settings" element={<P><SettingsPage /></P>} />
+
+      {/* F379/F380: Engineer Workbench */}
+      <Route path="/engineer/workbench" element={<P><EngineerWorkbenchPage /></P>} />
+      <Route path="/engineer/workbench/:id" element={<P><EngineerWorkbenchPage /></P>} />
+
+      {/* F382/F387: Admin */}
+      <Route path="/admin" element={<P><AdminPage /></P>} />
 
       {/* F378: 기존 evidence 페이지 경로 → /executive/evidence redirect (북마크 보호) */}
       <Route path="/analysis-report" element={<P><AnalysisReportPage /></P>} />

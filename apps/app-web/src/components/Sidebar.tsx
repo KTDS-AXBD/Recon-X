@@ -110,6 +110,16 @@ const menuGroups: MenuGroup[] = [
     ],
   },
   {
+    id: 'engineer',
+    icon: <Code className="w-4 h-4" />,
+    label: '엔지니어',
+    labelEn: 'Engineer',
+    defaultOpen: false,
+    items: [
+      { icon: <GitCompareArrows className="w-4 h-4" />, label: 'Workbench', labelEn: 'Workbench', path: '/engineer/workbench' },
+    ],
+  },
+  {
     id: 'admin',
     icon: <Wrench className="w-4 h-4" />,
     label: '관리',
@@ -119,6 +129,7 @@ const menuGroups: MenuGroup[] = [
       { icon: <Network className="w-4 h-4" />, label: '온톨로지', labelEn: 'Ontology', path: '/ontology' },
       { icon: <Settings className="w-4 h-4" />, label: '설정', labelEn: 'Settings', path: '/settings' },
       { icon: <MonitorPlay className="w-4 h-4" />, label: 'Working Mock-up', labelEn: 'Live Demo', path: '/mockup' },
+      { icon: <Wrench className="w-4 h-4" />, label: 'Admin 대시보드', labelEn: 'Admin', path: '/admin' },
     ],
   },
 ];

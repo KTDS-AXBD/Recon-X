@@ -549,19 +549,25 @@
 - [ ] F390 (AIF-REQ-036 R2 전이 S219, **P0**, Sprint 224 선행, 1h): **Cloudflare Web Analytics 활성화 + Archive 실측 데이터 수집 시작** — `ai-foundry-web` Pages project beacon 주입. Archive 실행(F377) 전 최소 2~4주 수집. 실 우선 RP-5 완화
 - [ ] TD-41 (Sprint 223 연계, **P1**, Sprint 224): **CF Access JWT mock E2E 복원 + F374 실 분기 활성화** — Playwright `page.route()` + msw로 `CF_Authorization` cookie 주입 + `/auth/me` stub. 10 spec test.describe.skip 해제
 
-**Sprint 225 (S3 — M-UX-3 Engineer Workbench, 📋 PLANNED):**
-- [ ] F379 (AIF-REQ-036 M-UX-3, **P0**, Sprint 225, 6h): **Engineer Workbench Split View** — 좌 Spec / 우 재구성 마크다운 + section 앵커 스크롤. 원본 소스 줄 하이라이트는 Out-of-Scope(F364 별도). KPI-2 ≤ 3 클릭 목표
-- [ ] F380 (AIF-REQ-036 M-UX-3, **P0**, Sprint 225, 4h): **Provenance Inspector** — 우측 drawer + Provenance 그래프 탐색. F391 API 응답 소비
-- [ ] F381 (AIF-REQ-036 M-UX-3, **P1**, Sprint 225, 4h): **AXIS DS Tier 2 `@axis-ds/react` 8종 교체** — Button/Card/Tabs/Dialog/Input/Select/Tooltip/Badge shadcn 래퍼 교체. 교체율 ≥ 80% 목표
-- [ ] F382 (AIF-REQ-036 M-UX-3, **P0**, Sprint 225, 4h): **Admin 기본** — Users CRUD + Organization + Health + Usage Dashboard. 서비스 운영 기반
-- [ ] F387 (AIF-REQ-036 R2 전이 S220~221, **P1**, Sprint 225, 3h): **Role별 Audit Log 설계 + Admin 페이지 노출** — 역할 매트릭스(Analyst/Reviewer/Developer/Client/Executive) audit log 스키마 + 필터/검색 UI
-- [ ] F388 (AIF-REQ-036 R2 전이 S221, **P1**, Sprint 225, 2h): **Section-only Fallback 실사용자 파일럿** — 3명 인터뷰 + 체감 측정. RP-7(ChatGPT 지적) 조기 검증
-- [ ] F391 (AIF-REQ-036 M-UX-3, **P0**, Sprint 225, 3h): **`GET /skills/:id/provenance/resolve` API 신설 (svc-skill)** — R2 + D1 + spec-container path/section 1회 집약. F379/F380 백엔드
-- [ ] F392 (AIF-REQ-036 M-UX-3, **P0**, Sprint 225, 4h): **QA/E2E 자동화** — Playwright + smoke + regression. KPI-3 통과율 ≥ 95%
+**Sprint 225 (AIF-PLAN-037 G-1 Phase 2 — converter.ts 패치, 🔧 IN_PROGRESS 세션 227):**
+> **번호 재배치 (세션 227, 2026-04-21)**: G-1 Phase 1 Root Cause 발견으로 Phase 2가 "container Fill (1~2 Sprint)" → "converter.ts 패치 (0.5~1 Sprint)"로 전환. AIF-REQ-036 S3 M-UX-3 Sprint 225 → Sprint 226 이관, Should M-UX-4 → Sprint 227 이관.
+- [ ] F393 (AIF-PLAN-037 G-1 Phase 2 P1~P3, **P0**, Sprint 225, 2h): **converter.ts Traceable 패치** — `services/svc-skill/src/spec-container/converter.ts`의 (P1) `policy.source.documentId`를 `provenance.sources[].path` 매핑, (P2) `sourceDocumentIds`를 복수 sources enumeration, (P3) `pipeline.stages`를 4단계(ingestion/extraction/policy-inference/spec-container-import)로 확장. TR 0.30 → ~1.0, AI-Ready overall +0.12 예상
+- [ ] F394 (AIF-PLAN-037 G-1 Phase 2 P4~P5, **P0**, Sprint 225, 2h): **converter.ts Semantic Consistency 패치** — (P4) `ontologyRef.termUris`를 policy.tags 유니크 → SKOS URI 생성(`https://ai-foundry.ktds.com/terms/{domain}#{tag}`), (P5) `ontologyRef.skosConceptScheme` 설정(`https://ai-foundry.ktds.com/schemes/{domain}`). SC 0.30 → ~1.0, AI-Ready overall +0.11 예상
+- [ ] F395 (AIF-PLAN-037 G-1 Phase 2 검증, **P0**, Sprint 225, 2h): **converter.test.ts 업데이트 + dry-run 재측정 + baseline-2 산출** — 기존 테스트 assertion 갱신 + `pnpm tsx scripts/package-spec-containers.ts --dry-run --with-ai-ready --report reports/ai-ready-baseline-2-{date}.json` 재실행. 7/7 PASS 확인 시 G-1 Phase 3 즉시 착수. F393/F394를 별도 커밋으로 분리하여 TR·SC 각 기여도 독립 측정
 
-**Sprint 226 (Should — M-UX-4, 📋 PLANNED 체력 여유 시):**
-- [ ] F383 (AIF-REQ-036 Should, **P2**, Sprint 226, 8h): **AXIS DS Tier 3: 도메인 특화 컴포넌트 3종 PR 생성** — SpecSourceSplitView/ProvenanceInspector/StageReplayer를 `IDEA-on-Action/AXIS-Design-System` 레포에 재활용 가능한 형태로 기여
-- [ ] F384 (AIF-REQ-036 Should, **P2**, Sprint 226, 4h): **Guest/Demo 모드** — 읽기 전용 데이터. 외부 데모/영업용
+**Sprint 226 (S3 — M-UX-3 Engineer Workbench, 📋 PLANNED, ← Sprint 225 이관):**
+- [ ] F379 (AIF-REQ-036 M-UX-3, **P0**, Sprint 226, 6h): **Engineer Workbench Split View** — 좌 Spec / 우 재구성 마크다운 + section 앵커 스크롤. 원본 소스 줄 하이라이트는 Out-of-Scope(F364 별도). KPI-2 ≤ 3 클릭 목표
+- [ ] F380 (AIF-REQ-036 M-UX-3, **P0**, Sprint 226, 4h): **Provenance Inspector** — 우측 drawer + Provenance 그래프 탐색. F391 API 응답 소비
+- [ ] F381 (AIF-REQ-036 M-UX-3, **P1**, Sprint 226, 4h): **AXIS DS Tier 2 `@axis-ds/react` 8종 교체** — Button/Card/Tabs/Dialog/Input/Select/Tooltip/Badge shadcn 래퍼 교체. 교체율 ≥ 80% 목표
+- [ ] F382 (AIF-REQ-036 M-UX-3, **P0**, Sprint 226, 4h): **Admin 기본** — Users CRUD + Organization + Health + Usage Dashboard. 서비스 운영 기반
+- [ ] F387 (AIF-REQ-036 R2 전이 S220~221, **P1**, Sprint 226, 3h): **Role별 Audit Log 설계 + Admin 페이지 노출** — 역할 매트릭스(Analyst/Reviewer/Developer/Client/Executive) audit log 스키마 + 필터/검색 UI
+- [ ] F388 (AIF-REQ-036 R2 전이 S221, **P1**, Sprint 226, 2h): **Section-only Fallback 실사용자 파일럿** — 3명 인터뷰 + 체감 측정. RP-7(ChatGPT 지적) 조기 검증
+- [ ] F391 (AIF-REQ-036 M-UX-3, **P0**, Sprint 226, 3h): **`GET /skills/:id/provenance/resolve` API 신설 (svc-skill)** — R2 + D1 + spec-container path/section 1회 집약. F379/F380 백엔드
+- [ ] F392 (AIF-REQ-036 M-UX-3, **P0**, Sprint 226, 4h): **QA/E2E 자동화** — Playwright + smoke + regression. KPI-3 통과율 ≥ 95%
+
+**Sprint 227 (Should — M-UX-4, 📋 PLANNED 체력 여유 시, ← Sprint 226 이관):**
+- [ ] F383 (AIF-REQ-036 Should, **P2**, Sprint 227, 8h): **AXIS DS Tier 3: 도메인 특화 컴포넌트 3종 PR 생성** — SpecSourceSplitView/ProvenanceInspector/StageReplayer를 `IDEA-on-Action/AXIS-Design-System` 레포에 재활용 가능한 형태로 기여
+- [ ] F384 (AIF-REQ-036 Should, **P2**, Sprint 227, 4h): **Guest/Demo 모드** — 읽기 전용 데이터. 외부 데모/영업용
 
 **완료 기준 (DoD, S221 완료 시)**:
 - KPI-1 본부장 3분 테스트 PASS

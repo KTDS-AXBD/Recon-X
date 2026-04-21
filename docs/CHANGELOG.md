@@ -2,6 +2,32 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 227 (2026-04-21)
+**AIF-PLAN-037 G-1 Phase 1 ✅ 완료 — AI-Ready baseline 실측 + converter.ts 전략 전환 발견**:
+- ✅ **Shadow Real Scorer 신설** (`4a8352c`): `scripts/package-spec-containers.ts`에 `--with-ai-ready --report <path>` 플래그 추가. `services/svc-skill/src/scoring/ai-ready.ts` `scoreSkill()`이 순수 결정적(LLM 비용 0)이라는 발견으로 PLAN-037 "사전 측정 없이 Empty Slot rate만" 가정 뒤집음 — production gate와 완전 동일한 점수를 0 비용으로 산출. `convertSpecContainerToSkillPackage()` + `scoreSkill()` 스크립트에서 직접 import. 108 insertions.
+- ✅ **7 containers 전수 dry-run** (`reports/ai-ready-baseline-2026-04-21.json`): 0/7 PASS @ threshold **canonical 0.8**, mean **0.683**, range 0.655(lpon-refund)~0.722(lpon-budget). **시나리오 C 확정** — PLAN-037 정의와 정확히 일치. 전원 `failedCriteria = [semanticConsistency, traceable]` 공통.
+- ✅ **Root Cause 진단 (세션 핵심 발견)**: SC 0.30 + TR 0.30 고정 실패는 container 내용 부족이 아닌 **`services/svc-skill/src/spec-container/converter.ts` 구조적 결함 3군데** — (a) `ontologyRef.termUris=[]` + `skosConceptScheme` 미설정 → SC 0.4+0.3=0.7 손실, (b) `policy.source.documentId="${id}-rules"` vs `sourceDocumentIds=[id]` 문자열 불일치 → TR coveredRatio=0 (0.5 손실), (c) `pipeline.stages=["spec-container-import"]` 1개뿐 → TR stageOk false (0.2 손실). spec-container `provenance.yaml`에 5+ sources·section·businessRules 살아있으나 converter가 전부 버림.
+- ✅ **PLAN-037 v1.0 → v1.1** (`docs/01-plan/features/phase-3-gap-remediation.plan.md`): Phase 2 전략 전환 — "container별 Empty Slot Fill (1~2 Sprint)" → "converter.ts 패치 P1~P5 (0.5~1 Sprint)". 예상 overall 상승 **+0.233** → lpon-budget 0.955, 최하 lpon-refund 0.888 → **7/7 PASS 가능성 매우 높음**. 통합 로드맵 **4~5 → 3~4 Sprint 축소**.
+- ✅ **AI-Ready threshold drift 해결**: PLAN-037 / MEMORY 기재 `0.75` vs 실제 `packages/types/src/skill.ts:209 AI_READY_OVERALL_THRESHOLD = 0.8`. canonical 0.8로 doc 정정.
+- 📌 **교훈 3종**: (a) **Shadow Real Scorer 패턴**: 순수 결정적 scorer를 리포지토리에서 직접 import하면 "dry-run = production 재현"이 0 비용 가능. 사전 측정 계획이 LLM 비용 가정에 묶이면 기회 상실. (b) **Stale doc detection via code grounding**: PLAN 수치는 canonical source(코드 상수)와 대조로 즉시 검증 가능. 세션 221 "provenance 60% 임계값" 선례와 동일 패턴. (c) **Code-as-Gap**: "Empty Slot Fill" 가정이 container를 원인으로 지목했으나 실 scoring 함수 추적으로 converter 전파 누락이 진짜 병목임을 발견. 계획 가정은 실 함수 호출 chain으로 검증 필수.
+- 📌 **실 소요 1h** (PLAN 예상 2h 대비 50%) — 가정이 맞을 때 시나리오 오버헤드 축소 사례.
+- Commits: `4a8352c feat(g-1-phase-1): AI-Ready baseline 실측 + converter.ts 전략 전환` (script+plan+reports 3 files, +330/-43, main push).
+
+### 세션 226 (2026-04-21)
+**Sprint 224 ✅ autopilot 완주 — AIF-REQ-036 S2 M-UX-2 Executive View (Match 97% + CI green)**:
+- ✅ **Sprint 224 WT + autopilot 자체 완결 (19분 17초)**: `/ax:sprint 224 --manual` → ccs --model sonnet + autopilot full cycle. **Match Rate 97%** (19/20 설계 항목 일치). 17 files, 3,316 insertions. 구현/테스트/커밋/push 완료. PR #25 생성.
+- ✅ **7 F-item DONE**: F374 (Feature Flag 실 분기, `?legacy=1`) + F375 (ExecutiveOverview 4 Group 요약 위젯) + F376 (FoundryXTimeline 6서비스 round-trip) + F377 (Archive soft-archive 방침 전환) + F378 (Evidence 3탭 허브) + F386 (Compliance 뱃지) + F390 (CF Web Analytics beacon).
+- ✅ **Design 역동기화 (commit `db1febd`)**: F377 hard delete → soft archive 정책 변경을 Design doc §2.2에 즉시 기록. PDCA gap 처리 규칙(Design에 사유 기록) 준수. 히스토리 보존 + 롤백 비용 최소화.
+- ✅ **CI 전 단계 green (PR #25, run 24724324098)**: E2E Tests ✅ (52 tests, 52s) + Typecheck & Test ✅ (1m11s) + Migration Sequence Check ✅ (5s).
+- ✅ **Master 독립 검증**: gap-detector Agent가 Design vs Code 재검증 → **96% Match Rate** (autopilot 97% vs Master 96% ±1% 신뢰도 확보, 메타 검증 성공).
+- ⏳ **autopilot pr-lookup 실패 3회차**: Sprint 217 / Sprint 225 / **Sprint 224** 연속 재현. autopilot 자체는 완결하나 session-end pr-lookup step에서 "no PR found" 오류. Master에서 수동 `gh pr create` 복구 경로 (정상 패턴, feedback memory 등록 후보).
+- ⏸️ **Gap-1 (Minor)**: soft-archive 파일 root 중복 — 5개 원본 파일이 root + `_archived/` 양쪽 존재 (복사, 버전 관리 아님). 런타임은 redirect로 정상, IDE 노이즈만. Sprint 225 착수 전 정리 권고.
+- ⏸️ **TD-41 이월**: CF Access JWT mock E2E 복원 (Sprint 223 이월, Sprint 225 F392 QA/E2E 단계에서 처리).
+- 📌 **교훈 3종**: (a) Design 역동기화 원칙 성공 사례 — soft-archive 정책 전환을 Design에 즉시 기록, PDCA gap 처리 규칙 준수. (b) Match Rate 메타 검증 정착 — autopilot + gap-detector 양측 일치로 품질 보증. (c) autopilot pr-lookup 실패는 정상 패턴 — session-end 단계 feedback memory 등록 후보.
+- 📌 **차기 Sprint (225, S3 M-UX-3)**: F379 Split View + F380 Provenance Inspector + F381 AXIS DS Tier 2 + F382 Admin 기본 + F391 provenance/resolve API + F392 QA/E2E. 선행: TD-41 E2E 복원 (2~3h).
+- Commits: autopilot 자체 `f36cf23` + `db1febd` (Design 역동기화) + push → PR #25 (OPEN, CI green).
+- **관련 문서**: `docs/04-report/features/sprint-224-AIF-REQ-036-S2.report.md` (완료 보고서 신규 생성).
+
 ### 세션 225 (2026-04-21)
 **Sprint 223 ✅ MERGED — AIF-REQ-036 S1 OAuth + IAM 재편 + Guest 온보딩 완결 (R1/R2 자동화 + Plan+Design + autopilot + admin merge)**:
 - ✅ **R1/R2 외부 AI 검토 자동화**: `/ax:req-interview` 풀 사이클 (OpenRouter 프록시 3 모델 ChatGPT/Gemini/DeepSeek). R1 **79/100** (40.9초, 52 actionable items, Gemini Ready) → apply 모드 12건 자동 반영 + **가짜 DAU 수치 2건 감지하여 정직 정제** (§11.4 "Archive 실측 데이터 수집 계획"으로 교체, LLM hallucination 방어) → PRD v0.3. R2 **71/100** (전원 Conditional, 53.6초, 가중 이슈 밀도 5.0→3.6/1K자 **-28% 개선**). **평균 75/100 ✅ (기준 74 통과)**, Ambiguity 0.175 (Phase 1 착수 수준).

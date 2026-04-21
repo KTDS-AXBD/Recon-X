@@ -16,6 +16,7 @@ import { join, basename } from "path";
 const args = process.argv.slice(2);
 const isDryRun = args.includes("--dry-run");
 const orgFilter = args.find((a, i) => args[i - 1] === "--org") ?? "lpon";
+const onlyFilter = args.find((a, i) => args[i - 1] === "--only");
 const baseUrl =
   args.find((a, i) => args[i - 1] === "--url") ??
   process.env["SKILL_API_URL"] ??
@@ -253,6 +254,7 @@ async function main() {
 
   for (const dir of dirs) {
     const containerId = basename(dir);
+    if (onlyFilter && containerId !== onlyFilter) continue;
     process.stdout.write(`  Processing ${containerId}... `);
 
     const input = readSpecContainer(dir, orgFilter);

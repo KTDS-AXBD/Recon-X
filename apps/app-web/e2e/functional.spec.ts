@@ -1,4 +1,4 @@
-// TODO(S224/TD-40): 모든 protected route — CF Access mock 없이 /welcome redirect. 재활성화 S224.
+// TODO(S224/TD-41): 모든 protected route — CF Access mock 없이 /welcome redirect. 재활성화 S224.
 import { test, expect } from "@playwright/test";
 
 test.describe.skip("Dashboard functional", () => {

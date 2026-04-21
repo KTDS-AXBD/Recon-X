@@ -1,4 +1,4 @@
-// TODO(S224/TD-40): protected route — CF Access mock 후 재활성화.
+// TODO(S224/TD-41): protected route — CF Access mock 후 재활성화.
 import { test, expect } from "@playwright/test";
 
 test.describe.skip("Verify group", () => {

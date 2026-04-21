@@ -1,4 +1,4 @@
-// TODO(S224/TD-40): protected route + org selector requires login — CF Access mock 후 재활성화.
+// TODO(S224/TD-41): protected route + org selector requires login — CF Access mock 후 재활성화.
 import { test, expect } from "@playwright/test";
 
 test.describe.skip("Organization switching", () => {

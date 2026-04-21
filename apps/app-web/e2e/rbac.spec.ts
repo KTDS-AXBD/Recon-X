@@ -1,4 +1,4 @@
-// TODO(S224/TD-40): DEMO_USERS 폐기(F389)로 loginAs() 헬퍼 전체 skip. CF Access mock 후 재활성화.
+// TODO(S224/TD-41): DEMO_USERS 폐기(F389)로 loginAs() 헬퍼 전체 skip. CF Access mock 후 재활성화.
 import { test, expect, type BrowserContext } from "@playwright/test";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */

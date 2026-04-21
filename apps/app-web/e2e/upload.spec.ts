@@ -1,4 +1,4 @@
-// TODO(S224/TD-40): DEMO_USERS 폐기(F389)로 loginAs("김경임") 불가 + /upload protected route. 재활성화 S224.
+// TODO(S224/TD-41): DEMO_USERS 폐기(F389)로 loginAs("김경임") 불가 + /upload protected route. 재활성화 S224.
 import { test, expect } from "@playwright/test";
 
 // Minimal valid PDF (1 page, blank)

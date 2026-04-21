@@ -1,4 +1,4 @@
-// TODO(S224/TD-40): /poc/ai-ready, /org-spec protected route — CF Access mock 후 재활성화.
+// TODO(S224/TD-41): /poc/ai-ready, /org-spec protected route — CF Access mock 후 재활성화.
 import { test, expect } from "@playwright/test";
 
 test.describe.skip("PoC & Spec pages (Sprint 209~210)", () => {

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-// TODO(S224/TD-40): DEMO_USERS 폐기(F389)로 데모 로그인 기반 테스트 전면 skip.
+// TODO(S224/TD-41): DEMO_USERS 폐기(F389)로 데모 로그인 기반 테스트 전면 skip.
 // CF Access JWT mock 구현 후 재활성화.
 
 test.describe("Authentication", () => {

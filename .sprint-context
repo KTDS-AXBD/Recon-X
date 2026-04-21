@@ -1,13 +1,15 @@
-SPRINT_NUM=226
+SPRINT_NUM=227
 PROJECT=Decode-X
-BRANCH=sprint/226
-F_ITEMS=F396+F391+F379+F380+F381+F382+F387+F388+F392
-MILESTONE=M-UX-3 Engineer Workbench
-WAVE_ORDER=F396(위생) → F391(API) → F379/F380/F381(UX) → F382/F387/F388(운영) → F392+TD-41(QA)
-PLAN_DOC=docs/01-plan/features/AIF-REQ-036.plan.md §11 Follow-up Plan
-KPI_TARGETS=KPI-1 3분 설득 / KPI-2 Split View ≤ 3 클릭 / KPI-3 E2E 95% pass + 47 복원
+BRANCH=sprint/227
+F_ITEMS=F401+F384+F383
+MILESTONE=M-UX-4 Should + TD-41 완전 해소
+WAVE_ORDER=F401(P1 선행, ~3h 30min) → F384(P2 Guest/Demo, 4h) → F383(P2 AXIS DS Tier 3 기여, 8h 선택)
+PLAN_DOC=docs/01-plan/features/AIF-REQ-036.plan.md §11.7 F401 PoC 설계
+F401_APPROACH=옵션 A: ?demo=1 bypass endpoint + CI DEMO_MODE env flag (세션 229 AskUserQuestion 확정)
+F401_DOD=CI E2E pass count 1→45 복원 + Production smoke fail-on-leak (DEMO_MODE 미정의 확인)
+KPI_TARGETS=F401: KPI-3 ≥95% 통과율 달성 + 보안 smoke / F384: 읽기전용 데이터 모드 / F383: 외부 레포 PR skeleton
+SECURITY_RULE=wrangler.toml production/staging env.vars에 DEMO_MODE 키 절대 미정의 (env flag 2중 가드)
 CHECKPOINT=design
-MATCH_RATE=100
-TEST_RESULT=pass
+CHECKPOINT=implement
 CHECKPOINT=analyze
-CHECKPOINT=report
+MATCH_RATE=100

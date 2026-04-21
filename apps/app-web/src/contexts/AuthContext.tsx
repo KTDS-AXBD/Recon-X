@@ -8,6 +8,9 @@ import { setAuthUser } from "@/api/auth-store";
 import type { CfUser } from "@/api/auth-store";
 
 const API_BASE = import.meta.env['VITE_API_BASE_URL'] ?? "http://localhost:8705";
+// CI E2E demo mode — never set in production builds
+const VITE_DEMO_MODE = (import.meta.env as Record<string, string>)['VITE_DEMO_MODE'];
+const DEMO_STORAGE_KEY = '__demo_user__';
 
 interface AuthContextType {
   user: CfUser | null;
@@ -41,7 +44,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loadUser = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Quick check: does a CF JWT cookie exist?
+      // Demo mode (CI E2E): VITE_DEMO_MODE=1 + ?demo=1 init OR localStorage session
+      if (VITE_DEMO_MODE === '1') {
+        const stored = localStorage.getItem(DEMO_STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored) as CfUser;
+          setUser(parsed);
+          setAuthUser(parsed);
+          return;
+        }
+        const isDemoInit = new URLSearchParams(window.location.search).get('demo') === '1';
+        if (isDemoInit) {
+          const stubUser: CfUser = { email: 'e2e@test', role: 'engineer', status: 'active' };
+          localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(stubUser));
+          setUser(stubUser);
+          setAuthUser(stubUser);
+          return;
+        }
+      }
+
+      // Regular CF Access JWT flow
       const claims = getCfJwtFromCookie();
       if (!claims) {
         setUser(null);

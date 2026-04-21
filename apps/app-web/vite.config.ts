@@ -78,8 +78,20 @@ function buildProxy(mode: string) {
   return proxy;
 }
 
+// F390: CF Web Analytics token replacement — dev/staging: token placeholder, prod: real token via CF_BEACON_TOKEN env
+const cfBeaconToken = process.env["CF_BEACON_TOKEN"] ?? "PLACEHOLDER_DEV";
+
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    {
+      name: "cf-beacon-token",
+      transformIndexHtml(html) {
+        return html.replace("__CF_BEACON_TOKEN__", cfBeaconToken);
+      },
+    },
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

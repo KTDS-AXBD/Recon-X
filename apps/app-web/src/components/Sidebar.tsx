@@ -60,18 +60,29 @@ const ORGANIZATIONS = [
   { id: 'org-001', label: '파일럿', labelEn: 'Pilot' },
 ] as const;
 
+// F375/F376/F378: S220 Executive View 메뉴 구조로 재편 (F377 Archive + 재배치 반영)
 const menuGroups: MenuGroup[] = [
+  {
+    id: 'executive',
+    icon: <Sparkles className="w-4 h-4" />,
+    label: 'Executive',
+    labelEn: 'Executive',
+    defaultOpen: true,
+    items: [
+      { icon: <LayoutDashboard className="w-4 h-4" />, label: '현황 Overview', labelEn: 'Overview', path: '/executive/overview' },
+      { icon: <BarChart3 className="w-4 h-4" />, label: '근거 자료', labelEn: 'Evidence', path: '/executive/evidence' },
+      { icon: <PackageOpen className="w-4 h-4" />, label: 'Export 센터', labelEn: 'Export Center', path: '/export' },
+    ],
+  },
   {
     id: 'extract',
     icon: <Microscope className="w-4 h-4" />,
     label: '지식 추출',
     labelEn: 'Extract',
-    defaultOpen: true,
+    defaultOpen: false,
     items: [
       { icon: <Upload className="w-4 h-4" />, label: '문서 업로드', labelEn: 'Document Upload', path: '/upload' },
       { icon: <Code className="w-4 h-4" />, label: '소스코드 업로드', labelEn: 'Source Upload', path: '/source-upload' },
-      { icon: <FileSearch className="w-4 h-4" />, label: '분석 결과', labelEn: 'Analysis', path: '/analysis' },
-      { icon: <BarChart3 className="w-4 h-4" />, label: '분석 리포트', labelEn: 'Analysis Report', path: '/analysis-report' },
     ],
   },
   {
@@ -79,7 +90,7 @@ const menuGroups: MenuGroup[] = [
     icon: <BadgeCheck className="w-4 h-4" />,
     label: '품질 보증',
     labelEn: 'Verify',
-    defaultOpen: true,
+    defaultOpen: false,
     items: [
       { icon: <CheckSquare className="w-4 h-4" />, label: 'HITL 검토', labelEn: 'HITL Review', path: '/hitl' },
       { icon: <GitCompareArrows className="w-4 h-4" />, label: '팩트 체크', labelEn: 'Fact Check', path: '/fact-check' },
@@ -91,24 +102,11 @@ const menuGroups: MenuGroup[] = [
     icon: <Rocket className="w-4 h-4" />,
     label: '활용',
     labelEn: 'Deliver',
-    defaultOpen: true,
+    defaultOpen: false,
     items: [
       { icon: <Package className="w-4 h-4" />, label: 'Skill 카탈로그', labelEn: 'Skill Catalog', path: '/skills' },
       { icon: <FileJson className="w-4 h-4" />, label: 'Spec 카탈로그', labelEn: 'Spec Catalog', path: '/specs' },
-      { icon: <FileText className="w-4 h-4" />, label: 'Org 종합 Spec', labelEn: 'Org Spec', path: '/org-spec' },
-      { icon: <PackageOpen className="w-4 h-4" />, label: 'Export 센터', labelEn: 'Export Center', path: '/export' },
       { icon: <Plug className="w-4 h-4" />, label: 'API 연결', labelEn: 'API Console', path: '/api-console' },
-    ],
-  },
-  {
-    id: 'experience',
-    icon: <Sparkles className="w-4 h-4" />,
-    label: '체험',
-    labelEn: 'Experience',
-    defaultOpen: true,
-    items: [
-      { icon: <MonitorPlay className="w-4 h-4" />, label: 'Working Mock-up', labelEn: 'Live Demo', path: '/mockup' },
-      { icon: <FileText className="w-4 h-4" />, label: 'PoC 보고서', labelEn: 'PoC Report', path: '/poc-report' },
     ],
   },
   {
@@ -119,8 +117,8 @@ const menuGroups: MenuGroup[] = [
     defaultOpen: false,
     items: [
       { icon: <Network className="w-4 h-4" />, label: '온톨로지', labelEn: 'Ontology', path: '/ontology' },
-      { icon: <BarChart3 className="w-4 h-4" />, label: '벤치마크 리포트', labelEn: 'Benchmark', path: '/benchmark' },
       { icon: <Settings className="w-4 h-4" />, label: '설정', labelEn: 'Settings', path: '/settings' },
+      { icon: <MonitorPlay className="w-4 h-4" />, label: 'Working Mock-up', labelEn: 'Live Demo', path: '/mockup' },
     ],
   },
 ];

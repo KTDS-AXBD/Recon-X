@@ -57,6 +57,7 @@ import {
 } from "./routes/tacit-interview.js";
 import { handleGenerateHandoff, handleSubmitHandoff, handleHandoffCallback } from "./routes/handoff.js";
 import { handleGetMe } from "./routes/auth.js";
+import { handleProvenanceResolve } from "./routes/provenance.js";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -288,6 +289,14 @@ export default {
         const specType = specMatch[2];
         if (!specSkillId || !specType) return new Response("Not Found", { status: 404 });
         return await handleSkillSpec(request, env, specSkillId, specType);
+      }
+
+      // F391: GET /skills/:id/provenance/resolve
+      const provenanceMatch = path.match(/^\/skills\/([^/]+)\/provenance\/resolve$/);
+      if (method === "GET" && provenanceMatch) {
+        const provenanceSkillId = provenanceMatch[1];
+        if (!provenanceSkillId) return new Response("Not Found", { status: 404 });
+        return await handleProvenanceResolve(request, env, provenanceSkillId);
       }
 
       // Match /skills/:id and /skills/:id/download

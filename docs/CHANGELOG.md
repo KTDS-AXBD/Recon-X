@@ -2,6 +2,16 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 223 (2026-04-21)
+**TD-39 해소 + TD-40 신규+해소 — CI D1 migration pipeline production 첫 완전 작동 증명**:
+- ✅ **TD-39 해소** (`7cde99d`): Sprint 220 F366 merge 직후 production 배포 실패의 **wrangler 설정 2중 버그 수정** — (1) `.github/workflows/deploy-services.yml` 5 migrate-d1 step + `scripts/db-init-staging.sh` 2곳에 `--remote` flag 추가 (local 대신 remote D1 대상), (2) 5 서비스 wrangler.toml의 `[[env.staging.d1_databases]]` + `[[env.production.d1_databases]]` 블록에 `migrations_dir` 복제 (wrangler 4.x env override 인식). 7 files changed, 17 insertions, 7 deletions.
+- ✅ **TD-40 신규+해소** (`e9a3db3`): TD-39 fix 검증 중 `gh run 24719888095` 로그에서 새 에러 발견 — `duplicate column name: error_type`. 근본 원인: **production D1이 과거 `wrangler d1 execute --file` 수동 초기화 → `d1_migrations` 추적 테이블 비어있음** → CI가 0부터 재적용 시도, 멱등 migration(CREATE TABLE IF NOT EXISTS)은 통과, 비멱등(ALTER TABLE ADD COLUMN)은 실패. 해결: `scripts/backfill-d1-migrations.sh` 신설 (5 DB 전체 INSERT OR IGNORE, EXCLUDE 리스트, --dry-run 지원).
+- ✅ **Backfill 수동 실행**: `CLOUDFLARE_API_TOKEN_KTDS` 사용해 `bash scripts/backfill-d1-migrations.sh --env production` 실행. 결과: db-ingestion 3, db-structure 8, db-policy 2, db-ontology 2, db-skill 11 (총 26 rows, db-skill +1은 svc-skill 구 local migrations 이력). 전부 OK.
+- ✅ **CI deploy 재trigger + 검증**: `gh workflow run deploy-services.yml -F environment=production -F services=all` → **run 24720331379 12/12 jobs 전원 success**: Prepare deployment ✅ + Typecheck ✅ + D1 Migrations (production) ✅ + Deploy (recon-x-api, svc-ontology, svc-queue-router, svc-extraction, svc-ingestion, svc-skill, svc-policy, svc-mcp-server) ✅ + Deployment summary ✅. CI pipeline production 실 작동 **첫 완전 증명**.
+- 📌 **TD-35 ~~취소선~~**: 세션 222 "부분 해소"였던 것이 세션 223 실 작동 증명으로 **완전 해소**. staging 실 검증(`--env staging`)은 동일 파이프라인 재사용 가능, 다음 세션 선택 과제.
+- 📌 **교훈**: TD-39 수정은 wrangler 명령어 정상화, TD-40 해소는 schema state reconciliation — 두 레이어가 분리된 채 얽혀있어 한 번에 해결 불가였음. CI 로그로 **1차 fix 후에도 다음 블로커 발견**하는 루프 철학이 자가보고 vs 실 production 3연속 패턴을 드디어 종결시킴. autopilot production smoke test feedback memory(세션 222 신설)가 이제 정책으로 승격 후보.
+- Commits: `7cde99d` TD-39 → `e9a3db3` TD-40 + backfill script.
+
 ### 세션 222 (2026-04-21)
 **Sprint 220 F366 autopilot 단독 Sprint — CI migration workflow 코드 merge ✅ but Production 첫 배포 실패 (TD-39 신규)**:
 - ✅ **Sprint 220 scope 재편** (`8944fef`): 기존 F356-B/F357 → Sprint 221+ 이관, F366(TD-35 해소, CI D1 migration workflow) 단독 주력으로 등록. 근거: Sprint 219~221 production drift 6건 연속 발견(TD-33~38), migration 자동 파이프라인 부재가 근원.

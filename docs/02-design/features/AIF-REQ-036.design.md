@@ -549,13 +549,18 @@ ERROR (network 실패)
 
 ### 5.5 Page Route 매핑 (Archive 실행, F377)
 
+> **Sprint 224 역동기화 (2026-04-21)**: 5 하드삭제 대상은 `pages/_archived/`로 soft-archive 채택.
+> `tsconfig.json exclude`로 빌드/번들에서 완전 제거. 런타임 동작 동일.
+> 히스토리 보존 가치 + PDCA gap 처리 규칙("코드 불가 gap은 Design에 사유 기록") 적용.
+> 물리 삭제는 S222 Legacy 코드 완전 제거 시 함께 수행.
+
 | 현 경로 | 액션 | 신 경로 / 처리 |
 |---------|:----:|----------------|
-| `/analysis` | 🗑️ Archive | `_archived/` 이동 후 삭제 (S222) |
-| `/poc-phase-2-report` | 🗑️ Archive | 동상 |
-| `/poc-ai-ready` | 🗑️ Archive | 동상 |
-| `/poc-ai-ready-detail` | 🗑️ Archive | 동상 |
-| `/benchmark` | 🗑️ Archive | 동상 |
+| `/analysis` | 🗑️ Soft-Archive | `pages/_archived/analysis.tsx` + tsconfig exclude (S222 물리 삭제) |
+| `/poc-phase-2-report` | 🗑️ Soft-Archive | `pages/_archived/poc-phase-2-report.tsx` + tsconfig exclude |
+| `/poc-ai-ready` | 🗑️ Soft-Archive | `pages/_archived/poc-ai-ready.tsx` + tsconfig exclude |
+| `/poc-ai-ready-detail` | 🗑️ Soft-Archive | `pages/_archived/poc-ai-ready-detail.tsx` + tsconfig exclude |
+| `/benchmark` | 🗑️ Soft-Archive | `pages/_archived/benchmark.tsx` + tsconfig exclude |
 | `/dashboard` | ♻️ 재설계 | `/executive/overview` (F375) |
 | `/login` | ♻️ 재설계 | CF Access 리다이렉트 (실제 로그인은 IdP) |
 | `/skill-detail` | ♻️ 재설계 | `/engineer/workbench/:id` (Split View) |

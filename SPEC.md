@@ -58,7 +58,7 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-04-21 (세션 218 — AIF-REQ-035 Phase 3 PRD Ready, R2 77 + Amb 0.122 + Phase 1/2 선례 기반 착수 정당화, Sprint 218~221+ 배치 확정)
+- **Last Updated**: 2026-04-21 (세션 218 — AIF-REQ-035 Phase 3 Sprint 218 진행 중. F354 ✅ DIVERGENCE 마커 5건. F355 사전 조사로 6중 갭 발견 → 분할(F355a/F355b/F362). TD-29/30/31 신규 등록)
 - **Current Phase**: **Pilot Core 완료** — 5-Stage 역공학 파이프라인 실증 완료. 7 Workers + Gateway + Pages, 2-org 파일럿 (퇴직연금 948건 + 온누리 88건), policies 3,675 / skills 3,924. KPI: API Coverage 95.4%, Table Coverage 100%. REQ 24/32 DONE. E2E 47/47 PASS
 <!-- 마지막 실측 (daily-check 자동 보정 대상) -->
 - **마지막 실측** (세션 218, 2026-04-20, daily-check): 7 Workers(운영) / 12 svc-* 디렉토리(잔존 포함), D1 5 DBs (23 migrations, latest db-skill 0007 handoff_jobs), 113 test files on disk, E2E 10 specs 47 tests
@@ -485,12 +485,15 @@
 
 > **PRD**: `docs/req-interview/decode-x-v1.3-phase-3/prd-final.md` (v1.2, R2 77 + Amb 0.122 + Phase 1/2 선례 기반 착수 정당화)
 > **목표**: Phase 2 미완 마무리(TD-24 DIVERGENCE 마커 / TD-25 Foundry-X Production E2E 증거) + AI-Ready 자동 채점기 + AgentResume 실구현 + Tree-sitter 업그레이드 등 품질·운영 성숙
-> **MVP 임계값**: True Must 2건(F354 + F355) 완결
+> **MVP 임계값**: True Must 2건 — F354 (M-1) + F355a (M-2a 재정의). 세션 218 사전 조사로 F355 분할 후 M-2a로 축소
 > **착수일**: 2026-04-21 (세션 218)
 
 **Sprint 218 (True Must, Week 1):**
 - [x] F354 ✅ (AIF-REQ-035 Phase 3 M-1, **P0**, 세션 218): **TD-24 DIVERGENCE 공식 마커 발행** — `.decode-x/spec-containers/lpon-refund/provenance.yaml`에 `divergenceMarkers` 섹션 신규 발행 (5건: BL-024 HIGH + BL-026/028/029 MEDIUM + BL-027 LOW). BL-024는 TC-REFUND-002 WRONG_OUTCOME 감사 로그 직접 링크(`scripts/roundtrip-verify/last-report.json:182-187`). BL-028은 `refund.ts:80-82` hard-coded `exclusionAmount = 0`과 TD-22 silent PASS 교차 언급. BL-026/029는 ES edge spec 링크, BL-027은 `approveRefund:130-135` 부분 구현 명시. KPI "≥3건 DIVERGENCE" 5건으로 충족. reconcile 엔진(API-level) 대비 BL-level divergence는 수동 큐레이션 + ES edge spec 링크 방식 채택 — Phase 3 이후 자동 검출 확장 검토. 경로 공식화: PRD 문서상 `docs/poc/sprint-214b/lpon-refund/` → 실제 `.decode-x/spec-containers/lpon-refund/`
-- [ ] F355 (AIF-REQ-035 Phase 3 M-2, **P0**): **TD-25 Foundry-X Production E2E 증거 수집** — Decode-X Production → Foundry-X Production `POST /prototype-jobs` 실 호출 + `handoff_jobs` row 생성 확인 + 로그/스크린샷 캡처. Tier-A 6서비스 모두 반복. Cross-repo PR 포함. 예상 2h + Foundry-X 2~4h
+- [x] **F355 갭 명세 ✅** (세션 218): F355 사전 조사에서 6중 구조 갭 발견 → 분할(F355a/F355b/F362). 분석 보고서 `docs/03-analysis/features/sprint-218-f355-gap-analysis.md`. 갭: (1) FOUNDRY_X_URL worker 이름 오류(`-production`→`-api`), (2) handoff path `/api/` prefix 누락, (3) FOUNDRY_X_SECRET production 미설정, (4) 0007_handoff_jobs.sql production 미적용, (5) 인증 모델 미스매치(X-Internal-Secret vs JWT+tenant), (6) **lpon-* spec-container ↔ skills D1 packaging pipeline 부재**. Sprint 215 자가보고 "200 응답 1/1"은 로컬 mock/픽스처 결과. TD-25 "증거 부재"의 결정적 보강 증거 확보
+- [ ] F355a (AIF-REQ-035 Phase 3 M-2a, **P0**, Sprint 218 잔여): **Decode-X handoff Production 도구 정리** — wrangler.toml `FOUNDRY_X_URL` 4곳 정정 + handoff.ts L236 path `/api/prototype-jobs` 정정 + `FOUNDRY_X_SECRET` production secret 등록 + `0007_handoff_jobs.sql` production 적용. 약 30min. 갭 #1~#4 해소
+- [ ] F355b (AIF-REQ-035 Phase 3 M-2b, **P0**, Sprint 219로 이관): **Foundry-X internal endpoint 신설** — `/api/internal/prototype-jobs` 신설(X-Internal-Secret 미들웨어 + 명시적 orgId 파라미터). Cross-repo PR (Decode-X handoff.ts callerSecret 정렬). 인증 통합(갭 #5) 후 1서비스 실 호출 200 응답 확보. 2~3h 예상
+- [ ] F362 (AIF-REQ-035 Phase 3 신규, **P0**, Sprint 219~220): **spec-container → skills D1 packaging pipeline** — `.decode-x/spec-containers/lpon-*/` 디렉토리(provenance.yaml + rules + runbooks + tests + contracts) → SkillPackage Zod schema 변환 + R2 .skill.json 업로드 + skills D1 INSERT. 신규 endpoint `POST /skills/from-spec-container` + 7서비스 일괄 packaging 스크립트. **결정타** — Tier-A handoff 데이터 흐름 복원(갭 #6). 1~2 Sprint 분량
 - [ ] F360 (AIF-REQ-035 Phase 3 S-5, P3): **TD-20/21/23 Phase 2 작연 정리** — Sprint 215 retroactive Plan/Design(0.5h) + gift/settlement provenance FX-SPEC 버전 drift 수정(0.1h) + `rfndPsbltyYn` 하드코딩 해결(1h). 총 1.6h
 
 **Sprint 219 (Should Have 1차, Week 2):**
@@ -507,7 +510,9 @@
 
 **Out-of-scope (Phase 4 이후)**: 타 도메인 확장, 외부 파일럿, AIF-REQ-021 PAL Router 고도화, AIF-REQ-023 Pipeline Event Sourcing. (유지 but 자연 편입 가능)
 
-**실패/중단 조건**: Sprint 218 말에 F354 또는 F355 미완 → Phase 3 범위 재협상 또는 aborting. LLM 비용 일일 한도 초과 3회 이상 → S-1 샘플링 전환. Cross-repo merge 48h 지연 → TD-25 mock 하네스로 전환.
+**실패/중단 조건**: Sprint 218 말에 F354 또는 F355a 미완 → Phase 3 범위 재협상 또는 aborting. F355b/F362는 Sprint 219~220 이관(M-2b/M-2c Should). LLM 비용 일일 한도 초과 3회 이상 → S-1 샘플링 전환. Cross-repo merge 48h 지연 → F355b mock 하네스로 전환.
+
+> **세션 218 재정의 (2026-04-21)**: F355 사전 조사 결과 6중 갭 발견으로 분할. MVP 임계값 = F354 + F355a (도구 정리 + 갭 명세 보고서). M-2 본질("Foundry-X Production E2E 실 호출 6/6")은 F355b + F362 완결로 Sprint 219~220 달성 예정. 분석: `docs/03-analysis/features/sprint-218-f355-gap-analysis.md`
 
 ---
 
@@ -684,11 +689,15 @@
 | TD-26 | TD-18 연장 — `packages/utils/` Java 파서 이관 미완 | **svc-ingestion/parsing/java-*.ts + scripts/java-ast/runner.ts 중복 유지** — Phase 3 착수 전 `packages/utils/src/java-parsing/` 공용 모듈 추출 권장. P3 | DRY 위반 지속 (세션 217 Phase 2 통합 분석) | 2026-04-20 |
 | TD-27 | AI-Ready 자동 채점기 (PRD §4.2 Should) 미구현 | **Phase 2 scope 밖** — Sprint 214a/b/c 자가보고 "AI-Ready 6기준 10/10"은 수동 평가. 자동 채점기는 Phase 3 scope로 이관. 해결안: Phase 3 Sprint 편입 (크기 TBD). P3 | 정량 지표 자동화 지연 (세션 217 Phase 2 통합 분석) | 2026-04-20 |
 | TD-28 | TD-19 연장 — Sprint 212 regex CLI → Tree-sitter 이관 | **PRD 명세 대비 구현 gap** — TD-19의 후속. 해결안: (a) Phase 3 Sprint로 Tree-sitter 업그레이드, 또는 (b) PRD §4.1을 "regex CLI 확정"으로 수정. P3 | 유지보수성·확장성 (세션 217 Phase 2 통합 분석) | 2026-04-20 |
+| TD-29 | `services/svc-skill/wrangler.toml` `FOUNDRY_X_URL` + `handoff.ts:236` path + production secrets/migration | **Sprint 215 Production 도구 정리 4건 미완** — (1) FOUNDRY_X_URL worker 이름 오류(`-production`/`-staging` → `-api`/`-api-staging`), (2) handoff path `/api/` prefix 누락, (3) FOUNDRY_X_SECRET production 미설정, (4) `0007_handoff_jobs.sql` production 미적용. 해결안: F355a로 흡수(30min). **P1** | Production E2E 호출 자체 불가 — Sprint 215 코드는 단 한 번도 실 production에서 동작하지 않았음 (세션 218 F355 사전 조사 발견) | 2026-04-21 |
+| TD-30 | `services/svc-skill/src/routes/handoff.ts:240` X-Internal-Secret ↔ Foundry-X `packages/api/src/app.ts:222` authMiddleware (JWT+tenant) | **인증 모델 미스매치** — Decode-X는 service-to-service inter-internal-secret 패턴, Foundry-X는 user JWT + tenantGuard 패턴. FX-SPEC-003 contract document에 인증 방식 명세 부재가 원인. 해결안: F355b로 분리 — Foundry-X `/api/internal/prototype-jobs` 신설(X-Internal-Secret 미들웨어 + 명시적 orgId). Cross-repo PR 2~3h. **P1** | 갭 #5 — 인증 헤더 정렬 없이는 호출 401/500 (세션 218 F355 사전 조사) | 2026-04-21 |
+| TD-31 | `.decode-x/spec-containers/lpon-*/` ↔ Production D1 `skills` 테이블 + R2 SkillPackage | **결정타: spec-container → skills D1 packaging pipeline 부재** — Phase 2가 `.decode-x/spec-containers/`에 7 디렉토리 산출물(provenance + rules + runbooks + tests + contracts)을 만들었으나, 이를 SkillPackage Zod schema로 변환 + R2 업로드 + skills D1 INSERT하는 packaging step이 없음. Production skills의 lpon-* domain count = 0건. handoff/submit 호출 시 `notFound("skill", skillId)` 반환. 해결안: F362로 신규 등록 — `POST /skills/from-spec-container` endpoint + 7서비스 일괄 packaging 스크립트. 1~2 Sprint. **P0** | Tier-A handoff 데이터 흐름 0%. F354 DIVERGENCE 마커도 결국 Production 데이터 없이는 영속·검증 불가 (세션 218 F355 사전 조사) | 2026-04-21 |
 | TD-29 | `docs/` frontmatter 누락 90건 (40%) | **GOV-001 형식 위반** — `/ax:gov-doc index` dry-run 결과 227개 활성 .md 중 90개에 frontmatter 없음. 영향: INDEX 자동화 불가, 카테고리 분류 디렉토리 휴리스틱 의존. 주요 누락 영역: features/sprint-* (plan/design/analysis/report) 35건, poc/* 13건, req-interview/decode-x-v1.2/review/round-* 12건, decode-x-v1.2/* 6건, decode-x-restructuring/* 3건, contracts/* 3건, docs/ 직속 4건. 해결안: (a) 필수 8필드(code/title/version/status/category/created/updated/author) 일괄 보강, (b) review/round-* + sub-meta는 frontmatter 면제 정책 명시. 사전 자료: `docs/INDEX-inventory-2026-04-21.md`. **추가 발견**: 오타 디렉토리 `03-plan`(1)·`03-report`(2)·`06-report`(1) 정리 필요. P3 | INDEX 큐레이션 의존도 영구화 (세션 218 /ax:gov-doc index dry-run) | 2026-04-21 |
 
 > **Note**: TD-10 범위 확대 — 원래 svc-queue-router만 등록했으나, 실제로는 9개 서비스(svc-mcp-server 제외) 전체 production 서비스 바인딩이 default env를 참조하는 동일 이슈 확인 → 일괄 수정
 > **Note**: TD-13/14/15는 **외부 리포(ax-marketplace)** 이슈 — ax plugin 업스트림으로 PR 또는 이슈 전달 필요. 로컬 Decode-X 리포 코드 수정은 아님
 > **Note**: TD-20~28은 Phase 2 종합 Gap Analysis(`docs/03-analysis/features/phase-2-pipeline.analysis.md` §4.2) 산출. **TD-24/TD-25(P1)는 Phase 3 Sprint 1 착수 전 선행 해소 권장** (M-3 + M-6 완결)
+> **Note**: TD-29~31은 세션 218 F355 사전 조사(`docs/03-analysis/features/sprint-218-f355-gap-analysis.md`) 산출. **TD-25 "Foundry-X Production E2E 증거 부재"의 본질은 6중 구조 갭**이며 TD-29(도구 4건)/TD-30(인증 1건)/TD-31(데이터 흐름 1건)으로 분해됨. F355 → F355a + F355b + F362 분할.
 
 ### 가정 (Assumptions)
 

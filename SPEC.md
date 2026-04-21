@@ -58,10 +58,10 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-04-21 (세션 220 session-end — AIF-REQ-036 신규 OPEN 등록: Phase 3 UX 재편 PRD v0.1 Draft 작성 완료. 듀얼 트랙(Executive+Engineer+Admin+Guest) + Spec→Source Split View + 기존 5 페르소나 폐기 + Google OAuth(Cloudflare Access) + AXIS DS Full 연동 + 24페이지 Archive 분류 일괄 승인(Hard 5/재설계 5/이관 11/유지 4). Sprint 219~221 3-Sprint MVP + S222 Should. 외부 AI R1/R2 검토 대기. 선행 Sprint 219(F355b+F362) ✅ PR #22 MERGED (세션 220 다른 pane))
+- **Last Updated**: 2026-04-21 (세션 221 session-end — AIF-REQ-036 **OPEN→TRIAGED** 전환 + **Provenance 실측 완료**: sourceLineRange 스키마 부재(0% 확정), pageRef optional, documentId 100%. MVP 스코프 축소(Split View 우측 = 재구성 마크다운 section 앵커) + **F364/F365 신규 등록**(F364 Provenance v2 Phase 4+, F365 pageRef 선제 실측 선택). **PRD v0.1→v0.2** 패치(§3/§4/§5/§6.2/§9/§10.3/§11.3), review-history R1 대상 = v0.2로 갱신. Ambiguity 0.10→0.08. 실측 보고서: `docs/03-analysis/features/provenance-coverage-2026-04-21.md`. 세션 220 Last Updated: AIF-REQ-036 신규 OPEN 등록 + PRD v0.1 Draft 작성 완료)
 - **Current Phase**: **Pilot Core 완료** — 5-Stage 역공학 파이프라인 실증 완료. 7 Workers + Gateway + Pages, 2-org 파일럿 (퇴직연금 948건 + 온누리 88건), policies 3,675 / skills 3,924. KPI: API Coverage 95.4%, Table Coverage 100%. REQ 24/32 DONE. E2E 47/47 PASS
 <!-- 마지막 실측 (daily-check 자동 보정 대상) -->
-- **마지막 실측** (세션 220, 2026-04-21, session-end): 7 Workers(운영) / 12 svc-* 디렉토리(잔존 포함), D1 5 DBs (23 migrations, latest db-skill 0008 spec_container_ref), 111 test files on disk, E2E 10 specs 47 tests
+- **마지막 실측** (세션 221, 2026-04-21, session-end): 7 Workers(운영) / 12 svc-* 디렉토리(잔존 포함), D1 5 DBs (23 migrations, latest db-skill 0008 spec_container_ref), 114 test files on disk, E2E 10 specs 47 tests
 - **Foundry-X MCP 통합**: ✅ Phase 1-3 완료 — org MCP 2서버 + meta-tool 3종(`foundry_policy_eval`, `foundry_skill_query`, `foundry_ontology_lookup`). 619 tools (616 기존 + 3 meta). Foundry-X AgentTaskType 7종(기존4 + 신규3). SVC_ONTOLOGY binding. PDCA 100%. AIF-REQ-026 IN_PROGRESS
 - **반제품 생성 엔진**: AIF-REQ-026 Phase 2 Sprint 1 완료 — Working Prototype Generator (svc-skill 확장). POST /prototype/generate API, collector(5 SVC) + generators 3종(business-logic/rules-json/terms-jsonld) + fflate ZIP → R2. 262 tests, PDCA 93%. AIF-REQ-027 IN_PROGRESS (별도 pane). D1 0004 production 적용
 - **B/T/Q Spec 문서 생성기**: ✅ Sprint 208 완료 — Template+LLM Hybrid 방식 Spec 조립 레이어. `GET /skills/:id/spec/{type}` API, 3종 생성기(Business/Technical/Quality) + OpenRouter→Haiku 요약+Gap. `spec-gen/` 8파일 1,593줄 + `openrouter-client.ts`. Production 배포+검증 완료 (LPON 3건 B/T/Q 전수 PASS)

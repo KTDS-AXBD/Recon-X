@@ -1,8 +1,8 @@
 ---
 code: AIF-REVH-decode-x-v1.3-phase-3-ux
 title: Decode-X v1.3 Phase 3 UX 재편 외부 AI 검토 이력
-version: 0.2
-status: Round 1 Pending
+version: 0.3
+status: Round 1 Pending (대상 = PRD v0.2, 실측 반영본)
 category: REVIEW
 system-version: 0.7.0
 created: 2026-04-21
@@ -11,24 +11,27 @@ author: Sinclair Seo
 related:
   - docs/req-interview/decode-x-v1.3-phase-3-ux/prd-final.md
   - docs/req-interview/decode-x-v1.3-phase-3-ux/interview-log.md
+  - docs/03-analysis/features/provenance-coverage-2026-04-21.md
 ---
 
 # 외부 AI 검토 이력 — AIF-REQ-036
 
 > Phase 1/2/3 본 PRD와 동일한 2라운드 검토 프로세스.
-> PRD v0.1 → R1 피드백 → v0.2 → R2 피드백 → v1.0 final.
+> ~~PRD v0.1~~ **PRD v0.2 (Provenance 실측 반영)** → R1 피드백 → v0.3 → R2 피드백 → v1.0 final.
+>
+> **v0.2 변경점 (세션 221)**: Split View 우측 스코프 축소(재구성 마크다운 section 앵커), sourceLineRange/원본 SI 산출물 페이지 앵커 Out-of-Scope, F364/F365 분리, R1 리스크 해소 + R5 신설, Ambiguity 0.10→0.08.
 
 ---
 
-## R1 (Pending) — PRD v0.1
+## R1 (Pending) — PRD v0.2 (실측 반영본)
 
 ### 검토 프롬프트 (사용자 복사용)
 
-아래 프롬프트를 Claude Opus / GPT-5 / Gemini 2.5 Pro 중 2개 이상 모델에 붙여넣으세요. `prd-final.md` 본문을 함께 첨부.
+아래 프롬프트를 Claude Opus / GPT-5 / Gemini 2.5 Pro 중 2개 이상 모델에 붙여넣으세요. `prd-final.md` 본문(v0.2) + `provenance-coverage-2026-04-21.md`를 함께 첨부.
 
 ```
 당신은 소프트웨어 제품 기획 리드 및 SI 조직 CTO 관점의 PRD 리뷰어입니다.
-첨부된 PRD(v0.1)를 다음 기준으로 100점 만점 평가해 주세요.
+첨부된 PRD(v0.2 — Provenance 실측 반영본)를 다음 기준으로 100점 만점 평가해 주세요.
 
 평가 기준:
 1. 문제 정의의 구체성 (20점) — Pain Points가 숫자·사건·사용자 시나리오로 근거되는가

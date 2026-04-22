@@ -1,0 +1,386 @@
+{
+  "executedAt": "2026-04-22T05:21:04.872Z",
+  "modelVersion": "haiku",
+  "totalSkills": 7,
+  "totalCostUsd": 0.161867,
+  "evaluations": [
+    {
+      "skillId": "lpon-budget",
+      "skillName": "lpon-budget",
+      "criteria": [
+        {
+          "criterion": "source_consistency",
+          "score": 0.82,
+          "rationale": "Provenance의 5개 businessRules(BB-001~BB-005)이 rules/*.md의 3개 Empty Slot(ES-BUDGET-001, ES-BUDGET-002, ES-BUDGET-003)에 매핑되어 있으며, condition-criteria-outcome 구조가 대체로 일치한다. BB-001(예산 배정 한도)은 ES-BUDGET-001의 criteria '잔액 ≥ 요청 금액'과 일치하고, BB-002(차감)는 동일 규칙의 outcome과 매칭된다. BB-005(복구)는 ES-BUDGET-002에 완전히 구현되었다. BB-003(임계치 알림)과 BB-004(이월/소멸)는 각각 ES-BUDGET-003에 포함되어 있다. 다만 minor 불일치 2건: (1) BB-003의 '임계치 10%' 기준이 rules에서 명시적 수치 없이 '임계치 이하'로만 표현됨, (2) BB-004의 이월 상한선('전 기간 배정액의 20% 이내')이 provenance에는 없고 rules 구현 힌트에만 존재. 전체적으로 기능 의미는 동일하며 드리프트는 없으나 표현 정확도에서 소폭 차이 발생.",
+          "passThreshold": 0.75,
+          "passed": true
+        },
+        {
+          "criterion": "comment_doc_alignment",
+          "score": 0.72,
+          "rationale": "ES-BUDGET-001, ES-BUDGET-002, ES-BUDGET-003 세 규칙 모두에 대응하는 runbook이 존재하며, 각 runbook은 rule의 condition/outcome을 기본적으로 반영하고 있다. ES-BUDGET-001 runbook은 '한도 초과 민원 발생 시 조치'로 exception 처리를 다루고, ES-BUDGET-002는 '예산 복구 실패 수기처리'로 BB-005의 보상 트랜잭션을 설명하며, ES-BUDGET-003은 '월말 배치 처리'로 BB-004의 이월/소멸을 다룬다. 그러나 runbook 내용이 rule의 criteria를 정확히 반영하지 못하는 부분이 있다. 예를 들어 ES-BUDGET-001 runbook은 '임시 한도 증액' 운영 절차만 제시하고, rule의 핵심인 '동시 요청 Race Condition 처리'와 '원자적 UPDATE WHERE 구현'은 누락되어 있다. ES-BUDGET-002 runbook도 수기처리 절차만 있고, rule의 '즉시 원복' 및 'Saga 패턴 오케스트레이션' 기술 요구사항이 불충분하다. ES-BUDGET-003 runbook은 배치 스케줄과 실패 복구만 다루고, rule의 '이월 상한선 설정' 및 '배치 순서 보장' 엣지 케이스가 미반영되어 있다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "io_structure",
+          "score": 0.72,
+          "rationale": "tests/contract/*.yaml의 given/when/then 구조는 기본적으로 정의되어 있으나 입출력 필드의 타입 명확성에서 부분적 결함이 있다. given 필드는 대부분 구체적 값으로 명시되어 있다(예: TC-BUDGET-001의 remainingBudget: 1000000, requestedAmount: 300000). 그러나 then 필드에서 타입 정의가 불완전하다. 예를 들어 TC-BUDGET-003의 'budgetRestored: true'는 boolean만 제시되어 복구 금액, 복구 시간, 복구 로그 ID 등 상태 변화의 세부 정보가 누락되어 있다. TC-BUDGET-004의 'notificationChannel: LMS'도 발송 상태, 수신자 정보, 발송 시간 등이 명시되지 않았다. TC-BUDGET-005에서 'nextPeriodBudget: 500000'은 이월 금액만 제시하고 이월 로그 생성, 이벤트 발행 여부 등 부수적 상태 변화가 불명확하다. 필드 의미는 대체로 파악 가능하나 1~3개 필드의 타입과 응답 구조가 추상적이다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "exception_handling",
+          "score": 0.82,
+          "rationale": "ES-BUDGET-001, ES-BUDGET-002, ES-BUDGET-003 세 규칙 모두에서 exception(Else) 절이 명시적으로 정의되어 있다. ES-BUDGET-001은 '잔액 < 요청 금액'일 때 HTTP 422 + BUDGET_LIMIT_EXCEEDED 에러코드 반환을 명시했고, ES-BUDGET-002는 복구 실패 시 'FAILED' 상태 기록 및 관리자 알림을 정의했으며, ES-BUDGET-003은 rollover_yn='N' 또는 잔액=0일 때 EXPIRED 상태 처리를 명시했다. 테스트 시나리오에서도 TC-BUDGET-LIMIT-002(한도 초과 거부), TC-BUDGET-LIMIT-003(동시성 Race Condition), TC-BUDGET-RESTORE-001~003(충전 실패/타임아웃 복구), TC-BUDGET-ROLLOVER-002(소멸 처리) 등 예외 케이스가 충분히 커버되어 있다. 다만 TC-BUDGET-RESTORE-003에서 '복구 실패' 자체의 예외 시나리오(budget_restoration_log.status='FAILED')가 테스트 계약에 명시적으로 포함되지 않았고, 동시성 제어 실패(SELECT FOR UPDATE 락 타임아웃) 같은 엣지 케이스 테스트가 누락되어 있어 완전성이 약간 부족하다.",
+          "passThreshold": 0.75,
+          "passed": true
+        },
+        {
+          "criterion": "srp_reusability",
+          "score": 0.72,
+          "rationale": "ES-BUDGET-001, ES-BUDGET-002, ES-BUDGET-003은 각각 단일 책임(한도 초과 처리, 실패 복구, 이월/소멸)을 가지며 독립적으로 참조 가능하다. 그러나 여러 중복과 경계 모호성이 존재한다. (1) BB-002와 ES-BUDGET-001이 동일한 '예산 차감' 조건을 중복 정의하고 있으며, BB-005와 ES-BUDGET-002도 '충전 실패 시 복구'를 중복 설명한다. (2) ES-BUDGET-001의 criteria '잔액 ≥ 요청 금액'과 BB-002의 criteria '해당 직원의 예산 잔액 ≥ 충전 요청 금액'이 실질적으로 동일하다. (3) BB-004(이월 정책)와 ES-BUDGET-003(이월/소멸 처리)의 책임 분리가 불명확하다. (4) BB-001의 '회사 최대 한도'와 BB-002의 '직원별 충전'이 혼재되어 있다. 테스트 시나리오는 3개 rule × 3~5 시나리오로 충분하나, rule 간 중복 정의로 인해 재사용성이 저하된다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "testability",
+          "score": 0.72,
+          "rationale": "tests/*.yaml 시나리오는 happy path(TC-BUDGET-LIMIT-001, TC-BUDGET-RESTORE-001, TC-BUDGET-ROLLOVER-001)와 edge case(TC-BUDGET-LIMIT-003 동시성, TC-BUDGET-LIMIT-004 경계값, TC-BUDGET-ROLLOVER-003 잔액0원)를 포함하며, error case(TC-BUDGET-LIMIT-002 한도초과, TC-BUDGET-RESTORE-002 타임아웃, TC-BUDGET-ROLLOVER-002 소멸)도 커버한다. given/when/then 구조는 대부분 구체적 값으로 자동화 가능하다(예: companyId, totalAmount, usedAmount, requestedAmount 명시). 다만 일부 시나리오의 then이 boolean 수준에 머물러 있다(TC-BUDGET-RESTORE-001의 'budgetRestored: true', 'restorationLogCreated: true'). Contract Tests 섹션의 TC-BUDGET-004, TC-BUDGET-005는 then 조건이 추상적이다('warningNotificationSent: true', 'nextPeriodBudget: 500000'). 전체 시나리오 수는 충분하나(13건), 일부 then이 검증 가능한 구체적 상태값(예: DB 레코드 존재 여부, 이벤트 페이로드 필드)으로 표현되지 않아 자동화 구현 시 해석 모호성이 있다.",
+          "passThreshold": 0.75,
+          "passed": false
+        }
+      ],
+      "totalScore": 0.753,
+      "passCount": 2,
+      "overallPassed": false,
+      "modelVersion": "haiku",
+      "evaluatedAt": "2026-04-22T05:17:21.697Z",
+      "costUsd": 0.016968
+    },
+    {
+      "skillId": "lpon-charge",
+      "skillName": "lpon-charge",
+      "criteria": [
+        {
+          "criterion": "source_consistency",
+          "score": 0.42,
+          "rationale": "Provenance에서 선언한 8개 businessRule(BL-001~BL-008)과 rules/*.md의 condition-criteria-outcome 매핑을 검토한 결과, 심각한 구조적 불일치가 발견되었습니다. Provenance는 BL-001~BL-008을 '시나리오 1: 충전(Top-up)' 출처로 명시하고 있으나, 실제 rules/*.md에는 ES-CHARGE-001~009라는 9개의 Empty Slot만 정의되어 있으며, 원본 BL들의 condition-criteria-outcome 구현이 완전히 누락되어 있습니다. 예를 들어 BL-001('출금계좌 잔액 ≥ 충전 요청 금액')은 어느 ES-CHARGE 규칙에도 직접 매핑되지 않고, BL-004('출금 타임아웃 후 5분 상태조회')는 ES-CHARGE-002에서만 부분적으로 다루어집니다. 또한 Provenance의 inputCompleteness에서 'rulesCoverage: 0.92'로 표기했으나, 실제로는 원본 BL 규칙들이 체계적으로 구현되지 않았습니다. Empty Slot들은 추가 요구사항(멱등성, 재시도, Rate Limiting 등)을 다루지만, 이는 provenance의 businessRules 목록과 1:1 매핑되지 않습니다. 따라서 spec-container의 소스코드 정합성이 현저히 낮습니다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "comment_doc_alignment",
+          "score": 0.62,
+          "rationale": "lpon-charge 스킬의 9개 Empty Slot(ES-CHARGE-001~009)에 대응하는 runbook이 부분적으로 존재하나, 주석·문서 일치도가 불충분하다. ES-CHARGE-001~003, 005, 006, 008, 009에 대해서는 운영 가이드 runbook이 작성되어 있으며, 각 runbook이 rule의 condition-criteria-outcome을 기본적으로 반영하고 있다. 예를 들어 ES-CHARGE-001의 rule(동일 chargeRequestId 재전송 시 기존 결과 반환)은 runbook의 '이중 충전 발생 시 수동 조치' 섹션에서 멱등성 체크 쿼리와 함께 설명되어 있다. 그러나 ES-CHARGE-004(자동충전 중복 실행 방지)와 ES-CHARGE-007(외부 API 재시도)의 runbook은 존재하지만 rule의 세부 criteria(예: TTL=30분, exponential backoff 1-2-4초)를 명확히 반영하지 못하고 있다. 또한 Contract Tests 섹션이 BL-001~008만 다루고 있어 9개 Empty Slot의 test scenario와 runbook 간 추적성이 약하다. 대부분의 runbook이 SLA와 감지 조건을 포함하나, rule의 exception 경로(예: ES-CHARGE-002의 UNCERTAIN 상태 처리)가 runbook에서 충분히 상세화되지 않은 경우가 있다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "io_structure",
+          "score": 0.72,
+          "rationale": "tests/contract/*.yaml의 given/when/then 구조는 대체로 명확하나, 입출력 필드의 타입 정의와 의미 설명에서 불완전성이 있다. 예를 들어 TC-CHARGE-001의 given에서 'withdrawalAccountBalance: 100000'은 값만 제시되고 단위(원)나 필드 타입(integer)이 명시되지 않았다. TC-IDEM-001의 then에서 'responseIdempotent: true'는 boolean만 반환되어 실제 응답 구조(HTTP 헤더, 바디 필드)를 파악하기 어렵다. 반면 TC-ESC-001, TC-RL-002 등은 'escalationPriority: P2', 'errorCode: RATE_LIMIT_EXCEEDED'처럼 구체적 값을 제시한다. TC-CACHE-005의 'staleFlag: true'는 boolean이지만 문맥상 의미가 명확하다. 전체적으로 given 필드는 입력값 중심으로 구성되었으나, then 필드에서 응답 형태(HTTP 상태코드, JSON 구조, 헤더)의 완전한 정의가 부족하다. 약 60% 시나리오는 충분히 명확하나, 40%는 필드 타입이나 응답 구조 상세도가 0.5~0.75 수준이다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "exception_handling",
+          "score": 0.82,
+          "rationale": "POL-LPON-CHARGE-001 spec-container는 9개의 Empty Slot(ES-CHARGE-001~009)에서 exception/else 절을 명시적으로 정의하고 있다. ES-CHARGE-001(멱등성)은 'chargeRequestId 없거나 status=failed이면 신규 처리, processing이면 409+CHARGE_IN_PROGRESS 반환' 명시. ES-CHARGE-002(타임아웃)는 'SUCCESS/FAILED/UNKNOWN 각각 다른 경로' 정의. ES-CHARGE-003(분할충전)은 'availableAmount>0 vs ≤0' 두 exception 케이스 구분. ES-CHARGE-004(자동충전락)는 'LOCKED 보유 중/만료/없음' 3가지 exception 처리. ES-CHARGE-007(재시도)는 '5xx/timeout 재시도 vs 4xx 즉시실패' 구분. 다만 tests/*.yaml에서 일부 미흡: TC-CHARGE-001~006은 happy path 중심이며, error_code 포함 예외 시나리오가 ES-CHARGE-001~009의 runbook 수준 상세도에 비해 부족. 특히 ES-CHARGE-008(이중출금감지)의 'UNCERTAIN' 상태나 ES-CHARGE-006(Rate Limiting)의 Circuit Breaker 상태 전환 테스트가 tests에 명시되지 않음. 규칙 정의는 0.9 수준이나 테스트 커버리지가 0.75 수준으로 평가됨.",
+          "passThreshold": 0.75,
+          "passed": true
+        },
+        {
+          "criterion": "srp_reusability",
+          "score": 0.72,
+          "rationale": "lpon-charge spec-container는 9개의 Empty Slot(ES-CHARGE-001~009)을 정의하며, 대부분 단일 책임을 가지고 있으나 몇 가지 재사용성 문제가 있다. ES-CHARGE-001(멱등성)과 ES-CHARGE-008(이중 출금 감지)은 모두 '중복 방지'라는 유사한 책임을 다루고 있으며, 전자는 요청 레벨, 후자는 출금 레벨에서 처리하지만 개념적 중복이 존재한다. ES-CHARGE-002(타임아웃 에스컬레이션)와 ES-CHARGE-007(재시도 정책)은 외부 API 장애 처리라는 공통 관심사를 공유하면서도 분리되어 있어 일관성 문제 가능성이 있다. ES-CHARGE-005(이벤트 한도 증량)와 ES-CHARGE-003(분할 충전)은 한도 관리라는 상위 개념에서 겹치는 영역이 있다. 반면 ES-CHARGE-004(자동충전 락), ES-CHARGE-006(Rate Limiting), ES-CHARGE-009(캐시 무효화)는 명확한 단일 책임을 가지고 있다. 규칙 간 명시적 모순은 없으나, 중복 정의와 경계 모호성이 재사용성을 저해한다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "testability",
+          "score": 0.72,
+          "rationale": "tests/*.yaml 시나리오는 happy path(TC-CHARGE-001~003), edge case(TC-IDEM-003 처리 중 상태, TC-ESC-002 고액 즉시 에스컬레이션, TC-CACHE-005 stale 캐시), error case(TC-CHARGE-002 잔액 부족, TC-RETRY-003 3회 실패, TC-DW-001 이중 출금 차단)를 포함하여 균형있게 커버한다. 각 시나리오의 given/when/then이 구체적 값으로 자동화 가능하다(예: TC-IDEM-001 chargeRequestId='req-abc-001', existingStatus='completed', responseChargeId='charge-existing-001'). 다만 일부 시나리오에서 then 조건이 boolean 수준으로 단순화된 부분이 있다(TC-CHARGE-001 'withdrawal_processed: true' 등). 또한 9개 Empty Slot 중 일부(ES-CHARGE-005, ES-CHARGE-006)는 시나리오 수가 4건으로 제한적이며, 경계값 테스트(TC-SPLIT-003 정확히 일치)는 있으나 음수/null 값 같은 극단 케이스가 누락되었다. 전체적으로 happy path + edge/error 커버는 충분하나 then의 구체성과 극단 케이스 깊이에서 0.75~0.9 범위 상단보다 낮다.",
+          "passThreshold": 0.75,
+          "passed": false
+        }
+      ],
+      "totalScore": 0.67,
+      "passCount": 1,
+      "overallPassed": false,
+      "modelVersion": "haiku",
+      "evaluatedAt": "2026-04-22T05:17:58.658Z",
+      "costUsd": 0.042461
+    },
+    {
+      "skillId": "lpon-gift",
+      "skillName": "lpon-gift",
+      "criteria": [
+        {
+          "criterion": "source_consistency",
+          "score": 0.72,
+          "rationale": "Provenance의 businessRules [BL-G001~G006]과 Rules/*.md의 condition-criteria-outcome 매핑을 검토한 결과, 구조적 1:1 대응은 이루어졌으나 중대한 불일치가 존재합니다. BL-G001~G003은 기본 흐름(발송, 수락, 거절)을 명확히 정의하고 있으나, BL-G004(만료)와 BL-G005(취소)는 Provenance에서 단순 상태 전환만 기술한 반면 Rules에서는 SELECT-FOR-UPDATE 락, 경쟁 조건 방지, 멱등성 처리 등 구현 수준의 상세 기준을 추가로 정의했습니다. 특히 BL-G006(원자성)은 Provenance에서 '단일 원자 처리'만 언급하지만 Rules에서는 롤백 범위, 트랜잭션 경계, UNIQUE 인덱스 멱등성 등을 명시합니다. 또한 Provenance의 'SOURCE_MISSING' 마커와 0.72 신뢰도는 이들 규칙이 db-policy 42건 확인만으로 추정 기반 Fill되었음을 나타내며, 실제 소스코드(/gift/*.java)와의 검증이 미완료된 상태입니다. 따라서 현재 Rules는 Provenance 출처의 의도를 초과 해석하여 구현했으므로 '기능 의미 동일하나 상세도 불일치' 범주에 해당합니다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "comment_doc_alignment",
+          "score": 0.72,
+          "rationale": "ES-GIFT-001, ES-GIFT-002, ES-GIFT-003 세 규칙 모두에 대응하는 runbook이 존재하며, 각 runbook은 rule의 condition/criteria/outcome을 반영하고 있다. 예를 들어 ES-GIFT-001의 condition('expires_at < NOW() AND status=pending')과 outcome('status→expired, 발송자 잔액 복원, GiftExpired 이벤트')이 runbook의 '선물 미복원 민원 대응' 섹션에서 정확히 설명되고 있다. ES-GIFT-002의 취소 불가 조건(status='accepted')도 runbook에서 고객센터 대응 절차로 명확히 기술되어 있다. ES-GIFT-003의 원자성 보장(단일 트랜잭션 내 4개 연산)도 runbook의 'GiftTransferFailed 이벤트 대응'에서 부분 실패 시나리오로 다루어진다. 다만 SOURCE_MISSING 마커로 인해 원본 소스 문서와의 직접 링크가 없고, 추정 기반 Fill이므로 Phase 3 소스 추출 시 DIVERGENCE 검증이 필요하다는 점이 완전성을 제한한다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "io_structure",
+          "score": 0.72,
+          "rationale": "tests/contract/*.yaml의 given/when/then 시나리오에서 입출력 구조가 부분적으로 명확하나 여러 제약이 있다. given 필드는 구체적 값(giftId, status, amount, balance 등)으로 명시되어 있으나, then 필드에서 타입 정의가 불완전하다. 예를 들어 TC-GEXP-001의 then에서 'senderBalanceRestored: true'는 boolean only로 실제 복원 메커니즘(ledger entry 생성, vouchers 테이블 업데이트)의 세부 타입이 불명확하다. TC-GATOM-001에서 'ledgerEntries: 2'는 개수만 제시하고 각 entry의 구조(entry_type, amount, executed_at 등)를 정의하지 않는다. 또한 when 필드가 'batch_expiry_job_runs', 'receiver_accepts_gift' 등 추상적 액션으로만 표현되어 실제 API 호출 형식(HTTP method, endpoint, request body)이 누락되었다. SOURCE_MISSING 마커로 인해 원본 소스와의 추적성도 제한적이다. 입출력 경계는 파악 가능하나 필드 타입과 의미의 완전한 명확성이 부족하다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "exception_handling",
+          "score": 0.78,
+          "rationale": "ES-GIFT-001~003 규칙에서 exception 절이 명시되어 있으나 일부 미흡함. ES-GIFT-001은 SELECT-FOR-UPDATE 실패 시 '처리 스킵' 정의, 발송자 잔액 복원 실패 시 'ManualRefundRequired 이벤트' 발행으로 exception 처리됨. ES-GIFT-002는 status별 4가지 예외(accepted/expired/canceled/already_canceled) 명시, HTTP 422 에러코드 정의. ES-GIFT-003은 롤백 범위와 'GiftTransferFailed' 이벤트 발행 정의. 다만 네트워크 단절 후 재시도 시 멱등성 처리는 UNIQUE 인덱스로만 언급되고 구체적 에러 핸들링 로직 부재. Tests에서 TC-GEXP-001~004, TC-GCANCEL-001~005, TC-GATOM-001~004 총 13개 시나리오 중 경쟁 조건(TC-GEXP-002, TC-GCANCEL-005, TC-GATOM-004)과 에러 케이스(TC-GEXP-003, TC-GCANCEL-002~003, TC-GATOM-002~003) 포함되어 있으나, 데이터베이스 연결 실패, 타임아웃, 부분 실패 등 인프라 레벨 예외 시나리오 누락. Runbook에서 'GiftTransferFailed' 대응 절차는 상세하나 다른 예외 이벤트(ManualRefundRequired 등)에 대한 운영 가이드 부재.",
+          "passThreshold": 0.75,
+          "passed": true
+        },
+        {
+          "criterion": "srp_reusability",
+          "score": 0.62,
+          "rationale": "ES-GIFT-001, ES-GIFT-002, ES-GIFT-003 세 규칙은 각각 만료 처리, 취소 가능 시점, 원자성 보장이라는 서로 다른 책임을 가지고 있으나, 업무루틴 분리·재사용성 측면에서 중대한 문제가 있다. 첫째, 세 규칙 모두 '발송자 잔액 복원'이라는 동일한 outcome을 반복 정의하고 있다(ES-GIFT-001 outcome 3번, ES-GIFT-002 outcome 3번, ES-GIFT-003 exception). 둘째, ES-GIFT-001과 ES-GIFT-002는 모두 SELECT-FOR-UPDATE 기반 낙관적 잠금을 criteria로 사용하며, 경쟁 조건 방지 로직이 중복된다. 셋째, ES-GIFT-003의 원자성 보장은 ES-GIFT-002의 취소 처리와 개념적으로 겹치는 부분이 있다(트랜잭션 롤백). 규칙 간 의존성이 명확하지 않아 독립 참조 시 중복 구현 위험이 높다. 다만 각 규칙의 condition은 구분되고, 테스트 시나리오가 13건으로 충분하며, 운영 가이드가 분리되어 있어 완전한 혼재는 아니다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "testability",
+          "score": 0.72,
+          "rationale": "tests/*.yaml는 13개 시나리오(TC-GEXP-001~004, TC-GCANCEL-001~005, TC-GATOM-001~004)로 happy path, edge case, error case를 부분 커버한다. Happy path는 충분하다(TC-GEXP-001, TC-GCANCEL-001, TC-GATOM-001). Edge case도 존재한다(동시성 경쟁 조건: TC-GEXP-002, TC-GCANCEL-005, TC-GATOM-004). Error case도 있다(TC-GCANCEL-002~003, TC-GATOM-002). 그러나 given/when/then의 구체성에 편차가 있다. TC-GEXP-001은 구체적 값(giftId, expiresAt, amount, senderBalance)으로 자동화 가능하나, TC-GEXP-003의 'expiresAt: past'는 추상적이다. TC-GATOM-002의 'receiverUpdateFails: true'는 실제 DB 오류 시뮬레이션 방식이 명시되지 않아 구현 모호성이 있다. then 절도 대부분 구체적(giftStatus, senderBalance, ledgerEntryType)이지만 TC-GEXP-002의 'finalStatus: [\"expired\", \"accepted\"]'는 어느 상태가 최종인지 불명확하다. 전체적으로 0.75~0.9 범위의 중상 수준이나, 추상 표현 2~3개와 시뮬레이션 방식 미명시로 0.72로 평가한다.",
+          "passThreshold": 0.75,
+          "passed": false
+        }
+      ],
+      "totalScore": 0.713,
+      "passCount": 1,
+      "overallPassed": false,
+      "modelVersion": "haiku",
+      "evaluatedAt": "2026-04-22T05:18:33.411Z",
+      "costUsd": 0.018916
+    },
+    {
+      "skillId": "lpon-payment",
+      "skillName": "lpon-payment",
+      "criteria": [
+        {
+          "criterion": "source_consistency",
+          "score": 0.72,
+          "rationale": "provenance.yaml의 businessRules [BL-013~019]와 rules/*.md의 condition-criteria-outcome 매핑을 분석한 결과, 다음과 같은 불일치가 확인됩니다. BL-013(충전 환불)은 rules에서 ES-PAYMENT-001~005 중 어디에도 명시적으로 구현되지 않았습니다. BL-014(결제 완료 시 취소 가능)는 ES-PAYMENT-001의 멱등성 규칙과 부분적으로 겹치지만 취소 가능 조건 자체는 별도 정의 부족입니다. BL-017(가맹점 QR 취소 버튼)과 BL-018(QR 취소 승인)은 rules에서 '[미정의]' 상태로 표기되어 있으며, condition-criteria-outcome이 완전하지 않습니다. BL-019(탈퇴회원 AP06)는 ES-PAYMENT-005로 구현되었으나 '수기처리'라는 표현만 있고 구체적 기준이 provenance 출처와 일치하지 않습니다. 반면 ES-PAYMENT-002(CARD 재시도), ES-PAYMENT-003(MIXED 보상), ES-PAYMENT-004(SMS 실패)는 rules에서 명확한 condition-criteria-outcome-exception 구조를 갖추고 있습니다. 총 7개 BL 중 약 3~4개가 완전히 매핑되지 않아 0.5~0.75 구간에 해당하며, 기능 드리프트(조건 누락, outcome 변경)가 1~2건 확인됩니다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "comment_doc_alignment",
+          "score": 0.72,
+          "rationale": "POL-LPON-PAYMENT-001의 5개 Empty Slot 규칙(ES-PAYMENT-001~005)에 대응하는 runbook이 모두 존재하며, 각 runbook은 rule의 condition/outcome을 기본적으로 반영하고 있다. 그러나 내용 일치도에서 다음과 같은 불일치가 발견된다: (1) ES-PAYMENT-001 rule은 'idempotent: true' 필드 포함을 명시하나 runbook에는 미언급, (2) ES-PAYMENT-002 rule의 '지수 백오프: 0.5s→1s→2s' 타임라인이 runbook에 미포함, (3) ES-PAYMENT-003 rule의 'incident_type: MIXED_PAYMENT_CARD_DANGLING' 에스컬레이션이 runbook에서 구체적 처리 절차 부족, (4) ES-PAYMENT-004 rule의 '5분 후 1회 재시도' 스케줄링이 runbook에서 배치 실행 명령만 제시되고 자동화 메커니즘 미정의, (5) ES-PAYMENT-005 rule의 '4시간 SLA' 및 '자동 재시도 1회(2분 후)' 정책이 runbook에서 수기처리 절차 중심으로 기술되어 자동화 부분 약함. 또한 BL-017/018/019의 '가맹점 UI 연동 세부 미정의' 및 '외부 API 스펙 미포함' 문제가 runbook에도 반영되지 않았다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "io_structure",
+          "score": 0.82,
+          "rationale": "tests/contract/*.yaml의 given/when/then 구조가 대체로 명확하게 정의되어 있다. given 필드에서 구체적 값(voucherBalance: 100000, paymentAmount: 30000, merchantStatus: 'ACTIVE' 등)과 타입이 명시되고, then 필드에서 상태 변화(balance_after: 70000, payment_completed: true)와 응답 형태(error_code, sms_sent 등)가 정의되어 있다. 예를 들어 TC-PAYMENT-001은 입력(잔액, 금액, 가맹점 상태)과 출력(결제 완료 여부, 변경된 잔액)이 명확하다. 다만 일부 시나리오에서 필드 타입이 암묵적이다. TC-AP06-002의 responseBody.status는 문자열이지만 다른 필드들과 타입 일관성이 부족하고, cardAuthResult: 'success'처럼 열거형 값이 명시되지 않은 경우가 있다. 또한 when 필드가 추상적 액션(payment_requested, payment_cancel_requested)으로만 표현되어 구체적 HTTP 메서드나 엔드포인트 정보가 누락되었다. 전반적으로 0.75~0.9 범위의 명확성을 보이며, 1~2개 필드의 타입 정의 강화가 필요하다.",
+          "passThreshold": 0.75,
+          "passed": true
+        },
+        {
+          "criterion": "exception_handling",
+          "score": 0.72,
+          "rationale": "ES-PAYMENT-001~005의 5개 Empty Slot에서 exception/else 절이 부분적으로 정의되어 있다. ES-PAYMENT-001(멱등성)은 condition/criteria/outcome/exception이 명확하고, ES-PAYMENT-002(CARD 재시도)는 재시도 불가 케이스(400/401/402)를 구분하여 정의했다. ES-PAYMENT-003(MIXED 부분실패)은 카드 취소 실패 시 에스컬레이션을 명시했다. 그러나 ES-PAYMENT-004(SMS 실패)는 exception 절이 약하고(단순 '50,000원 미만 미적용'), ES-PAYMENT-005(AP06 실패)는 '수기처리'만 언급되어 있다. tests/*.yaml에서 TC-PAY-IDEM-001~004, TC-CARD-RETRY-001~003, TC-MIXED-001~003, TC-SMS-001~003, TC-AP06-001~003이 존재하여 주요 예외 시나리오(409 PAYMENT_IN_PROGRESS, 502 CARD_AUTHORIZATION_FAILED, 500 MIXED_PAYMENT_ROLLBACK, 202 PENDING_MANUAL)를 커버한다. 다만 네트워크 타임아웃, DB 오류, 부분 실패 후 보상 트랜잭션 실패 등 엣지 케이스가 일부 미커버되어 있다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "srp_reusability",
+          "score": 0.72,
+          "rationale": "ES-PAYMENT-001~005는 각각 단일 업무 책임(멱등성, 카드 재시도, MIXED 보상, SMS 비즈니스 영향, AP06 실패)을 정의하고 있어 SRP를 대체로 준수한다. 그러나 여러 규칙 간 중복 및 경계 모호성이 존재한다. ES-PAYMENT-002와 ES-PAYMENT-005 모두 '재시도 정책'을 정의하는데, 재시도 로직(횟수, 간격, 최종 실패 처리)이 규칙별로 상이하게 정의되어 있다(ES-002는 지수 백오프 0.5s→1s→2s, ES-005는 2분 후 1회). ES-PAYMENT-003의 '보상 트랜잭션'과 ES-PAYMENT-001의 '멱등성' 간에도 트랜잭션 롤백 처리 방식이 명확히 분리되지 않았다. 또한 BL-014('결제 완료 시 취소 가능')는 ES-PAYMENT-001~003에서 암묵적으로 참조되지만, 각 규칙이 이를 독립적으로 재정의하는 경향이 있다. 테스트 시나리오는 각 ES별로 격리되어 있으나, 통합 시나리오(예: MIXED 결제 후 멱등성 재시도)에서 규칙 간 상호작용이 정의되지 않았다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "testability",
+          "score": 0.72,
+          "rationale": "tests/*.yaml 시나리오는 happy path(TC-PAYMENT-001~006), edge case(TC-PAY-IDEM-002, TC-CARD-RETRY-002), error case(TC-PAYMENT-002, TC-AP06-002)를 포함하여 3가지 경로를 커버한다. 그러나 평가 기준 대비 다음 결함이 있다: (1) given 조건이 부분적으로 추상적 — 예: 'cardApiResponses: [\"503\", \"503\", \"200\"]'는 구체적이나 'smsServiceFails: true'는 구현 가능성이 낮음. (2) then 검증이 boolean 위주 — 'newBalanceDeducted: true', 'retryCount: 2' 등은 구체적이나 'escalationCreated: true'는 자동화 검증 대상이 모호함. (3) 5개 Empty Slot(ES-PAYMENT-001~005)별 시나리오 수가 3~4건으로 적절하나, TC-PAYMENT-001~006 Contract Tests는 BL 매핑만 있고 given/when/then의 구체적 값(예: 정확한 API 응답 형식, DB 상태 검증 쿼리)이 누락됨. 따라서 happy path + edge/error 균형은 0.75~0.9 범위이나, 자동화 구현 가능성이 0.5~0.75 수준으로 하향 조정.",
+          "passThreshold": 0.75,
+          "passed": false
+        }
+      ],
+      "totalScore": 0.737,
+      "passCount": 1,
+      "overallPassed": false,
+      "modelVersion": "haiku",
+      "evaluatedAt": "2026-04-22T05:19:09.135Z",
+      "costUsd": 0.021113
+    },
+    {
+      "skillId": "lpon-purchase",
+      "skillName": "lpon-purchase",
+      "criteria": [
+        {
+          "criterion": "source_consistency",
+          "score": 0.72,
+          "rationale": "provenance.yaml의 businessRules [BP-001, BP-002, BP-003, BP-004, BP-005]와 rules/*.md의 condition-criteria-outcome 매핑을 검토한 결과, 기능적 의미는 대부분 일치하나 3~4개 구조적 불일치가 확인됨. BP-001은 '1회 구매 한도'를 criteria로 정의하나 rules에서는 명시적 한도값 미제시. BP-003(월별 한도)은 ES-PURCHASE-002에서 'MONTHLY_PURCHASE_LIMIT 설정값'으로 추상화되어 있으나 provenance 출처 문서(01-business-logic.md)에서 구체적 수치 미확정 상태(inputCompleteness.notes 참조). BP-005(7일 환불)는 rules에 정의되지 않고 contract test TC-PURCHASE-005에만 존재하여 rules 커버리지 부족. ES-PURCHASE-001~003의 condition-criteria-outcome 구조는 명확하나, BP-001의 '1회 한도'와 BP-003의 '월 한도' 간 우선순위 및 검증 순서가 rules에서 명시되지 않음(spec container 설명에만 기술). 따라서 완전 매핑(0.9+)에는 미달하며, 기능 드리프트는 없으나 표현 정확도와 명시성 측면에서 minor 불일치 3건 이상 존재.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "comment_doc_alignment",
+          "score": 0.62,
+          "rationale": "POL-LPON-PURCHASE-001의 5개 BP 규칙 중 3개(ES-PURCHASE-001, ES-PURCHASE-002, ES-PURCHASE-003)에 대응하는 runbook이 존재하며, 각각 condition-outcome을 반영하고 있다. 그러나 BP-004(구매 멱등성)와 BP-005(7일 이내 환불)에 대한 전담 runbook이 누락되었다. ES-PURCHASE-001 runbook은 '이중 상품권 발행 발생 시 조치'로 BP-004의 completed 상태 처리를 다루지만, processing 상태 재시도 권고(409 반환)는 미기술되어 있다. ES-PURCHASE-002는 월 한도 설정 변경과 특예 처리만 다루고, 구매 요청 시 실시간 한도 검증 로직은 누락되었다. ES-PURCHASE-003은 유효기간 오류 수정 절차만 제시하고, 구매 시점의 expires_at 산정 프로세스는 불명확하다. BP-005(환불)는 runbook 전무 상태로, lpon-charge 취소 흐름 준용이라는 언급만 있고 구체적 운영 절차가 없다. 따라서 runbook 커버리지 60%(3/5), 내용 일치도 약 70% 수준이다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "io_structure",
+          "score": 0.82,
+          "rationale": "tests/contract/*.yaml의 given/when/then 구조가 대체로 명확하게 정의되어 있다. TC-PURCHASE-001~005에서 given 필드는 userId, purchaseAmount, monthlyUsed, monthlyLimit 등 구체적 값과 타입으로 명시되어 있으며, then 필드는 paymentProcessed(boolean), voucherIssued(boolean), voucherFaceAmount(integer), error_code(string) 등으로 상태 변화와 응답 형태를 정의하고 있다. 단위 테스트 시나리오(TC-PURCHASE-IDEM-*, TC-PURCHASE-MONTHLY-*, TC-PURCHASE-VALIDITY-*)도 given의 구체적 값(purchaseRequestId, existingStatus, validityMonths)과 then의 명확한 기대값(responseStatus, errorCode, expiresAt)을 제시한다. 다만 일부 필드의 의미가 암묵적이다: TC-PURCHASE-002에서 'singlePurchaseLimit' 필드의 출처나 검증 로직이 명시되지 않았고, TC-PURCHASE-VALIDITY-002의 'noOverflow' 필드는 boolean only로 타입 소실이 있다. 또한 then 필드에서 'adminAlertSent'(TC-PURCHASE-VALIDITY-003)와 같은 부수 효과가 포함되어 있으나 주요 I/O 경계는 명확하다.",
+          "passThreshold": 0.75,
+          "passed": true
+        },
+        {
+          "criterion": "exception_handling",
+          "score": 0.72,
+          "rationale": "ES-PURCHASE-001~003 규칙에서 exception 절이 부분적으로 정의되어 있으나 완전하지 않다. ES-PURCHASE-001은 'purchaseRequestId 없거나 status=failed이면 신규 처리'로 exception을 명시했고, ES-PURCHASE-002는 '누적+신규>한도이면 E422 MONTHLY_LIMIT_EXCEEDED'로 정의했으며, ES-PURCHASE-003은 '설정 없으면 기본값 60개월 적용'으로 처리했다. 그러나 결제 실패, 네트워크 타임아웃, 데이터베이스 오류 등 세부 예외 시나리오는 미정의 상태다. 테스트 시나리오에서는 TC-PURCHASE-IDEM-002(409 PURCHASE_IN_PROGRESS), TC-PURCHASE-MONTHLY-002(422 MONTHLY_LIMIT_EXCEEDED), TC-PURCHASE-VALIDITY-003(기본값 적용)이 예외 케이스를 커버하고 있으나, 결제 게이트웨이 오류, 동시성 제어 실패, 환불 실패 등 운영 환경의 주요 예외 시나리오가 누락되어 있다. Runbooks에서 이중 발행 조치는 상세하나, 예외 발생 시 자동 복구 로직이나 폴백 메커니즘은 명시되지 않았다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "srp_reusability",
+          "score": 0.82,
+          "rationale": "POL-LPON-PURCHASE-001의 3개 ES rule(ES-PURCHASE-001, 002, 003)은 각각 단일 책임을 명확히 분리하고 있다. ES-PURCHASE-001은 구매 멱등성(중복 요청 처리)에만 집중하고, ES-PURCHASE-002는 월별 한도 검증, ES-PURCHASE-003은 유효기간 산정에 각각 독립적으로 대응한다. 각 rule은 독립적으로 참조 가능하며 구현 힌트와 테스트 시나리오가 명확하다. 다만 BP-001과 BP-002 간에 '구매 금액 검증'과 '결제 처리'가 순차적으로 연결되어 있고, BP-003(월 한도)과 BP-001(1회 한도)의 검증 순서가 명시되어 있으나 ES rule 수준에서는 명확히 분리되지 않은 점이 있다. 또한 BP-005(7일 환불)는 lpon-charge 도메인과의 연동을 언급하면서도 ES rule로 독립 정의되지 않아 책임 경계가 다소 모호하다. 전반적으로 SRP를 대부분 준수하나 도메인 간 경계 정의에서 미세한 중복 가능성이 존재한다.",
+          "passThreshold": 0.75,
+          "passed": true
+        },
+        {
+          "criterion": "testability",
+          "score": 0.72,
+          "rationale": "tests/*.yaml 섹션에서 총 7개 시나리오(TC-PURCHASE-IDEM-001~004, TC-PURCHASE-MONTHLY-001~003, TC-PURCHASE-VALIDITY-001~003, TC-PURCHASE-001~005)를 제시하여 happy path(TC-PURCHASE-001, TC-PURCHASE-IDEM-004, TC-PURCHASE-MONTHLY-001)와 edge case(월말 일자 보정 TC-PURCHASE-VALIDITY-002, 멱등성 처리 TC-PURCHASE-IDEM-002~003), error case(한도 초과 TC-PURCHASE-002~003, TC-PURCHASE-MONTHLY-002)를 포함한다. 그러나 given/when/then의 구체성에서 불균형이 있다: TC-PURCHASE-IDEM-001, TC-PURCHASE-MONTHLY-001 등은 구체적 값(purchaseRequestId, monthlyUsed: 600000)으로 자동화 가능하나, TC-PURCHASE-VALIDITY-003의 'adminAlertSent: true'는 boolean 단독 표현으로 검증 기준이 모호하다. 또한 결제 실패 후 취소 처리(ES-PURCHASE-001 runbook 언급)나 설정값 미존재 시 기본값 적용 검증(ES-PURCHASE-003)은 시나리오로 명시되지 않았다. 전체적으로 happy path와 주요 edge/error case는 커버하나, 일부 시나리오의 then 조건이 추상적이고 예외 처리 케이스가 부분적으로 누락되어 있다.",
+          "passThreshold": 0.75,
+          "passed": false
+        }
+      ],
+      "totalScore": 0.737,
+      "passCount": 2,
+      "overallPassed": false,
+      "modelVersion": "haiku",
+      "evaluatedAt": "2026-04-22T05:19:40.990Z",
+      "costUsd": 0.015948
+    },
+    {
+      "skillId": "lpon-refund",
+      "skillName": "lpon-refund",
+      "criteria": [
+        {
+          "criterion": "source_consistency",
+          "score": 0.52,
+          "rationale": "Provenance의 businessRules [BL-020~030] 중 11개 규칙이 정의되어 있으나, rules/*.md의 condition-criteria-outcome 구현 상태는 불완전하다. BL-020, BL-021, BL-024, BL-025는 기본 정의가 있으나, BL-026, BL-027, BL-029는 '[미정의]' 상태로 명시되어 있다. BL-028은 PoC에서 exclusionAmount=0으로 하드코딩되어 실제 공식이 미구현 상태다. 특히 divergenceMarkers에서 5개의 DIVERGENCE가 공식 승격되었으며, BL-024는 TC-REFUND-002에서 실패 증거(WRONG_OUTCOME)를 보유하고 있다. ES-REFUND-001~005 edge spec들이 정의되어 있으나, 이들은 spec-source drift를 보완하는 보조 규칙일 뿐 원본 BL의 완전한 구현을 대체하지 못한다. 따라서 provenance의 businessRules와 rules/*.md 간 1:1 매핑이 성립하지 않으며, 기능 의미 동일성도 확보되지 않은 상태다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "comment_doc_alignment",
+          "score": 0.62,
+          "rationale": "ES-REFUND-001~005 다섯 개 규칙에 대응하는 runbook이 모두 존재하며, 각 runbook은 규칙의 condition-outcome을 기본적으로 반영하고 있다. 그러나 내용 일치도에서 다음과 같은 결함이 있다: (1) ES-REFUND-001 runbook은 판정 기준 5가지를 명시하지 않고 '우선순위 규칙과 대조'만 언급하여 구체성 부족. (2) ES-REFUND-002 runbook은 포인트 전환 비율(1원=1포인트), 유효기간(1년) 등 규칙의 세부 outcome을 누락. (3) ES-REFUND-003 runbook은 7일 자동 재처리 스케줄링, EXPIRED_ACCOUNT_ERROR 상태 전환 등 규칙의 타임라인을 불완전하게 설명. (4) ES-REFUND-004 runbook은 강제환불 한도(연간 3건), 만료 1년 제한 등 criteria를 포함하나 감사 로그 5년 보존 정책은 규칙에 없는 추가 내용. (5) ES-REFUND-005 runbook은 제외금액 공식을 정확히 반영하나 100원 단위 절사 로직 설명이 모호. 전체적으로 runbook 커버리지는 높으나 규칙의 condition-criteria-outcome 정확성 반영이 30% 수준에서 미흡하다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "io_structure",
+          "score": 0.72,
+          "rationale": "tests/contract/*.yaml의 given/when/then 구조는 기본적으로 명확하나, 입출력 필드의 타입 정의와 의미 명확성에서 부분적 결함이 있다. TC-REFUND-001~006의 given 필드는 구체적 값(voucherType, purchasedDaysAgo, originalAmount 등)으로 명시되어 있으나, then 필드에서 타입 소실이 발생한다. 예: TC-REFUND-001의 then에서 'refund_status: PENDING'은 상태값이지만 'rfndPsbltyYn: Y'는 boolean 대신 문자열로 혼재되어 있다. TC-REFUND-006에서 'deposit_amount: 44500'은 숫자 타입이 명확하나, 'exclusion_amount: 5500'의 산정 근거(캐시백 5000 + 수수료 500)가 then 필드에 명시되지 않아 검증 기준이 불명확하다. ES-REFUND-005 edge spec에서 제외금액 공식이 상세히 정의되어 있음에도 contract test에 반영되지 않았다. 또한 TC-REFUND-002의 error_code 필드와 TC-REFUND-004의 deposit_requested boolean 필드는 응답 형태의 완전성이 부족하다(HTTP status, 에러 메시지 구조 미정의). 입력 구조는 0.8 수준이나 출력 구조의 타입 명확성과 필드 의미 정의가 0.6 수준으로 평가된다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "exception_handling",
+          "score": 0.62,
+          "rationale": "예외·에러 핸들링 기준 평가 결과: rules/*.md에서 exception/else 절이 부분적으로 정의되어 있으나 완전하지 않음. BL-020~030 중 BL-022, BL-023, BL-026, BL-027, BL-029, BL-030이 '[미정의]'로 표기되어 있어 4개 rule의 exception 절이 누락됨. ES-REFUND-001~005 edge spec에서 일부 예외 처리를 정의했으나, 이는 빈 슬롯 보완용이므로 원본 rules의 완성도가 낮음. tests/*.yaml에서 TC-REFUND-001~006 계약 테스트가 존재하나, 에러 시나리오 커버가 제한적임. TC-REFUND-002(7일 초과 거부)는 DIVERGENCE 마커에서 실제 실패 증거(WRONG_OUTCOME)가 있고, TC-REFUND-006은 harness silent PASS로 실 검증 부재. 예외 케이스(ACCOUNT_ERROR, FORCED_REFUND, EXCLUSION_EXCEEDS 등)에 대한 테스트 시나리오는 ES-REFUND 테스트에만 존재하고 main contract에 미통합. 따라서 주요 예외 처리는 정의되었으나 일부 rule의 exception 절 누락과 tests의 불완전한 에러 커버로 0.5~0.75 구간 상단 평가.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "srp_reusability",
+          "score": 0.62,
+          "rationale": "ES-REFUND-001~005 규칙들은 각각 단일 업무 책임을 명시하고 있으나, 규칙 간 중복 정의와 모순이 다수 존재한다. ES-REFUND-001의 criteria 우선순위 규칙(조건 1~5)과 ES-REFUND-004의 강제환불 조건이 겹치며(만료 voucher 처리), ES-REFUND-002와 ES-REFUND-005가 캐시백/할인보전 금액 처리를 중복 언급한다. BL-026(캐시백 환불불가)은 ES-REFUND-001에서 criteria 조건 3으로도, ES-REFUND-002에서도 정의되어 규칙 경계가 불명확하다. 또한 divergenceMarkers에서 BL-024, BL-026, BL-027, BL-028, BL-029가 모두 '[미정의]' 또는 'PoC 하드코딩' 상태로 표시되어, 실제 구현과 spec 간 심각한 괴리가 있다. TC-REFUND-002는 WRONG_OUTCOME으로 실패하고 있으며, 5개 divergence marker 중 HIGH 1건, MEDIUM 3건이 OPEN 상태다. 규칙 간 독립 참조 가능성이 제한되고, 중복 조건 정의로 인해 재사용성이 저하된다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "testability",
+          "score": 0.62,
+          "rationale": "tests/*.yaml 시나리오는 happy path(TC-REFUND-001, TC-REFUND-003, TC-REFUND-004)와 일부 error case(TC-REFUND-002, TC-REFUND-005)를 포함하나, 전반적으로 edge case 커버가 부족하다. TC-RFND-PSBLTY-001~005는 rfndPsbltyYn 판정 기준을 구체적 값으로 명시(voucherStatus, voucherType, errorCode 등)하여 자동화 가능하나, TC-CASHBACK-001~003, TC-ACCOUNT-001~003, TC-FORCE-001~004, TC-EXCLUSION-001~004는 given 조건이 'pointSystemAvailable: true/false', 'depositApiAvailable: true' 같은 추상 boolean으로만 표현되어 실제 테스트 데이터 구성이 모호하다. 특히 TC-REFUND-006의 then 조건('deposit_amount: 44500')은 구체적이나, 제외금액 산정 로직 검증이 'harness construction (comparator TD-22 silent PASS)'로 표기되어 실제 자동화 검증 수준이 불명확하다. 5개 DIVERGENCE marker(BL-024, BL-026, BL-027, BL-028, BL-029)로 인해 미정의 시나리오가 다수 존재하며, ES-REFUND-002~004 edge spec이 '[미정의]' 상태로 대응 TC가 부재하다.",
+          "passThreshold": 0.75,
+          "passed": false
+        }
+      ],
+      "totalScore": 0.62,
+      "passCount": 0,
+      "overallPassed": false,
+      "modelVersion": "haiku",
+      "evaluatedAt": "2026-04-22T05:20:16.906Z",
+      "costUsd": 0.028034
+    },
+    {
+      "skillId": "lpon-settlement",
+      "skillName": "lpon-settlement",
+      "criteria": [
+        {
+          "criterion": "source_consistency",
+          "score": 0.82,
+          "rationale": "provenance.yaml의 businessRules [BL-031~036]과 rules/*.md의 condition-criteria-outcome 매핑을 검토한 결과, 전체적으로 높은 정합성을 보이나 minor 불일치 3건이 확인됨. BL-031(충전/환불 집계)과 BL-032(포인트 집계)는 rules에서 구체적 condition/criteria/outcome이 명시되지 않고 ES-SETTLE-002, 003에만 상세 정의됨. BL-033(BATCH_004 실행)은 'condition: 스케줄 또는 수동 실행'으로 정의되나 ES-SETTLE-001에서는 '동일 period_start~period_end 기간 재실행'으로 더 구체화됨. BL-034(계산 데이터 처리)는 criteria가 '존재 여부'만 기술되고 처리 로직 상세가 ES-SETTLE-003에 분산됨. BL-035(기간 조회)와 BL-036(수수료)은 명확히 매핑됨. 기능 의미는 동일하나 규칙 정의의 세분화 수준이 BL별로 불균형하며, 일부 condition-criteria-outcome이 empty slot 정의로 분산되어 단일 rules/*.md 파일에서 완전한 1:1 매핑이 부재함.",
+          "passThreshold": 0.75,
+          "passed": true
+        },
+        {
+          "criterion": "comment_doc_alignment",
+          "score": 0.82,
+          "rationale": "ES-SETTLE-001, ES-SETTLE-002, ES-SETTLE-003 세 개의 Empty Slot에 대응하는 runbook이 모두 존재하며, 각 runbook이 rule의 condition-criteria-outcome을 대체로 정확히 반영하고 있다. ES-SETTLE-001 runbook은 'calc_status' 상태 분기(running/completed/failed)와 대기 로직을 명확히 설명하고, ES-SETTLE-002는 'fee_reflected' Y/N 판정 기준과 INVALID_FEE_FLAG 에러 처리를 구체화했으며, ES-SETTLE-003은 'processed' 필드 기반 부분 재처리와 건별 커밋 전략을 설명한다. 다만 runbook의 일부 내용이 rule의 exception 조항을 완전히 포괄하지 못한 부분이 있다. 예를 들어 ES-SETTLE-001의 'INVALID_BATCH_STATE' 에러 처리가 runbook에서 명시적으로 다루어지지 않았고, ES-SETTLE-003의 '모든 건이 processed=true인 경우' 예외 처리도 runbook에서 간접적으로만 언급된다. 또한 BL-031~036 중 BL-031, BL-032, BL-034, BL-035에 대응하는 runbook이 명시적으로 제공되지 않아 전체 rule 커버리지가 50% 수준이다.",
+          "passThreshold": 0.75,
+          "passed": true
+        },
+        {
+          "criterion": "io_structure",
+          "score": 0.82,
+          "rationale": "tests/contract/*.yaml의 given/when/then 구조에서 입출력이 대체로 명확하나 일부 불완전성이 있다. TC-SIDEM-001~004에서 given 필드(periodStart, periodEnd, existingCalcStatus)와 then 필드(calcStatus, eventEmitted, batchRunIdGenerated)가 구체적 값으로 명시되어 있다. TC-SFEE-001~004도 feeReflected, feeRate, grossAmount 등 타입과 값이 명확하다. 그러나 TC-SRESTART-001에서 'reprocessedCount: 40'의 계산 근거가 불명확하고, TC-SRESTART-003의 'failsAtTx: 5'에서 장애 발생 메커니즘이 추상적이다. 또한 then 필드에서 'alreadyProcessedTouched: false'처럼 boolean only로 정의된 항목이 있어 상태 변화의 의미를 완전히 파악하기 어렵다. SQL 힌트와 구현 가이드는 충분하나, 테스트 시나리오의 입출력 필드 타입(예: processedCount의 정수 범위, eventEmitted의 가능한 값 목록)이 스키마 수준에서 명시되지 않았다.",
+          "passThreshold": 0.75,
+          "passed": true
+        },
+        {
+          "criterion": "exception_handling",
+          "score": 0.88,
+          "rationale": "ES-SETTLE-001, ES-SETTLE-002, ES-SETTLE-003 세 규칙 모두 exception/else 절이 명시적으로 정의되어 있다. ES-SETTLE-001은 'calc_status = NULL 또는 예상 외 값 → INVALID_BATCH_STATE 에러'로 예외 처리를 명확히 했고, ES-SETTLE-002는 'fee_reflected = NULL/이외 값 → INVALID_FEE_FLAG 에러 + 건 스킵'으로 정의했으며, ES-SETTLE-003은 'processed 컬럼 없거나 모든 건이 processed = true → BatchSkipped'로 처리했다. 테스트 시나리오도 12개(TC-SIDEM 4개, TC-SFEE 4개, TC-SRESTART 4개)가 예외 케이스를 포함한다. TC-SIDEM-004(실행 중 배치 감지), TC-SFEE-003/004(fee_reflected NULL/이외값), TC-SRESTART-002(모든 건 완료 후 재실행)가 error_code와 비정상 상태를 커버한다. 다만 runbook에서 'BATCH_IDEMPOTENCY_VIOLATION', 'BATCH_STUCK' 같은 추가 에러 코드가 언급되나 rules에서 명시되지 않은 점, 그리고 'processed 컬럼 없음' 예외가 테스트에서 직접 커버되지 않은 점이 미흡하다.",
+          "passThreshold": 0.75,
+          "passed": true
+        },
+        {
+          "criterion": "srp_reusability",
+          "score": 0.72,
+          "rationale": "ES-SETTLE-001, ES-SETTLE-002, ES-SETTLE-003은 각각 배치 멱등성, 수수료 반영 기준, 부분 재처리 범위라는 단일 책임을 가지며 독립적으로 참조 가능하다. 그러나 규칙 간 중복과 모순이 존재한다. ES-SETTLE-001의 'calc_status=failed' 처리와 ES-SETTLE-003의 'processed=false' 기반 재처리가 동일 시나리오(배치 실패 후 재시작)를 중복으로 다룬다. ES-SETTLE-001은 'calc_status' 상태 전이에 집중하고 ES-SETTLE-003은 'processed' 필드 기반 건별 처리를 강조하는데, 두 규칙의 책임 경계가 불명확하다. 또한 ES-SETTLE-002의 'fee_reflected' 변경 시 'calc_status=completed' 건 재계산 절차가 ES-SETTLE-001의 멱등성 규칙과 충돌한다(SKIP vs. 재계산). BL-031~036 중 BL-031, BL-032, BL-034는 집계 로직으로 중복되며, 각 규칙의 condition-criteria-outcome 구조도 일부 모호하다. 규칙 간 의존성이 명시되지 않아 독립 적용 시 모순 위험이 있다.",
+          "passThreshold": 0.75,
+          "passed": false
+        },
+        {
+          "criterion": "testability",
+          "score": 0.82,
+          "rationale": "tests/*.yaml는 3개 Empty Slot(ES-SETTLE-001, 002, 003)에 대해 총 12개 시나리오를 제공한다. Happy path 커버: TC-SIDEM-001(신규 배치 성공), TC-SFEE-001/002(수수료 Y/N 정상 처리), TC-SRESTART-001(미처리 건 재처리). Edge case 커버: TC-SIDEM-003(실패 기간 재실행), TC-SIDEM-004(실행 중 배치 감지 대기), TC-SRESTART-003(중간 장애 시 손실 최소화). Error case 커버: TC-SFEE-003/004(fee_reflected NULL/이외값 에러), TC-SRESTART-002(모든 건 완료 후 스킵). Given/When/Then 구체성: 대부분 구체적 값(periodStart='2026-04-01', feeRate=0.0150, grossAmount=1000000, netAmount=985000)으로 자동화 가능하나, TC-SIDEM-004의 'waitTriggered: true'와 TC-SRESTART-004의 'newBatchRunId: \"!= run-old-001\"'은 다소 추상적. 전체적으로 happy path + edge case + error case 균형이 양호하고 SQL 힌트 포함으로 구현 가능성 높으나, 2~3개 시나리오의 then 표현이 boolean 수준으로 단순화되어 0.9 이상 도달 미흡.",
+          "passThreshold": 0.75,
+          "passed": true
+        }
+      ],
+      "totalScore": 0.813,
+      "passCount": 5,
+      "overallPassed": true,
+      "modelVersion": "haiku",
+      "evaluatedAt": "2026-04-22T05:21:04.871Z",
+      "costUsd": 0.018427
+    }
+  ]
+}

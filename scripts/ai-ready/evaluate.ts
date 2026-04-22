@@ -32,6 +32,7 @@ import { buildPrompt } from "../../services/svc-skill/src/ai-ready/prompts.js";
 import type { PromptInput } from "../../services/svc-skill/src/ai-ready/prompts.js";
 import { loadSpecContainers } from "./sample-loader.js";
 import type { SkillMeta } from "./sample-loader.js";
+import { callOpenRouterWithMeta } from "../../packages/utils/src/openrouter-client.js";
 
 // ── Argument Parsing ──────────────────────────────────────────────────
 
@@ -40,6 +41,8 @@ function parseArgs(): {
   model: "haiku" | "sonnet" | "opus";
   output: string;
   dryRun: boolean;
+  directAnthropic: boolean;
+  openrouter: boolean;
 } {
   const args = process.argv.slice(2);
   const get = (flag: string, def: string): string => {
@@ -52,8 +55,13 @@ function parseArgs(): {
     model: get("--model", "haiku") as "haiku" | "sonnet" | "opus",
     output: get("--output", `reports/ai-ready-poc-${today}.json`),
     dryRun: args.includes("--dry-run"),
+    directAnthropic: args.includes("--direct-anthropic"),
+    openrouter: args.includes("--openrouter"),
   };
 }
+
+let useAnthropicDirect = false;
+let useOpenRouter = false;
 
 // ── Cost Guard ────────────────────────────────────────────────────────
 
@@ -99,10 +107,106 @@ interface LlmResponse {
   usage?: { prompt_tokens?: number; completion_tokens?: number };
 }
 
+async function callAnthropicDirect(
+  prompt: string,
+  tier: "haiku" | "sonnet" | "opus",
+): Promise<{ score: number; rationale: string; costUsd: number }> {
+  const apiKey = process.env["ANTHROPIC_API_KEY"] ?? "";
+  if (!apiKey) throw new Error("ANTHROPIC_API_KEY 미설정 (--direct-anthropic 사용 시 필수)");
+  const modelMap = {
+    haiku: "claude-haiku-4-5-20251001",
+    sonnet: "claude-sonnet-4-5-20250929",
+    opus: "claude-opus-4-5-20250514",
+  } as const;
+  const model = modelMap[tier];
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 512,
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+    if (!res.ok) {
+      if (attempt === 2) throw new Error(`Anthropic direct failed: ${res.status} ${await res.text()}`);
+      await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+      continue;
+    }
+    const json = (await res.json()) as {
+      content?: Array<{ type?: string; text?: string }>;
+      usage?: { input_tokens?: number; output_tokens?: number };
+    };
+    const raw = json.content?.find((c) => c.type === "text")?.text ?? "";
+    const jsonMatch = raw.match(/\{[\s\S]*"score"[\s\S]*"rationale"[\s\S]*\}/);
+    if (!jsonMatch) {
+      if (attempt === 2) throw new Error(`JSON parse failed: ${raw.slice(0, 200)}`);
+      continue;
+    }
+    const parsed = JSON.parse(jsonMatch[0]) as { score?: number; rationale?: string };
+    const score = Math.max(0, Math.min(1, Number(parsed.score ?? 0)));
+    const rationale = String(parsed.rationale ?? "").trim();
+    const promptTokens = json.usage?.input_tokens ?? 2000;
+    const completionTokens = json.usage?.output_tokens ?? 300;
+    const costUsd = estimateCostUsd(tier, promptTokens, completionTokens);
+    return { score, rationale, costUsd };
+  }
+  throw new Error("unreachable");
+}
+
+async function callOpenRouterJson(
+  prompt: string,
+  tier: "haiku" | "sonnet" | "opus",
+): Promise<{ score: number; rationale: string; costUsd: number }> {
+  const apiKey = process.env["OPENROUTER_API_KEY"] ?? "";
+  if (!apiKey) throw new Error("OPENROUTER_API_KEY 미설정 (--openrouter 사용 시 필수)");
+  const modelMap = {
+    haiku: "anthropic/claude-haiku-4-5",
+    sonnet: "anthropic/claude-sonnet-4-5",
+    opus: "anthropic/claude-opus-4-5",
+  } as const;
+  const model = modelMap[tier];
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const result = await callOpenRouterWithMeta(
+        { OPENROUTER_API_KEY: apiKey },
+        prompt,
+        { model, maxTokens: 1500, temperature: 0.1 },
+      );
+      const raw = result.content;
+      const jsonMatch = raw.match(/\{[\s\S]*"score"[\s\S]*"rationale"[\s\S]*\}/);
+      if (!jsonMatch) {
+        if (attempt === 2) throw new Error(`JSON parse failed: ${raw.slice(0, 200)}`);
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+        continue;
+      }
+      const parsed = JSON.parse(jsonMatch[0]) as { score?: number; rationale?: string };
+      const score = Math.max(0, Math.min(1, Number(parsed.score ?? 0)));
+      const rationale = String(parsed.rationale ?? "").trim();
+      const costUsd = estimateCostUsd(tier, result.usage.promptTokens, result.usage.completionTokens);
+      return { score, rationale, costUsd };
+    } catch (err) {
+      if (attempt === 2) throw err;
+      await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+    }
+  }
+  throw new Error("unreachable");
+}
+
 async function callLlmJson(
   prompt: string,
   tier: "haiku" | "sonnet" | "opus",
 ): Promise<{ score: number; rationale: string; costUsd: number }> {
+  if (useOpenRouter) return callOpenRouterJson(prompt, tier);
+  if (useAnthropicDirect) return callAnthropicDirect(prompt, tier);
+
   const routerUrl = process.env["LLM_ROUTER_URL"] ?? "";
   const secret = process.env["INTERNAL_API_SECRET"] ?? "";
 
@@ -209,12 +313,16 @@ async function evaluateSkill(
 
 async function main(): Promise<void> {
   const args = parseArgs();
+  useAnthropicDirect = args.directAnthropic;
+  useOpenRouter = args.openrouter;
   const today = new Date().toISOString().slice(0, 10);
   const specDirAbs = resolve(args.specDir);
+  const route = useOpenRouter ? "OpenRouter (TD-43 fallback)" : useAnthropicDirect ? "Direct Anthropic" : "svc-llm-router";
 
   console.log(`\n🔍 AI-Ready 채점기 — Sprint 232 F402 (TD-42 재작)`);
   console.log(`   spec-dir: ${specDirAbs}`);
-  console.log(`   모델: ${args.model} | 출력: ${args.output}\n`);
+  console.log(`   모델: ${args.model} | 출력: ${args.output}`);
+  console.log(`   호출 경로: ${route}\n`);
 
   // Step 0: spec-container 목록 확인 (dry-run 포함)
   const skills = await loadSpecContainers(specDirAbs);

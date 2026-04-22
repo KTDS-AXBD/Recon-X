@@ -1,36 +1,19 @@
 name = "app-web"
-main = "src/worker.ts"
+pages_build_output_dir = "dist"
 compatibility_date = "2025-01-01"
-
-[assets]
-directory = "./dist"
-binding = "ASSETS"
-not_found_handling = "single-page-application"
 
 [vars]
 ENVIRONMENT = "development"
 DEPLOY_ENV = "staging"
 
 # ---------------------------------------------------------------------------
-# Preview environment (wrangler-action deploy --env preview)
+# Preview environment (Pages uses "preview" instead of "staging")
 # ---------------------------------------------------------------------------
 [env.preview]
-name = "app-web-preview"
 vars = { ENVIRONMENT = "staging", DEPLOY_ENV = "staging" }
 
-[env.preview.assets]
-directory = "./dist"
-binding = "ASSETS"
-not_found_handling = "single-page-application"
-
 # ---------------------------------------------------------------------------
-# Production environment (wrangler-action deploy --env production)
+# Production environment
 # ---------------------------------------------------------------------------
 [env.production]
-name = "app-web"
 vars = { ENVIRONMENT = "production", DEPLOY_ENV = "production" }
-
-[env.production.assets]
-directory = "./dist"
-binding = "ASSETS"
-not_found_handling = "single-page-application"

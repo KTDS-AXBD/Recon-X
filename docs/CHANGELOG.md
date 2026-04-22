@@ -2,6 +2,21 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 236 (2026-04-22)
+
+**Sprint 234 🟡 PARTIAL — F405 🟡 부분 완결 + F406 ⏸️ 롤백 (Cloudflare Pages+Access+Custom Domain cross-account 구조적 한계 도달) + B-02 신규 등록 (Master pane)**:
+- ✅ **F405 🟡 부분 완결** (CF Access Application 활성화): `Decode-X (Public)` 4 path Bypass + `Decode-X (Protected)` hostname 전체 Allow @kt.com 2 Application 구조로 9/13 PASS 달성. `curl -I /` = 302 ✅ / `/executive` = 302 ✅ / `/welcome` = 200 ✅ / `/assets/*.js` = 200 ✅ / `/favicon.ico` = 200 ✅ / `/_routes.json` = 200 ✅. hostname-level Access middleware 정상.
+- ❌ **F405 잔여 4/13 FAIL**: `/cdn-cgi/access/authorized|callback|login|logout` 모두 **404** — Pages asset serving이 CF edge middleware보다 앞단에서 `/cdn-cgi/*` 경로 intercept. Zero Trust 재정렬 3회 + `_routes.json exclude:/cdn-cgi/*` 시도 + Pages Settings 자체 Access 연결 시도 → 모두 404 지속 확인.
+- ⏸️ **F406 롤백 (Pages → Workers Static Assets 이행 시도)**: 배포 자체 성공(`app-web.ktds-axbd.workers.dev` HTTP 200, 85 assets uploaded in 7.65s, commit `afa061e`). 그러나 rx.minu.best Custom Domain 연결이 **Cloudflare 구조적 제약 2중 차단** — (1) Workers Custom Domain cross-account 미지원(`minu.best` zone은 개인 계정 `sinclair.seo@gmail.com` IDEA on Action, Worker는 회사 계정 `ktds.axbd@gmail.com`), (2) KTDS 계정에 subdomain zone 별도 등록 시도 → Free plan "Please ensure you are providing the root domain and not any subdomains" 거부, Enterprise 전용. 결과적으로 롤백: `wrangler.toml` Pages 구성 복원 + `src/worker.ts` 삭제 + `deploy-pages.yml` Pages deploy 복원. rx.minu.best는 기존 Pages `ai-foundry-web`에 연결 상태 유지.
+- 🚨 **B-02 신규 등록**: "Cloudflare Pages + Custom Domain + Access 조합에서 `/cdn-cgi/access/*` 404 구조적 이슈". Google 로그인 flow 중간 단계 callback 404 지속 → Production 로그인 전체 blocked. 후속 옵션 4종(이해관계자 협의): (a) minu.best zone 전체 KTDS 이전, (b) app-web 개인 계정 재배포+Zero Trust 재구성, (c) 대체 도메인(예: `decode-x.ktds-axbd.com`), (d) Pages + Functions level `@cloudflare/pages-plugin-cloudflare-access` 재검토.
+- 📌 **세션 진행 요약**: 사용자 AskUserQuestion 6회(Pages Access 연결→Zero Trust 재정렬→Workers 이행→subdomain delegation→막힘 후 롤백→최종 세션 종료 확정). Master curl 실측 20+회. Context7 MCP 2회(Cloudflare Pages+Access docs 교차검증). Monitor 3회(deploy-pages run ×2 + PR CI rollup ×1). 스크린샷 분석 7장(Pages Settings, Zero Trust Applications, DNS 레코드, 도메인 개요 등).
+- 📌 **교훈 4종**: (a) **Cloudflare Pages vs Workers 비대칭성** — Pages는 custom domain cross-account 지원, Workers는 미지원(공식 구조적 제약). subdomain zone은 Enterprise 전용. (b) **Pages + Access `/cdn-cgi/access/*` 404는 known structural issue** — `_routes.json` exclude로 해결 안 됨, Pages asset serving 레이어가 CF edge middleware보다 앞단. (c) **관리 주체 분리의 비용** — domain 관리(개인)와 app 관리(회사) 분리 시 Cloudflare 인프라 선택지 급격 축소. 초기 아키텍처 설계에서 account 통합 중요성. (d) **Zero Trust Access는 cross-account 호환** — hostname 기반 Application이라 zone 소속과 무관, `/` 302 redirect 정상 작동. 다만 Pages의 `/cdn-cgi/access/*` 처리가 별개 병목.
+- 📌 **실 소요 ~3h**: Pages Access 연결 30m + Zero Trust 재정렬 45m + Workers 이행 + 배포 40m + Custom Domain 시도 + cross-account/subdomain zone 막힘 30m + 롤백 15m + 문서 동기화 20m.
+- 📌 **다음 P0**: B-02 해결 옵션 결정(이해관계자 협의) → Sprint 235+ F-item 배치. 병행 후보 F403 Phase 9 E2E 커버리지 보강(3h).
+- Commits: `afa061e feat(f406): Cloudflare Pages → Workers Static Assets 이행` → (롤백 커밋 TBD, 본 세션 종료 커밋).
+
+---
+
 ### 세션 235 (2026-04-22)
 
 **2차 rubric 튜닝 완결 + 7 lpon-* 전수 재측정 + F356-B GO 신뢰도 상향 (Master pane 연장, 커밋 `86b3126`)**:

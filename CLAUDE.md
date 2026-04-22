@@ -337,6 +337,7 @@ pnpm typecheck && pnpm lint
 2. 변경 이력은 CHANGELOG.md에 기록
 3. 작은 단위 커밋 + 명확한 커밋 메시지(Conventional Commits)
 4. 보안/권한/감사 설계를 초기에 반영
+5. **UX F-item = 기능 + E2E 1건 Must** (SPEC §4 원칙 #6, 2026-04-22 제정): 사용자 접점(라우트/화면/상호작용) 변경 F-item은 정의 시점부터 **E2E 스모크 1건 이상을 Must 인수 기준**으로 포함. autopilot Match %나 unit test로 UI 회귀 감지 대체 불가. 근거: AIF-REQ-036 Phase 9 기능 100% DONE이었으나 신규 6 라우트 E2E 0% 커버 → AIF-ANLS-032 Match 82%. 예외: 순수 백엔드/스키마/스크립트 F-item은 unit/integration test 허용
 
 ### 요구사항 관리 (GOV-003)
 > 이 프로젝트의 오버라이드. 글로벌 표준: `~/.claude/standards/requirements-governance.md`

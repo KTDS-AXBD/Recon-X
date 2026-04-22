@@ -478,6 +478,43 @@ Sprint 226 완료 기준 (기존 "S221 완료 시" → "Sprint 226 완료 시"):
 
 ---
 
+### 11.8 Sprint 227 MERGED 결과 (세션 229, 2026-04-22)
+
+**PR #28 `34d49c6`** squash merged — F401 ✅ DONE / F383·F384 Sprint 229+ 이관
+
+**실 진행 timeline (총 ~2h 10m)**
+| 단계 | Commit | 내용 | CI 결과 |
+|------|--------|------|---------|
+| autopilot | `85c5f34` | VITE_DEMO_MODE + AuthContext + 11 spec skip 해제 + CI env | 45+ fail (1분, auth.setup timeout) |
+| Master fix 1 | `bab6149` | AuthContext 모듈 로드 시점 `?demo=1` 캡처 | ~7 fail (5분, F401 bypass 작동) |
+| Master fix 2 | `88234ab` | legacy 4 spec `/?legacy=1` 치환 | webhook 미trigger (CONFLICTING) |
+| Master fix 3 | `cf53074` | main merge (Sprint 228 병행 pane) | **45/45 PASS** (5분) |
+| PR merge | `34d49c6` | squash merge | cleanup 완료 |
+
+**3단 fix 상세**
+
+**Fix 1 — React-Router Navigate query drop**:
+- 증상: `/?demo=1` → `<Navigate to="/executive/overview" replace />`가 `?demo=1` 제거 → AuthProvider mount 시 URL에 demo param 없음 → localStorage 비어있음 → user=null → /welcome redirect → auth.setup `waitForURL(/executive/overview)` 15s timeout
+- 해결: AuthContext.tsx 모듈 로드 시점에 `window.location.search`에서 `?demo=1` 감지 → `localStorage['__demo_user__']` 선행 저장. `typeof window !== 'undefined'` + `VITE_DEMO_MODE === '1'` 가드 유지
+
+**Fix 2 — Sprint 224 F374 분기 활성화 legacy E2E 불일치**:
+- 증상: extract/functional/organization/rbac 11 goto가 `page.goto("/")` 후 "대시보드 Dashboard" heading 기대. F374 이후 default는 `/executive/overview` redirect
+- 해결: `page.goto("/")` → `page.goto("/?legacy=1")` 일괄 치환. isLegacyMode()가 URL param 기반이라 AuthContext demo bypass와 직교
+
+**Fix 3 — 병행 pane main CONFLICTING**:
+- 증상: Sprint 228 MERGED 후 main 3 커밋 전진 → PR #28 mergeable=CONFLICTING → GitHub Actions CI trigger 차단
+- 해결: WT에서 `git merge origin/main` + `.sprint-context` conflict 해결 + push
+
+**핵심 교훈**:
+1. **React-Router Navigate는 query string 보존 안 함** — 기본적인 특성이지만 E2E 시나리오에서 드러남
+2. **F374 같은 분기 활성화 변경은 E2E 전수 점검 필수** — skip 상태로 방치된 spec content가 drift
+3. **Multi-pane 병렬 작업 시 push 전 main fetch + fast-forward 체크 습관화**
+4. **F401이 4번째 CI시도 성공**은 "production-like 환경 부재 시 반복 시도로 수렴" 패턴 — 명확한 진단 → 최소 fix → 검증 cycle
+
+**신규 TD 후보**: 없음. 모든 fix 사항이 본 sprint PR에 포함됨.
+
+---
+
 ### 11.6 Sprint 226 MERGED 결과 (세션 229, 2026-04-22)
 
 - **PR #27 `4d35270`** squash merged (autopilot 20분 4초 자체 완결 + Master 복구 ~15분)
@@ -500,3 +537,4 @@ Sprint 226 완료 기준 (기존 "S221 완료 시" → "Sprint 226 완료 시"):
 | 0.1 | 2026-04-21 | 초안 — PRD v0.3 기반 Plan 작성, F-item 15건 제안, Sprint 219~222 분해, R2 전이 9건 F-item 매핑 | Sinclair |
 | 0.2 | 2026-04-21 (세션 229) | Sprint 223/224 MERGED 반영 + §11 Follow-up Plan 추가 (Sprint 226 9 F-item 확정 — F396 신규 위생 + TD-41을 F392에 통합, Sprint 227 Should 확정 포함) + §10 Next Steps 체크 갱신 | Sinclair |
 | 0.3 | 2026-04-22 (세션 229) | Sprint 226 ✅ MERGED PR #27 `4d35270` 결과 반영 — §11.6 추가 (8/9 F-item DONE, F392 partial, TD-41 완전 해소를 Sprint 227 F401로 이관), §11.5 착수 지시 체크 갱신 | Sinclair |
+| 0.4 | 2026-04-22 (세션 229) | Sprint 227 ✅ MERGED PR #28 `34d49c6` 결과 반영 — §11.8 추가 (F401 ✅ DONE + 3단 fix 상세 / F383·F384 Sprint 229+ 이관), TD-41 ~~해소~~ 마킹, S219/S220/S226 "autopilot local ≠ CI" 4연속 패턴 종결 | Sinclair |

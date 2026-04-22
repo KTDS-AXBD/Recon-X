@@ -14,6 +14,19 @@
 
 ### 세션 229 (2026-04-21 ~ 2026-04-22)
 
+**Sprint 227 ✅ MERGED — AIF-REQ-036 F401 TD-41 완전 해소 (PR #28 `34d49c6`, CI E2E 45/45 PASS + 4연속 패턴 종결)**:
+- ✅ **F401 PoC 설계**: Sprint 226 F392 미완 TD-41을 AskUserQuestion 3 후보(A. `?demo=1` bypass / B. Playwright addCookies + server bypass / C. auth.setup 토큰 발급 endpoint) 중 **옵션 A** 확정. 최단 구현 시간 + Production 가드 2중(env flag + wrangler.toml 미정의).
+- ✅ **Sprint 227 WT 생성 + autopilot 20분 완결**: F401 + F383 + F384 지시. autopilot Match 100% self + TEST=pass + PR #28 자동 생성 (pr-lookup 실패 패턴 회피 2회째).
+- ⚠️ **CI 4회 반복 후 성공**: (1차) 45+ fail auth.setup timeout → (2차 Master `bab6149`) AuthContext 모듈 로드 시점 `?demo=1` 캡처로 ~7 fail로 축소 → (3차 Master `88234ab`) legacy 4 spec `page.goto("/?legacy=1")` 치환, but webhook 미trigger (병행 pane Sprint 228 MERGED로 CONFLICTING) → (4차 Master `cf53074`) merge origin/main → **45/45 PASS**.
+- ✅ **3단 fix 근본 원인 진단**: (1) **React-Router Navigate query drop** (`/?demo=1` → `<Navigate to="/executive/overview" replace />`가 `?demo=1` 제거 → AuthProvider mount 시 URL에 demo 없음 → localStorage 비어있음 → user=null → /welcome redirect → waitForURL 15s timeout). (2) **Sprint 224 F374 분기 활성화 이후 legacy Dashboard 전제 E2E 7건 content outdated** (`page.goto("/")` 후 "대시보드 Dashboard" heading 기대했으나 default가 Executive Overview로 바뀜. extract/functional/organization/rbac 11 goto 일괄 치환). (3) **병행 pane main 전진 CONFLICTING** (Sprint 228 MERGED로 sprint/227이 origin/main 뒤처짐 → webhook trigger 차단. merge origin/main로 해결).
+- ✅ **Squash merge + cleanup**: `gh pr merge 28 --squash --delete-branch` → `34d49c6`. tmux kill + worktree remove + sprint/227 local branch 삭제 + signal archive.
+- 📌 **TD-41 ~~해소~~**: Sprint 223 F389 DEMO_USERS 폐기 부수효과로 생긴 E2E 10 spec skip 문제가 Sprint 224/226/227 세 번의 시도 끝에 완전 종결. S219 F362 / S220 F366 / S226 F392 / **S227 F401** 4연속 "autopilot local TEST=pass ≠ CI production pass" 패턴 4회차 결국 Master 수동 개입으로 극복. 반복 개선 cycle의 전형적 종결 사례.
+- 📌 **실 소요 ~2h 10m** (autopilot 20m + CI 1차 1m + Master fix 1 + CI 2차 5m + Master fix 2 + Master merge fix 3 + CI 4차 5m + merge/cleanup 5m). Plan 예상 3h 30m 대비 62%.
+- 📌 **F383/F384 Sprint 229+ 이관**: AXIS DS Tier 3 기여(8h) + Guest/Demo 모드(4h)는 F401 복구 cycle 3회 집중으로 미착수. F401 구현 자산(VITE_DEMO_MODE + AuthContext 모듈 fix)은 향후 F384 Guest/Demo 모드 기반으로 재활용 가능.
+- Commits: `7e0baf7` PoC 설계 → `f5cbc58` IN_PROGRESS → `85c5f34` autopilot → `bab6149` + `88234ab` + `cf53074` Master 3단 fix → **`34d49c6`** (#28 squash).
+
+---
+
 **Sprint 226 ✅ MERGED — AIF-REQ-036 S3 M-UX-3 Engineer Workbench 완결 (PR #27 `4d35270`, 8/9 F-item DONE + F392 partial)**:
 - ✅ **계획 수립 선행**: "기존 작업에 이어서 메뉴 개편 후속 계획" 요청 → AIF-REQ-036 Plan doc §11 Follow-up 추가(v0.2, commit `9350ed4`). Sprint 226 9 F-item Wave 1~5 배치 + F396 신규 위생 F-item + Sprint 227 Should 확정 포함 + TD-41을 F392에 통합. AskUserQuestion 3 결정 확정(Gap-1 처리 / S3 범위 / S4 포함).
 - ✅ **Sprint 226 WT 생성 + autopilot Full Auto**: SPEC §6 Phase 9 Sprint 226 헤더 🔧 IN_PROGRESS 전환(`8516c7d`) + push → `bash -i -c "sprint 226"` 실패 → 수동 fallback Phase 2a~2e(git worktree add + tmux + wt.exe 탭 + .sprint-context WAVE_ORDER 주입 + signal CREATED). task-daemon 기존 실행 중(Foundry-X pane에서 시작) 생존 확인만.

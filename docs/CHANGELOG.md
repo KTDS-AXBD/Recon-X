@@ -2,6 +2,21 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 234 (2026-04-22)
+
+**TD-43 해소 — F402 DoD 실 실행 완결 + Phase 2 F356-B GO 판정 (Master pane %9, 커밋 `f771380`)**:
+- ✅ **TD-43 완결 (P1)**: Sprint 232 F402 autopilot이 "코드 재설계만 완결"하고 "실제 $0.22 (42 호출)" hallucination 기재했던 DoD 실행분을 Master 직접 실측으로 전원 달성. (a) `pnpm tsx scripts/ai-ready/evaluate.ts --spec-dir .decode-x/spec-containers --model haiku --openrouter` 실 실행, (b) 42 LLM 호출 성공(7 spec-containers × 6기준), (c) `reports/ai-ready-poc-2026-04-22.json` 53,205 bytes 실 파일 생성(1/7 PASS lpon-settlement 0.813만, 평균 0.720, 총 **$0.162 실측** — autopilot 추정 $0.22 대비 -26%), (d) lpon-charge 수기 재채점 6기준 5/6 일치(±0.1), 정확도 **83.3%** ≥ 80% → **Phase 2 F356-B GO 판정**, (e) `reports/ai-ready-poc-accuracy-2026-04-22.md` 6,740 bytes 작성 (수기 채점 근거 + diff 분석 + Phase 2 로드맵).
+- ✅ **`--openrouter` + `--direct-anthropic` fallback 플래그 구현** (`scripts/ai-ready/evaluate.ts` +110 lines): svc-llm-router production 502 Blocker 발견 후 임시 우회 경로 2종 추가. OpenRouter 경로는 `callOpenRouterWithMeta` (`packages/utils/src/openrouter-client.ts`) 재사용 + OpenAI-compatible JSON score/rationale 파싱 + max_tokens 1500(512는 rationale 중단 발견). svc-llm-router 기본 경로 보존(flag 없이 실행하면 production 경로 자동 회귀 — 복구 후 code 회귀 불필요). evaluate.test.ts 기존 6/6 통과 유지. 최소 침습적 module-level flag + function fork 패턴.
+- ✅ **블로커 3중 극복 기록**: (1차) svc-llm-router `/complete` HTTP 502 UPSTREAM_ERROR — Google/OpenAI 상호 fallback 모두 HTTP 401 error code 2009 (CF AI Gateway 인증 secret 만료 추정). (2차) Anthropic Direct API 401 "invalid x-api-key" — `.env ANTHROPIC_API_KEY` 만료/무효. (3차) OpenRouter `anthropic/claude-haiku-4-5` ✅ 200 성공 — `.dev.vars OPENROUTER_API_KEY` 유효. 첫 실행(max_tokens=512) 시 lpon-budget 성공 + lpon-charge JSON parse fail(rationale truncated) → max_tokens 1500 상향 후 7/7 완결. 각 블로커 발견마다 AskUserQuestion으로 사용자 선택 확인.
+- ✅ **SPEC.md + TD 정리 (Phase 5 문서 커밋)**: §6 Phase 8 Sprint 232 F402 [x] "부분 완결" → **"완결"** 전환 + DoD (e)(f)(g)(h) 실행분 세부 기록 + Phase 2 GO 판정 + rubric 개선 권고. §8 Tech Debt: **~~TD-43~~ 해소 마킹**(Master 직접 실측으로 `feedback_autopilot_production_smoke` 패턴 6회차 해소, 본 TD 자체가 "autopilot 자가보고 vs Master 실측" 메타 검증의 6회차 성공 사례) + **TD-44 신규 등록**(svc-llm-router Gateway 401 — AI Foundry 포털 리포에서 wrangler secret 재주입 필요, P1, F356-B 정상 경로 복구 필수).
+- 📌 **핵심 판정**: **Phase 2 F356-B GO** (정확도 83.3% ≥ 80%). LPON 859 skill × 6기준 = 5,154 호출 전수 배치 착수 가능. 예상 비용 $19.87 (일 $30 가드 하단), 예상 소요 8시간 45분(배치 병렬화 없이). 전제 조건: (a) source_consistency 프롬프트 rubric 개선 1건 선행(30분, lpon-charge |diff|=0.28 원인 해소), (b) svc-llm-router 복구 시 OpenRouter fallback 제거 고려, (c) max_tokens 1500 유지.
+- 📌 **메타 교훈 3종**: (a) **"autopilot Match % ≠ Production 증명" 메타 규칙 6회차 해소** — 세션 232 autopilot이 "실제 $0.22 (42 호출)" 기재했으나 실측 $0.162 + 당시 reports/ 산출물 부재(Master 실시간 확인)였고, 세션 234 Master 직접 실행으로 패턴 종결. rules/development-workflow.md `## Autopilot Production Smoke Test` 섹션 재현 카운트 업데이트 대상(S232 6회차 + **S234 Master 해소** 추가). (b) **정확도 ≠ 품질** — LLM vs 수기 일치율 83.3%는 채점기 신뢰도이지 spec-container 품질이 아님. 7개 중 6개 FAIL(평균 0.720 < threshold 0.75)는 spec quality 개선 영역으로 별개. Phase 2 승격은 "품질 개선 우선순위 탐색" 용도로 정당화. (c) **인프라 블로커 ≠ DoD 블로커** — svc-llm-router 502(TD-44)는 인프라 차원 별도 이슈. evaluate.ts에 `--openrouter` flag로 경로 분리하여 본 DoD는 완결, 인프라 복구는 TD-44로 별도 추적. 블로커 발견 시 TD 분리 + flag 기반 fallback이 생산성 패턴으로 정착 후보.
+- 📌 **실 소요 ~1h 15m**: 세션 브리핑 + AskUserQuestion 2건(10m) + dry-run + 환경 점검(5m) + svc-llm-router 502 조사 + Anthropic direct 401 조사 + OpenRouter 경로 채택 + flag 구현(25m) + 42 LLM 실행(5m) + max_tokens 상향 재실행(5m) + lpon-charge spec-container 수기 검토 + 6기준 채점(15m) + accuracy MD 작성(5m) + SPEC.md 업데이트 + CHANGELOG + MEMORY(5m). 당초 TD-43 Plan 예상 1~2h 하단 도달.
+- 📌 **다음 P0 후보**: (1) F403 Phase 9 E2E 커버리지 보강 (3h, Sprint 234/235) — AIF-ANLS-032 Match Rate 82% → 95%+ 복원, P0 4건 스모크. (2) source_consistency rubric 개선 30분 + 재측정 1 LLM call — F356-B 착수 전 선행 권장. (3) TD-44 svc-llm-router Gateway 복구 — AI Foundry 포털 리포 접근 필요. (4) F357 AgentResume / F358 Tree-sitter Java / F359 comparator 교체(Phase 4 이관).
+- Commits: `f771380` feat(ai-ready) --openrouter + --direct-anthropic fallback + reports/* (3 files, +626 -1) → 본 세션-end 커밋(SPEC TD-43 해소 + TD-44 신규 + §5 Last Updated + CHANGELOG + MEMORY).
+
+---
+
 ### 세션 233 (2026-04-22)
 
 **Sprint 233 ✅ MERGED — F404 CF Web Analytics 실 주입 완결 + beacon defensive rendering + welcome E2E 스모크 (Master pane, PR #34 `3b7ce8f`, 커밋 `5c3fb9e` + `3b7ce8f` squash)**:

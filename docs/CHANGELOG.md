@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 232 (2026-04-22)
+
+**Phase 3 종결 분석 + AIF-ANLS-032 Phase 3 E2E 감사 + F403 등록 + 원칙 #6 "UX F-item = 기능 + E2E 1건 Must" 명문화 (Master pane %6, 코드 변경 없는 분석/거버넌스 세션, 커밋 `5903bdf`)**:
+- ✅ **Phase 3 종결 분석 확정**: pane %6 세션 229에서 Sprint 226(메뉴 개편 PR #27) + 227(TD-41 F401 PR #28) + 229(AXIS DS F383 PR #30) + 231(Guest/Demo F384 PR #32) **4건 연쇄 MERGED** — AIF-REQ-036 Phase 9 UX 재편 **13 F-item 100% 종결**. 병행 pane %9에서 Sprint 228(M-2 7/7) + 230(F356-A PoC) 추가 MERGED.
+- ✅ **AIF-ANLS-032 Phase 3 E2E 종합 감사**: `docs/03-analysis/features/AIF-ANLS-032_phase-3-e2e-audit.analysis.md` 신규 (256 lines, YAML frontmatter + §1~§11). CI run #205 main@e398000 실측 47/47 PASS baseline. 등록 라우트 27 vs E2E 직접 커버 21 (**78%**). **Critical Gap**: Phase 9 신규 6 라우트(/executive/evidence F378 + /engineer/workbench F379/F380 + /admin F382/F387 + /?demo=guest F384 + /skills/:id + /specs/:id) **E2E 0% 커버**. Anti-patterns 5건 Minor (waitForTimeout 2 + toBeTruthy 2 + toBeGreaterThan 1). test.skip 0건(F401 TD-41 전면 해제 효과). Redirect 검증 4/5 (`/poc-phase-2` 누락). **Match Rate 82%**.
+- ✅ **F403 신규 등록 (SPEC §6 Sprint 232)**: "Phase 9 신규 라우트 E2E 커버리지 보강" (AIF-ANLS-032 remediation, P1, 예상 3h). P0 4건 = (a) executive-evidence.spec.ts 신규, (b) engineer-workbench.spec.ts 신규, (c) admin.spec.ts 확장, (d) guest-mode.spec.ts 신규. DoD: CI E2E 47→51+ PASS, Match Rate 82%→95%+ 복원. **F402 완료 후 순차 실행** 권장.
+- ✅ **원칙 #6 명문화 (SPEC §4 + CLAUDE.md)**: **"UX F-item = 기능 + E2E 1건 Must"** — 사용자 접점(라우트/화면/상호작용) 변경 F-item은 정의 시점부터 E2E 스모크 1건 이상을 Must 인수 기준으로 포함. DoD에 E2E 항목 없으면 F-item 리뷰 반려. "기능 DONE ≠ 검증 DONE" 원칙. 적용 2026-04-22 (세션 229)~. SPEC §4 #6 신규 + CLAUDE.md #Project Management Rules #5 크로스 레퍼런스 (autopilot 자동 로딩 시 인지). 예외: 순수 백엔드/스키마/스크립트 F-item은 unit/integration test 허용.
+- 📌 **교훈 3종**: (a) **"기능 DONE ≠ 검증 DONE" 패턴 확증** — autopilot Match 95~100% + CI unit green에도 UI 신규 라우트는 E2E 없으면 regression detection 불가. Phase 9 13건이 한꺼번에 발견. (b) **Shadow Real Analysis 패턴 재활용** — CI log grep(47) + 라우터 코드 grep(27) + E2E grep(21) → Match 산식 구성, 로컬 실행 불필요. (c) **원칙 즉시 정착** — AIF-ANLS-032 §10 교훈을 그 세션 내에 SPEC §4 + CLAUDE.md로 명문화 완결 (memory-lifecycle "즉시 정착" 원칙 적용, 2회 대기 없이 1회로 원칙 수준 판정).
+- 📌 **실 소요 ~45분**: 분석 15m + 보고서 15m + F403 등록 + 원칙 명문화 15m.
+- 📌 **다음 P0**: Sprint 232 F402(F356-A 재작, 4~6h) → F403(E2E 보강, 3h) 순차 실행.
+- Commits: `5903bdf docs(session-229): AIF-ANLS-032 Phase 3 E2E 감사 + F403 등록 + 원칙 #6 명문화` (3 files, +264 -4).
+
 ### 세션 231 (2026-04-22)
 
 **Sprint 230 ✅ MERGED + TD-42 발견(F356-A 재작 필요) + rules/ 승격 2건 + /ax:req-integrity 정합성 보정 (PR #31 `b35d514`)**:

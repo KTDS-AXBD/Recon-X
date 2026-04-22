@@ -1,21 +1,27 @@
 /**
- * evaluate.ts — AI-Ready 6기준 LLM 채점 CLI (F356-A PoC)
+ * evaluate.ts — AI-Ready 6기준 LLM 채점 CLI (F402 TD-42 재작)
  *
  * Usage:
  *   pnpm tsx scripts/ai-ready/evaluate.ts \
- *     [--sample 80] [--model haiku|sonnet|opus] [--tier-a-ratio 0.5] \
+ *     [--spec-dir .decode-x/spec-containers] \
+ *     [--model haiku|sonnet|opus] \
  *     [--output reports/ai-ready-poc-YYYY-MM-DD.json] \
- *     [--seed 20260422] [--opus-cross-check 10] [--dry-run]
+ *     [--dry-run]
  *
  * Required env:
  *   LLM_ROUTER_URL       — svc-llm-router HTTP URL
- *   SVC_SKILL_URL        — svc-skill HTTP URL
  *   INTERNAL_API_SECRET  — internal auth header value
+ *
+ * Sprint 230 → 232 변경:
+ *   - sample-loader: API 기반 → fs 기반 spec-containers (TD-42 해소)
+ *   - 샘플: 80건 → 7 spec-containers (lpon-*)
+ *   - LLM 호출: 480 → 42 (7 × 6)
+ *   - 프롬프트: Java 소스 기반 → markdown rules/runbooks/tests 기반
  */
 
 import { writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
-import { join } from "path";
+import { resolve } from "path";
 import {
   ALL_AI_READY_CRITERIA,
   AIReadyEvaluationSchema,
@@ -24,18 +30,15 @@ import {
 import type { AIReadyEvaluation, AIReadyScore, AIReadyCriterion } from "../../packages/types/src/ai-ready.js";
 import { buildPrompt } from "../../services/svc-skill/src/ai-ready/prompts.js";
 import type { PromptInput } from "../../services/svc-skill/src/ai-ready/prompts.js";
-import { loadTierASkills, loadRandomSkills } from "./sample-loader.js";
+import { loadSpecContainers } from "./sample-loader.js";
 import type { SkillMeta } from "./sample-loader.js";
 
 // ── Argument Parsing ──────────────────────────────────────────────────
 
 function parseArgs(): {
-  sample: number;
+  specDir: string;
   model: "haiku" | "sonnet" | "opus";
-  tierARatio: number;
   output: string;
-  seed: number;
-  opusCrossCheck: number;
   dryRun: boolean;
 } {
   const args = process.argv.slice(2);
@@ -45,12 +48,9 @@ function parseArgs(): {
   };
   const today = new Date().toISOString().slice(0, 10);
   return {
-    sample: Number(get("--sample", "80")),
+    specDir: get("--spec-dir", ".decode-x/spec-containers"),
     model: get("--model", "haiku") as "haiku" | "sonnet" | "opus",
-    tierARatio: Number(get("--tier-a-ratio", "0.5")),
     output: get("--output", `reports/ai-ready-poc-${today}.json`),
-    seed: Number(get("--seed", "20260422")),
-    opusCrossCheck: Number(get("--opus-cross-check", "0")),
     dryRun: args.includes("--dry-run"),
   };
 }
@@ -132,7 +132,6 @@ async function callLlmJson(
     const json = (await res.json()) as LlmResponse;
     const raw = json.content ?? json.choices?.[0]?.message?.content ?? "";
 
-    // Extract JSON from response (strip markdown code blocks if present)
     const jsonMatch = raw.match(/\{[\s\S]*"score"[\s\S]*"rationale"[\s\S]*\}/);
     if (!jsonMatch) {
       if (attempt === 2) throw new Error(`JSON parse failed after 3 attempts: ${raw.slice(0, 200)}`);
@@ -170,8 +169,7 @@ async function evaluateSkill(
   model: "haiku" | "sonnet" | "opus",
 ): Promise<AIReadyEvaluation> {
   const input: PromptInput = {
-    sourceCode: skill.sourceCode,
-    metadata: skill.metadata,
+    specContent: skill.specContent,
     skillName: skill.name,
   };
 
@@ -207,37 +205,31 @@ async function evaluateSkill(
   });
 }
 
-// ── Batch with concurrency control ────────────────────────────────────
-
-async function* chunked<T>(arr: T[], size: number): AsyncGenerator<T[]> {
-  for (let i = 0; i < arr.length; i += size) {
-    yield arr.slice(i, i + size);
-  }
-}
-
 // ── Main ──────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
   const args = parseArgs();
   const today = new Date().toISOString().slice(0, 10);
+  const specDirAbs = resolve(args.specDir);
 
-  console.log(`\n🔍 AI-Ready PoC 채점기 — Sprint 230 F356-A`);
-  console.log(`   샘플: ${args.sample} skill | 모델: ${args.model} | Tier-A 비율: ${args.tierARatio}`);
-  console.log(`   출력: ${args.output}\n`);
+  console.log(`\n🔍 AI-Ready 채점기 — Sprint 232 F402 (TD-42 재작)`);
+  console.log(`   spec-dir: ${specDirAbs}`);
+  console.log(`   모델: ${args.model} | 출력: ${args.output}\n`);
+
+  // Step 0: spec-container 목록 확인 (dry-run 포함)
+  const skills = await loadSpecContainers(specDirAbs);
+  console.log(`📦 spec-containers: ${skills.length}개 — ${skills.map((s) => s.name).join(", ")}`);
 
   if (args.dryRun) {
-    console.log("🔵 [Dry-Run] 실행 계획만 출력합니다.\n");
-    const tierACount = Math.round(args.sample * args.tierARatio);
-    const randomCount = args.sample - tierACount;
-    console.log(`  Tier-A 샘플: ${tierACount}건 (lpon-* 7 subdomain 균등)`);
-    console.log(`  무작위 샘플: ${randomCount}건 (pension + giftvoucher)`);
-    console.log(`  LLM 호출: ${args.sample} × 6 = ${args.sample * 6}회`);
-    console.log(`  예상 비용 (Haiku): $${(args.sample * 0.0034).toFixed(3)}`);
+    console.log("\n🔵 [Dry-Run] 실행 계획만 출력합니다.\n");
+    console.log(`  containers: ${skills.length}개`);
+    console.log(`  LLM 호출: ${skills.length} × 6 = ${skills.length * 6}회`);
+    console.log(`  예상 비용 (Haiku): $${(skills.length * 6 * estimateCostUsd("haiku", 2000, 300)).toFixed(4)}`);
     return;
   }
 
   // Step 1: 사전 비용 체크
-  console.log("💰 일일 누적 비용 확인 중...");
+  console.log("\n💰 일일 누적 비용 확인 중...");
   const dailyBase = await fetchTodayUsageUsd();
   if (dailyBase >= HARD_LIMIT_USD) {
     console.error(`❌ 오늘 LLM 비용이 이미 $${dailyBase.toFixed(2)} — $30 가드 초과. 중단.`);
@@ -248,28 +240,13 @@ async function main(): Promise<void> {
   }
   console.log(`   기존 누적: $${dailyBase.toFixed(4)}\n`);
 
-  // Step 2: 샘플링
-  const tierACount = Math.round(args.sample * args.tierARatio);
-  const randomCount = args.sample - tierACount;
-
-  console.log(`📦 샘플링 시작... (seed=${args.seed})`);
-  console.log(`   Tier-A: ${tierACount}건 로딩 중...`);
-  const tierASkills = await loadTierASkills(tierACount, args.seed);
-  console.log(`   ✅ Tier-A: ${tierASkills.length}건`);
-
-  console.log(`   무작위: ${randomCount}건 로딩 중...`);
-  const randomSkills = await loadRandomSkills(randomCount, ["pension", "giftvoucher"], args.seed);
-  console.log(`   ✅ 무작위: ${randomSkills.length}건`);
-
-  const allSkills = [...tierASkills, ...randomSkills];
-  console.log(`\n🚀 평가 시작: ${allSkills.length} skill × 6 기준 = ${allSkills.length * 6}회 LLM 호출\n`);
-
-  // Step 3: 배치 평가 (concurrency=5)
+  // Step 2: 배치 평가 (순차 — 7개 × 6 = 42 호출)
   const evaluations: AIReadyEvaluation[] = [];
   let cumulativeCost = 0;
-  let completed = 0;
 
-  for await (const batch of chunked(allSkills, 5)) {
+  console.log(`🚀 평가 시작: ${skills.length} skill × 6 기준 = ${skills.length * 6}회 LLM 호출\n`);
+
+  for (const skill of skills) {
     const guard = checkCostGuard(cumulativeCost, dailyBase);
     if (guard === "stop") {
       console.error(`\n❌ 비용 가드 초과 ($${(cumulativeCost + dailyBase).toFixed(2)} >= $${HARD_LIMIT_USD})`);
@@ -280,47 +257,20 @@ async function main(): Promise<void> {
       console.warn(`⚠️  누적 비용 $${(cumulativeCost + dailyBase).toFixed(2)} — 잔여 $${(HARD_LIMIT_USD - cumulativeCost - dailyBase).toFixed(2)}`);
     }
 
-    const results = await Promise.all(batch.map((skill) => evaluateSkill(skill, args.model)));
-    evaluations.push(...results);
-    cumulativeCost += results.reduce((s, r) => s + r.costUsd, 0);
-    completed += batch.length;
+    process.stdout.write(`   평가 중: ${skill.name}...`);
+    const result = await evaluateSkill(skill, args.model);
+    evaluations.push(result);
+    cumulativeCost += result.costUsd;
 
-    const passRate = evaluations.filter((e) => e.overallPassed).length / evaluations.length;
-    const avgScore = evaluations.reduce((s, e) => s + e.totalScore, 0) / evaluations.length;
-    process.stdout.write(
-      `\r   진행: ${completed}/${allSkills.length} | 비용: $${cumulativeCost.toFixed(4)} | pass: ${(passRate * 100).toFixed(0)}% | avg: ${avgScore.toFixed(3)}`,
+    const passStr = result.overallPassed ? "✅ PASS" : "❌ FAIL";
+    console.log(
+      ` ${passStr} (avg=${result.totalScore.toFixed(3)}, pass=${result.passCount}/6, cost=$${result.costUsd.toFixed(4)})`,
     );
   }
 
-  console.log("\n");
+  console.log("");
 
-  // Step 4: Opus 교차 검증 (--opus-cross-check N)
-  if (args.opusCrossCheck > 0 && evaluations.length > 0) {
-    console.log(`🔬 Opus 교차 검증: ${args.opusCrossCheck}건 (Haiku vs Opus 비교)`);
-    const crossSample = evaluations.slice(0, args.opusCrossCheck);
-    let haikusOpusDiffSum = 0;
-
-    for (const eval_ of crossSample) {
-      const skill = allSkills.find((s) => s.id === eval_.skillId);
-      if (!skill) continue;
-      const opusEval = await evaluateSkill(skill, "opus");
-      const diffSum = eval_.criteria.reduce((sum, haikuC, i) => {
-        const opusC = opusEval.criteria[i];
-        return sum + (opusC ? Math.abs(haikuC.score - opusC.score) : 0);
-      }, 0);
-      haikusOpusDiffSum += diffSum / 6;
-    }
-
-    const avgDiff = haikusOpusDiffSum / crossSample.length;
-    console.log(`   Haiku vs Opus |diff| 평균: ${avgDiff.toFixed(3)}`);
-    if (avgDiff > 0.2) {
-      console.warn("   ⚠️  Phase 2는 Opus 사용 권고 (|diff| > 0.2)");
-    } else {
-      console.log("   ✅ Haiku 정확도 충분 (|diff| <= 0.2)");
-    }
-  }
-
-  // Step 5: 리포트 저장
+  // Step 3: 리포트 저장
   const report = AIReadyBatchReportSchema.parse({
     executedAt: new Date().toISOString(),
     modelVersion: args.model,
@@ -338,14 +288,14 @@ async function main(): Promise<void> {
   const passCount = evaluations.filter((e) => e.overallPassed).length;
   const avgScore = evaluations.reduce((s, e) => s + e.totalScore, 0) / Math.max(evaluations.length, 1);
 
-  console.log(`\n✅ 완료`);
+  console.log(`✅ 완료`);
   console.log(`   처리: ${evaluations.length} skill`);
   console.log(`   AI-Ready PASS: ${passCount}/${evaluations.length} (${((passCount / Math.max(evaluations.length, 1)) * 100).toFixed(1)}%)`);
   console.log(`   평균 점수: ${avgScore.toFixed(3)}`);
   console.log(`   총 비용: $${cumulativeCost.toFixed(4)}`);
   console.log(`   리포트: ${args.output}`);
-  console.log(`\n📋 다음 단계: 8건 수기 재채점 후 accuracy 리포트 작성`);
-  console.log(`   정확도 ≥ 80% → F356-B (Sprint 231) 착수 GO\n`);
+  console.log(`\n📋 다음 단계: 1건 수기 재채점 후 accuracy 리포트 작성`);
+  console.log(`   정확도 ≥ 80% → F356-B (Phase 2) 착수 GO\n`);
 
   // Accuracy report template
   const accuracyPath = args.output.replace(".json", `-accuracy-${today}.md`);
@@ -355,37 +305,37 @@ async function main(): Promise<void> {
 }
 
 function generateAccuracyTemplate(date: string, evaluations: AIReadyEvaluation[]): string {
-  const sample8 = evaluations.slice(0, 8).map((e) => `- [ ] ${e.skillName} (${e.skillId})`).join("\n");
+  const sample1 = evaluations[0] ? `- [ ] ${evaluations[0].skillName} (6기준 × 1건 = 6 pair)` : "";
 
   return `# AI-Ready PoC Accuracy Report (${date})
 
 ## Summary
-- 총 평가: ${evaluations.length} skill × 6기준 = ${evaluations.length * 6} 점수
-- 수기 검증 샘플: 8건 × 6기준 = 48 pair
+- 총 평가: ${evaluations.length} spec-container × 6기준 = ${evaluations.length * 6} 점수
+- 수기 검증 샘플: 1건 × 6기준 = 6 pair (10% of ${evaluations.length})
 - 일치 (|diff| ≤ 0.1): {N} pair  ← 수기 입력 필요
-- 정확도: {N/48 * 100}%
+- 정확도: {N/6 * 100}%
 - 판정: ✅ GO / ⚠️ 프롬프트 iterate / ❌ 재설계
 
-## 수기 재채점 대상 8건
-${sample8}
+## 수기 재채점 대상 1건
+${sample1}
 
 ## 기준별 정확도 (수기 입력 후 채우기)
-| Criterion | Accuracy | Avg |LLM - Manual| |
-|-----------|:--------:|----:|
-| 1. 소스코드 정합성 | {X}/8 | 0.XX |
-| 2. 주석·문서 일치 | {X}/8 | 0.XX |
-| 3. 입출력 구조 명확성 | {X}/8 | 0.XX |
-| 4. 예외·에러 핸들링 | {X}/8 | 0.XX |
-| 5. 업무루틴 분리·재사용성 | {X}/8 | 0.XX |
-| 6. 테스트 가능성 | {X}/8 | 0.XX |
+| Criterion | LLM 점수 | 수기 점수 | |diff| ≤ 0.1 |
+|-----------|:-------:|:-------:|:----------:|
+| 1. 소스코드 정합성 | {LLM} | {Manual} | ✅/❌ |
+| 2. 주석·문서 일치 | {LLM} | {Manual} | ✅/❌ |
+| 3. 입출력 구조 명확성 | {LLM} | {Manual} | ✅/❌ |
+| 4. 예외·에러 핸들링 | {LLM} | {Manual} | ✅/❌ |
+| 5. 업무루틴 분리·재사용성 | {LLM} | {Manual} | ✅/❌ |
+| 6. 테스트 가능성 | {LLM} | {Manual} | ✅/❌ |
 
 ## 실패 Case 원인 분석
 (수기 검증 후 작성)
 
 ## Phase 2 권고
-- [ ] GO → F356-B Sprint 231 착수
-- [ ] iterate → 프롬프트 개선 후 재측정
-- [ ] 재설계 → 기준 재정의 필요
+- [ ] GO → F356-B 착수 (정확도 ≥ 80%)
+- [ ] iterate → 프롬프트 개선 후 재측정 (60~80%)
+- [ ] 재설계 → 기준 재정의 필요 (< 60%)
 `;
 }
 

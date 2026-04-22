@@ -5,17 +5,54 @@ import { ALL_AI_READY_CRITERIA } from "@ai-foundry/types";
 
 const SAMPLE_INPUT: PromptInput = {
   skillName: "lpon-charge",
-  sourceCode: `public class ChargeService {
-  private final ChargeRepository repo;
-  public ChargeResult charge(ChargeRequest req) {
-    if (req.getAmount() <= 0) throw new ValidationException("ERR-CHARGE-001");
-    return repo.save(req);
-  }
-}`,
-  metadata: {
-    provenanceYaml: "domain: giftvoucher\nsubdomain: charge",
-    contracts: '{"input": {"amount": "long"}, "output": {"chargeId": "string"}}',
-    rules: ["월 충전 한도 50만원 초과 불가"],
+  specContent: {
+    provenanceYaml: `skillId: POL-LPON-CHARGE-001
+sources:
+  - type: reverse-engineering
+    businessRules: [BL-001, BL-002, BL-003]
+    confidence: 0.92
+inputCompleteness:
+  rulesCoverage: 0.92
+  testCoverage: 0.78`,
+    rules: [
+      `# ES-CHARGE-001: 충전 멱등성 규칙
+### condition
+동일 chargeRequestId로 2회 이상 수신.
+### criteria
+charge_transactions에 동일 chargeRequestId + status completed.
+### outcome
+기존 트랜잭션 결과 반환, 신규 출금 발생 없음.
+### exception
+status=failed이면 신규 처리.`,
+    ],
+    runbooks: [
+      `# ES-CHARGE-001: 충전 멱등성 — 운영 가이드
+이중 충전 발생 시 charge_transactions에서 동일 chargeRequestId 건 조회 후
+후발 건 취소 처리. POST /money/chargeCancel 호출.`,
+    ],
+    tests: [
+      `emptySlotId: ES-CHARGE-001
+scenarios:
+  - id: TC-IDEM-001
+    name: 동일 requestId 재전송 시 기존 completed 결과 반환
+    given:
+      chargeRequestId: "req-abc-001"
+      existingStatus: "completed"
+    when: charge_requested_again
+    then:
+      - responseStatus: 200
+      - responseIdempotent: true`,
+    ],
+    contractYaml: `skillId: POL-LPON-CHARGE-001
+scenarios:
+  - id: TC-CHARGE-001
+    name: 잔액 충분 시 충전 성공
+    given:
+      withdrawalAccountBalance: 100000
+      chargeAmount: 50000
+    when: charge_requested
+    then:
+      - charge_completed: true`,
   },
 };
 
@@ -35,9 +72,9 @@ describe("buildPrompt — 6기준 전체", () => {
     expect(prompt).toContain("lpon-charge");
   });
 
-  it("소스 코드 포함 확인", () => {
+  it("spec 컨텐츠 포함 확인 (rules)", () => {
     const prompt = buildPrompt("io_structure", SAMPLE_INPUT);
-    expect(prompt).toContain("ChargeService");
+    expect(prompt).toContain("ES-CHARGE-001");
   });
 
   it("JSON 출력 지시 포함", () => {

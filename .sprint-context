@@ -1,14 +1,18 @@
-SPRINT_NUM=231
+SPRINT_NUM=232
 PROJECT=Decode-X
-BRANCH=sprint/231
-F_ITEMS=F384
-MILESTONE=M-UX-4 Should — Guest/Demo 읽기 전용 모드
-PLAN_DOC=docs/01-plan/features/AIF-REQ-036.plan.md (F384 Sprint 227→229→231 이관)
-F384_BASE=Sprint 227 F401 VITE_DEMO_MODE + AuthContext 모듈 로드 시점 capture 인프라 재활용
-F384_SCOPE=DEMO_STORAGE_KEY role 분기(engineer/guest) + Guest route guard + 시드 정적 JSON + Demo mode 배지 + 로그인 CTA
-F384_DOD=`/?demo=guest`로 진입 → (a) Executive Overview/Evidence/Skill Catalog 조회 가능, (b) Upload 등 write 차단, (c) 🎭 Demo Mode 배지 표시, (d) 로그인 CTA → /welcome
-SECURITY_RULE=wrangler.toml production env.vars에 VITE_DEMO_MODE 절대 미정의 (F401과 동일 가드)
-EXISTING_ASSETS=apps/app-web/src/contexts/AuthContext.tsx(VITE_DEMO_MODE/DEMO_STORAGE_KEY/module-level capture), apps/app-web/src/app.tsx(ProtectedRoute), apps/app-web/src/components/Sidebar.tsx
-CHECKPOINT=report
-MATCH_RATE=100
+BRANCH=sprint/232
+F_ITEMS=F402
+MILESTONE=AIF-PLAN-037 G-3 Phase 1 재작 — 데이터 소스 정합 + 실 실행 (TD-42 해소)
+PLAN_DOC=docs/01-plan/features/F356-A.plan.md (AIF-PLAN-038 재활용 — F402는 F356-A 재작)
+DESIGN_DOC=docs/02-design/features/F356-A.design.md (AIF-DSGN-038 재활용)
+F402_BASE=Sprint 230 F356-A PoC 인프라 재활용 (packages/types/src/ai-ready.ts + services/svc-skill/src/ai-ready/prompts.ts + scripts/ai-ready/evaluate.ts + scripts/ai-ready/sample-loader.ts). 27 테스트 PASS, typecheck clean, CI 3/3. 실 실행은 blocked.
+F402_GAP_ROOT_CAUSE=TD-42 — autopilot 구현이 Java 소스 + /skills API 필드(id/source_code/rules/contracts/provenance)를 가정했으나 production 현실과 불일치: (1) /skills/:id 응답은 메타만 반환 (skillId/metadata/r2Key/policyCount만), 실 content는 R2 .skill.json, (2) .decode-x/spec-containers/lpon-*/는 markdown rules + yaml contracts + runbooks/tests 구성, Java 소스 없음, (3) 실 Java Working Prototype은 Foundry-X repo handoff 후 산출되므로 Decode-X 단독 실행 불가
+F402_SCOPE=(a) sample-loader를 spec-containers 직접 읽기(fs-based 7 lpon-*)로 전환 또는 R2 .skill.json 직접 fetch, (b) 6기준 프롬프트를 markdown rules + yaml contracts + runbooks/tests 기준 재설계 (또는 Foundry-X prototype_jobs Java 소스 연계), (c) 샘플 80건 → 현실적 7 spec-containers로 축소, (d) evaluate.ts 실 실행 + 42 LLM 호출(7 × 6) + 수기 검증 10%(1건 또는 소수) 재채점 + 정확도 리포트
+F402_DOD=reports/ai-ready-poc-2026-04-22.json (7 × 6 = 42 점수) + reports/ai-ready-poc-accuracy-2026-04-22.md (정확도 ≥ 80% 판정) + Phase 2 (F356-B) GO/NO-GO 판정
+COST_GUARD=일 $30 비용 가드 3단계 (사전 usage 체크 + 초과 시 AskUserQuestion + 하드 상한) — 기존 F356-A evaluate.ts 로직 재활용. 7 × 6 = 42 호출 예상 비용 < $5 (Sonnet 기준)
+EXISTING_ASSETS=packages/types/src/ai-ready.ts, services/svc-skill/src/ai-ready/prompts.ts, scripts/ai-ready/evaluate.ts, scripts/ai-ready/sample-loader.ts (재설계 대상), .decode-x/spec-containers/lpon-{budget,charge,gift,payment,purchase,refund,settlement}/ (7 production containers 실측 가능)
+PRODUCTION_SMOKE_RULE=rules/development-workflow.md "Autopilot Production Smoke Test" 5회차 재현 방지 필수 — Match% + CI pass ≠ Production 동작. 실 R2 fetch 또는 fs 읽기로 실 데이터 1건 수동 확인 후 evaluate.ts 전수 실행
+MATCH_RATE=98
 TEST_RESULT=pass
+CHECKPOINT=report
+ESTIMATED_HOURS=4-6

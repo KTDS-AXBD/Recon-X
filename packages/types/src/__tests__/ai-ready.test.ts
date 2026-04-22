@@ -120,8 +120,13 @@ describe("AIReadyEvaluationSchema", () => {
     expect(AIReadyEvaluationSchema.safeParse({ ...valid, costUsd: -0.01 }).success).toBe(false);
   });
 
-  it("skillId UUID 아닐 때 거부", () => {
-    expect(AIReadyEvaluationSchema.safeParse({ ...valid, skillId: "not-uuid" }).success).toBe(false);
+  it("skillId는 UUID 외 container 이름도 허용 (e.g., lpon-charge)", () => {
+    expect(AIReadyEvaluationSchema.safeParse({ ...valid, skillId: "lpon-charge" }).success).toBe(true);
+    expect(AIReadyEvaluationSchema.safeParse({ ...valid, skillId: "not-uuid" }).success).toBe(true);
+  });
+
+  it("skillId 빈 문자열 거부", () => {
+    expect(AIReadyEvaluationSchema.safeParse({ ...valid, skillId: "" }).success).toBe(false);
   });
 });
 

@@ -25,7 +25,7 @@ export const AIReadyScoreSchema = z.object({
 export type AIReadyScore = z.infer<typeof AIReadyScoreSchema>;
 
 export const AIReadyEvaluationSchema = z.object({
-  skillId: z.string().uuid(),
+  skillId: z.string().min(1),
   skillName: z.string(),
   criteria: z.array(AIReadyScoreSchema).length(6),
   totalScore: z.number().min(0).max(1),

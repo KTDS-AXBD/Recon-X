@@ -1,170 +1,78 @@
 /**
- * sample-loader.ts — LPON skill 샘플 로더 (F356-A PoC)
+ * sample-loader.ts — spec-container fs 기반 로더 (F402 TD-42 재작)
  *
- * GET /skills (X-Organization-Id: LPON) 엔드포인트에서 skill 메타를 로드.
- * SVC_SKILL_URL, INTERNAL_API_SECRET 환경변수 필요.
+ * .decode-x/spec-containers/lpon-{name}/ 디렉토리를 직접 읽어 SkillMeta를 반환한다.
+ * Sprint 230 API 기반(GET /skills/:id)에서 전환 — production API는 메타만 반환하며
+ * 실 spec 컨텐츠는 R2 또는 파일시스템에 존재하기 때문 (TD-42).
  */
 
+import { readdir, readFile } from "fs/promises";
+import { existsSync } from "fs";
+import { join } from "path";
+import type { SpecContent } from "../../services/svc-skill/src/ai-ready/prompts.js";
+
 export interface SkillMeta {
-  id: string;
-  name: string;
-  domain: string;
-  subdomain: string;
-  sourceCode: string;
-  metadata: {
-    provenanceYaml: string;
-    contracts: string;
-    rules: string[];
-  };
+  id: string;             // container dirname (e.g., "lpon-charge")
+  name: string;           // same as id
+  specContent: SpecContent;
 }
 
-interface SkillListItem {
-  id: string;
-  name: string;
-  domain: string;
-  subdomain: string;
-  organization_id: string;
+async function readMarkdownFiles(dir: string): Promise<string[]> {
+  if (!existsSync(dir)) return [];
+  const files = (await readdir(dir)).filter((f) => f.endsWith(".md")).sort();
+  return Promise.all(files.map((f) => readFile(join(dir, f), "utf-8")));
 }
 
-interface SkillDetail {
-  id: string;
-  name: string;
-  domain: string;
-  subdomain: string;
-  source_code?: string;
-  provenance?: { yaml?: string };
-  contracts?: string;
-  rules?: string[];
+async function readYamlFiles(dir: string): Promise<string[]> {
+  if (!existsSync(dir)) return [];
+  const files = (await readdir(dir)).filter((f) => f.endsWith(".yaml") || f.endsWith(".yml")).sort();
+  return Promise.all(files.map((f) => readFile(join(dir, f), "utf-8")));
 }
 
-const TIER_A_SUBDOMAINS = [
-  "charge",
-  "budget",
-  "gift",
-  "payment",
-  "purchase",
-  "refund",
-  "settlement",
-];
-
-function seededRandom(seed: number): () => number {
-  let s = seed;
-  return () => {
-    s = (s * 1664525 + 1013904223) & 0xffffffff;
-    return (s >>> 0) / 0xffffffff;
-  };
+async function readContractYaml(testsDir: string): Promise<string> {
+  const contractDir = join(testsDir, "contract");
+  if (!existsSync(contractDir)) return "";
+  const files = await readdir(contractDir);
+  const yaml = files.find((f) => f.endsWith(".yaml") || f.endsWith(".yml"));
+  if (!yaml) return "";
+  return readFile(join(contractDir, yaml), "utf-8");
 }
 
-function shuffleWithSeed<T>(arr: T[], seed: number): T[] {
-  const copy = [...arr];
-  const rng = seededRandom(seed);
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    const tmp = copy[i];
-    const other = copy[j];
-    if (tmp !== undefined && other !== undefined) {
-      copy[i] = other;
-      copy[j] = tmp;
-    }
-  }
-  return copy;
-}
+async function loadContainer(containerDir: string): Promise<SkillMeta> {
+  const name = containerDir.split("/").at(-1) ?? containerDir;
 
-async function fetchSkillList(
-  baseUrl: string,
-  secret: string,
-  orgId: string,
-  domain?: string,
-  limit = 200,
-): Promise<SkillListItem[]> {
-  const url = new URL(`${baseUrl}/skills`);
-  if (domain) url.searchParams.set("domain", domain);
-  url.searchParams.set("limit", String(limit));
+  const [provenanceYaml, rules, runbooks, tests, contractYaml] = await Promise.all([
+    readFile(join(containerDir, "provenance.yaml"), "utf-8").catch(() => ""),
+    readMarkdownFiles(join(containerDir, "rules")),
+    readMarkdownFiles(join(containerDir, "runbooks")),
+    readYamlFiles(join(containerDir, "tests")),
+    readContractYaml(join(containerDir, "tests")),
+  ]);
 
-  const res = await fetch(url.toString(), {
-    headers: {
-      "X-Organization-Id": orgId,
-      "X-Internal-Secret": secret,
-    },
-  });
-
-  if (!res.ok) {
-    throw new Error(`GET /skills failed: ${res.status} ${await res.text()}`);
-  }
-
-  const json = (await res.json()) as { skills?: SkillListItem[]; data?: SkillListItem[] };
-  return json.skills ?? json.data ?? [];
-}
-
-async function fetchSkillDetail(
-  baseUrl: string,
-  secret: string,
-  orgId: string,
-  skillId: string,
-): Promise<SkillDetail> {
-  const res = await fetch(`${baseUrl}/skills/${skillId}`, {
-    headers: {
-      "X-Organization-Id": orgId,
-      "X-Internal-Secret": secret,
-    },
-  });
-  if (!res.ok) {
-    throw new Error(`GET /skills/${skillId} failed: ${res.status}`);
-  }
-  return (await res.json()) as SkillDetail;
-}
-
-function toSkillMeta(detail: SkillDetail): SkillMeta {
   return {
-    id: detail.id,
-    name: detail.name,
-    domain: detail.domain,
-    subdomain: detail.subdomain,
-    sourceCode: detail.source_code ?? "",
-    metadata: {
-      provenanceYaml: detail.provenance?.yaml ?? "",
-      contracts: detail.contracts ?? "{}",
-      rules: detail.rules ?? [],
-    },
+    id: name,
+    name,
+    specContent: { rules, runbooks, tests, contractYaml, provenanceYaml },
   };
 }
 
-export async function loadTierASkills(count: number, seed = 20260422): Promise<SkillMeta[]> {
-  const baseUrl = process.env["SVC_SKILL_URL"] ?? "http://localhost:8787";
-  const secret = process.env["INTERNAL_API_SECRET"] ?? "";
-  const orgId = "LPON";
+/**
+ * spec-containers 디렉토리 하위 lpon-* 컨테이너를 모두 로드한다.
+ * specDir 기본값: .decode-x/spec-containers (프로젝트 루트 기준)
+ */
+export async function loadSpecContainers(specDir: string): Promise<SkillMeta[]> {
+  if (!existsSync(specDir)) {
+    throw new Error(`spec-container 디렉토리 없음: ${specDir}`);
+  }
+  const entries = await readdir(specDir, { withFileTypes: true });
+  const containerDirs = entries
+    .filter((e) => e.isDirectory())
+    .map((e) => join(specDir, e.name))
+    .sort();
 
-  const perSubdomain = Math.ceil(count / TIER_A_SUBDOMAINS.length);
-  const allItems: SkillListItem[] = [];
-
-  for (const subdomain of TIER_A_SUBDOMAINS) {
-    const items = await fetchSkillList(baseUrl, secret, orgId, subdomain, perSubdomain * 3);
-    const shuffled = shuffleWithSeed(items, seed + allItems.length);
-    allItems.push(...shuffled.slice(0, perSubdomain));
+  if (containerDirs.length === 0) {
+    throw new Error(`spec-container 없음: ${specDir}`);
   }
 
-  const selected = shuffleWithSeed(allItems, seed).slice(0, count);
-  return Promise.all(selected.map((s) => fetchSkillDetail(baseUrl, secret, orgId, s.id).then(toSkillMeta)));
-}
-
-export async function loadRandomSkills(
-  count: number,
-  domains = ["pension", "giftvoucher"],
-  seed = 20260422,
-): Promise<SkillMeta[]> {
-  const baseUrl = process.env["SVC_SKILL_URL"] ?? "http://localhost:8787";
-  const secret = process.env["INTERNAL_API_SECRET"] ?? "";
-  const orgId = "LPON";
-
-  const perDomain = Math.ceil(count / domains.length);
-  const allItems: SkillListItem[] = [];
-
-  for (const domain of domains) {
-    const items = await fetchSkillList(baseUrl, secret, orgId, domain, perDomain * 3);
-    const shuffled = shuffleWithSeed(items, seed + allItems.length);
-    allItems.push(...shuffled.slice(0, perDomain));
-  }
-
-  const selected = shuffleWithSeed(allItems, seed).slice(0, count);
-  return Promise.all(selected.map((s) => fetchSkillDetail(baseUrl, secret, orgId, s.id).then(toSkillMeta)));
+  return Promise.all(containerDirs.map(loadContainer));
 }

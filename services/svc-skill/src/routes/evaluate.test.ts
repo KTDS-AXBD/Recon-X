@@ -81,11 +81,17 @@ function mockR2Null() {
   return { get: vi.fn().mockResolvedValue(null) } as unknown as R2Bucket;
 }
 
-function stubLlmRouter(content: string, provider = "anthropic", model = "claude-sonnet") {
+function stubLlmRouter(content: string, _provider = "anthropic", model = "anthropic/claude-sonnet-4-5") {
+  // OpenRouter chat-completions response (TD-44 Phase 1)
   vi.stubGlobal("fetch", vi.fn().mockImplementation(() =>
     Promise.resolve(
       new Response(
-        JSON.stringify({ success: true, data: { content, provider, model } }),
+        JSON.stringify({
+          id: "chatcmpl-test",
+          model,
+          choices: [{ message: { role: "assistant", content }, finish_reason: "stop" }],
+          usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+        }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       ),
     ),
@@ -157,7 +163,7 @@ describe("handleEvaluateSkill", () => {
     expect(body.data["policyCode"]).toBe("POL-PENSION-WD-001");
     expect(body.data["confidence"]).toBe(0.92);
     expect(body.data["result"]).toContain("APPLICABLE");
-    expect(body.data["provider"]).toBe("anthropic");
+    expect(body.data["provider"]).toBe("openrouter"); // TD-44: single provider via CF AI Gateway
   });
 
   it("returns 400 when policyCode is not found in skill", async () => {
@@ -243,7 +249,7 @@ describe("handleEvaluateSkill", () => {
     const res = await handleEvaluateSkill(req, env, "sk-001", ctx);
     expect(res.status).toBe(200);
     const body = (await res.json()) as { data: Record<string, unknown> };
-    expect(body.data["provider"]).toBe("openai");
+    expect(body.data["provider"]).toBe("openrouter"); // TD-44: provider param is deprecated, all calls route via OpenRouter
   });
 
   it("supports benchmark mode with multiple providers", async () => {

@@ -27,9 +27,15 @@ function mockDb(options: {
 }
 
 function stubLlmSuccess(content: string) {
+  // OpenRouter chat-completions response (TD-44 Phase 1)
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue(
     new Response(
-      JSON.stringify({ success: true, data: { content, provider: "anthropic", model: "claude-haiku" } }),
+      JSON.stringify({
+        id: "chatcmpl-test",
+        model: "anthropic/claude-haiku-4-5",
+        choices: [{ message: { role: "assistant", content }, finish_reason: "stop" }],
+        usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+      }),
       { status: 200, headers: { "Content-Type": "application/json" } },
     ),
   ));

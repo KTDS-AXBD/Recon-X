@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { callLlm } from "../llm/caller.js";
 import { buildExtractionPrompt } from "../prompts/structure.js";
 import type { ChunkWithMeta } from "../queue/handler.js";
@@ -15,68 +15,64 @@ function toChunks(texts: string[]): ChunkWithMeta[] {
   }));
 }
 
+function mockEnv(): LlmClientEnv {
+  return {
+    CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway",
+    OPENROUTER_API_KEY: "test-openrouter-key",
+  };
+}
+
+function openRouterResponse(content: string, model = "anthropic/claude-sonnet-4-5"): Response {
+  return new Response(
+    JSON.stringify({
+      id: "chatcmpl-test",
+      model,
+      choices: [{ message: { role: "assistant", content }, finish_reason: "stop" }],
+      usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+    }),
+    { status: 200 },
+  );
+}
+
 // ── callLlm ──────────────────────────────────────────────────────
 
-describe("callLlm", () => {
+describe("callLlm (via OpenRouter @ CF AI Gateway)", () => {
   const originalFetch = globalThis.fetch;
-
-  function mockEnv(): LlmClientEnv {
-    return {
-      CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key",
-    };
-  }
 
   afterEach(() => {
     globalThis.fetch = originalFetch;
   });
 
   it("returns content on successful response", async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({ success: true, data: { content: "extraction-result" } }),
-        { status: 200 },
-      ),
-    );
+    globalThis.fetch = vi.fn().mockResolvedValue(openRouterResponse("extraction-result"));
     const result = await callLlm("prompt", "sonnet", mockEnv());
     expect(result).toBe("extraction-result");
   });
 
-  it("sends correct request body with sonnet tier", async () => {
-    const fetchFn = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({ success: true, data: { content: "ok" } }),
-        { status: 200 },
-      ),
-    );
+  it("sends OpenRouter chat-completions body with sonnet slug", async () => {
+    const fetchFn = vi.fn().mockResolvedValue(openRouterResponse("ok"));
     globalThis.fetch = fetchFn;
 
     await callLlm("test-prompt", "sonnet", mockEnv());
 
     expect(fetchFn).toHaveBeenCalledOnce();
     const [url, opts] = fetchFn.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("http://test-llm-router/complete");
+    expect(url).toBe("http://test-gateway");
     expect(opts.method).toBe("POST");
 
     const headers = opts.headers as Record<string, string>;
-    expect(headers["X-Internal-Secret"]).toBe("my-secret");
+    expect(headers["Authorization"]).toBe("Bearer test-openrouter-key");
     expect(headers["Content-Type"]).toBe("application/json");
+    expect(headers["X-Title"]).toBe("Decode-X/svc-extraction");
 
     const body = JSON.parse(opts.body as string) as Record<string, unknown>;
-    expect(body["tier"]).toBe("sonnet");
-    expect(body["callerService"]).toBe("svc-extraction");
-    expect(body["maxTokens"]).toBe(8192);
-    expect(body["messages"]).toEqual([
-      { role: "user", content: "test-prompt" },
-    ]);
+    expect(body["model"]).toBe("anthropic/claude-sonnet-4-5");
+    expect(body["max_tokens"]).toBe(8192);
+    expect(body["messages"]).toEqual([{ role: "user", content: "test-prompt" }]);
   });
 
-  it("sends haiku tier when specified", async () => {
-    const fetchFn = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({ success: true, data: { content: "ok" } }),
-        { status: 200 },
-      ),
-    );
+  it("sends haiku slug when specified", async () => {
+    const fetchFn = vi.fn().mockResolvedValue(openRouterResponse("ok", "anthropic/claude-haiku-4-5"));
     globalThis.fetch = fetchFn;
 
     await callLlm("prompt", "haiku", mockEnv());
@@ -84,59 +80,45 @@ describe("callLlm", () => {
     const body = JSON.parse(
       (fetchFn.mock.calls[0] as [string, RequestInit])[1].body as string,
     ) as Record<string, unknown>;
-    expect(body["tier"]).toBe("haiku");
+    expect(body["model"]).toBe("anthropic/claude-haiku-4-5");
   });
 
   it("throws on non-OK HTTP status", async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue(
-      new Response("Bad Request", { status: 400 }),
-    );
+    globalThis.fetch = vi.fn().mockResolvedValue(new Response("Bad Request", { status: 400 }));
 
-    await expect(
-      callLlm("prompt", "sonnet", mockEnv()),
-    ).rejects.toThrow("LLM Router error 400: Bad Request");
+    await expect(callLlm("prompt", "sonnet", mockEnv())).rejects.toThrow(
+      "LLM Router (OpenRouter) error 400: Bad Request",
+    );
   });
 
   it("throws on 500 server error", async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue(
-      new Response("Internal Server Error", { status: 500 }),
-    );
+    globalThis.fetch = vi.fn().mockResolvedValue(new Response("Internal Server Error", { status: 500 }));
 
-    await expect(
-      callLlm("prompt", "sonnet", mockEnv()),
-    ).rejects.toThrow("LLM Router error 500");
+    await expect(callLlm("prompt", "sonnet", mockEnv())).rejects.toThrow(
+      "LLM Router (OpenRouter) error 500",
+    );
   });
 
-  it("throws when API returns success: false", async () => {
+  it("throws when OpenRouter returns error body", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue(
       new Response(
-        JSON.stringify({
-          success: false,
-          error: { code: "RATE_LIMIT", message: "rate limited" },
-        }),
+        JSON.stringify({ error: { code: "RATE_LIMIT", message: "rate limited" } }),
         { status: 200 },
       ),
     );
 
-    await expect(
-      callLlm("prompt", "sonnet", mockEnv()),
-    ).rejects.toThrow("rate limited");
+    await expect(callLlm("prompt", "sonnet", mockEnv())).rejects.toThrow("rate limited");
   });
 
   it("throws descriptive error on quota exceeded", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue(
       new Response(
-        JSON.stringify({
-          success: false,
-          error: { code: "QUOTA_EXCEEDED", message: "quota exceeded" },
-        }),
+        JSON.stringify({ error: { code: "QUOTA_EXCEEDED", message: "quota exceeded" } }),
         { status: 200 },
       ),
     );
 
-    await expect(
-      callLlm("prompt", "sonnet", mockEnv()),
-    ).rejects.toThrow("quota exceeded");
+    await expect(callLlm("prompt", "sonnet", mockEnv())).rejects.toThrow("quota exceeded");
   });
 });
 

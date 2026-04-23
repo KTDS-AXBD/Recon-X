@@ -10,10 +10,13 @@ let mockLlmResponse: string;
 const originalFetch = globalThis.fetch;
 
 function mockFetchSuccess() {
+  // OpenRouter chat-completions response (TD-44 Phase 1)
   globalThis.fetch = vi.fn().mockImplementation(async () => {
     return Response.json({
-      success: true,
-      data: { content: mockLlmResponse, provider: "anthropic", model: "sonnet" },
+      id: "chatcmpl-test",
+      model: "anthropic/claude-sonnet-4-5",
+      choices: [{ message: { role: "assistant", content: mockLlmResponse }, finish_reason: "stop" }],
+      usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
     });
   });
 }
@@ -272,8 +275,10 @@ describe("llmSemanticMatch", () => {
       const resp = responses[callCount] ?? '{"found":false,"docRef":null,"isNamingDiff":false,"severity":"MEDIUM","reasoning":"fallback"}';
       callCount++;
       return Response.json({
-        success: true,
-        data: { content: resp, provider: "anthropic", model: "sonnet" },
+        id: "chatcmpl-test",
+        model: "anthropic/claude-sonnet-4-5",
+        choices: [{ message: { role: "assistant", content: resp }, finish_reason: "stop" }],
+        usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
       });
     });
 

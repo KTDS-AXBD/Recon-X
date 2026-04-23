@@ -22,8 +22,14 @@ function mockEnv(fetchFn: ReturnType<typeof vi.fn>): Env {
 }
 
 function llmResponse(results: Array<{ policyId: string; category: string; confidence: number }>): Response {
+  // OpenRouter chat-completions response (TD-44 Phase 1)
   return new Response(
-    JSON.stringify({ success: true, data: { content: JSON.stringify(results) } }),
+    JSON.stringify({
+      id: "chatcmpl-test",
+      model: "anthropic/claude-haiku-4-5",
+      choices: [{ message: { role: "assistant", content: JSON.stringify(results) }, finish_reason: "stop" }],
+      usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+    }),
     { status: 200 },
   );
 }
@@ -76,7 +82,12 @@ describe("classifyPolicies", () => {
       "\n```";
     const fetchFn = vi.fn().mockResolvedValue(
       new Response(
-        JSON.stringify({ success: true, data: { content: fencedContent } }),
+        JSON.stringify({
+          id: "chatcmpl-test",
+          model: "anthropic/claude-haiku-4-5",
+          choices: [{ message: { role: "assistant", content: fencedContent }, finish_reason: "stop" }],
+          usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+        }),
         { status: 200 },
       ),
     );
@@ -113,14 +124,14 @@ describe("classifyPolicies", () => {
     await classifyPolicies(mockEnv(fetchFn), makePolicies(1));
 
     const [url, opts] = fetchFn.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("http://test-llm-router/complete");
+    expect(url).toBe("http://test-gateway");
     const body = JSON.parse(opts.body as string) as Record<string, unknown>;
-    expect(body["tier"]).toBe("haiku");
-    expect(body["callerService"]).toBe("svc-skill");
+    expect(body["model"]).toBe("anthropic/claude-haiku-4-5");
     expect(body["temperature"]).toBe(0.1);
 
     const headers = opts.headers as Record<string, string>;
-    expect(headers["X-Internal-Secret"]).toBe("test-secret");
+    expect(headers["Authorization"]).toBe("Bearer test-openrouter-key");
+    expect(headers["X-Title"]).toBe("Decode-X/svc-skill");
   });
 
   it("throws on LLM Router HTTP error", async () => {
@@ -128,13 +139,13 @@ describe("classifyPolicies", () => {
 
     await expect(
       classifyPolicies(mockEnv(fetchFn), makePolicies(1)),
-    ).rejects.toThrow("LLM Router error 500");
+    ).rejects.toThrow("LLM Router (OpenRouter) error 500");
   });
 
   it("throws on LLM API failure response", async () => {
     const fetchFn = vi.fn().mockResolvedValue(
       new Response(
-        JSON.stringify({ success: false, error: { message: "rate limited" } }),
+        JSON.stringify({ error: { message: "rate limited", code: "rate_limited" } }),
         { status: 200 },
       ),
     );

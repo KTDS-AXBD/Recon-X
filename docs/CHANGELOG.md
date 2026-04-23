@@ -2,6 +2,16 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 238 계속 (2026-04-24)
+
+**TD-44 완전 해소 + TD-45 해소 (Master pane %9)**:
+- ✅ **Phase 2 사용자 본인 터미널 수행 완료**: (a) 4 서비스(svc-policy/skill/extraction/ontology) × prod+staging × 2 secret = **16/16 주입 성공** (OPENROUTER_API_KEY + CLOUDFLARE_AI_GATEWAY_URL 전체 URL), (b) `wrangler delete svc-llm-router --env production` 성공(경고 존재: svc-governance + recon-x-api Service Binding 참조 있었으나 Master 진단 결과 recon-x-api HTTP 503 이미 dead legacy + svc-governance는 Decode-X 7 Worker 범위 밖 externalized → 주 파이프라인 영향 없음. staging은 `[env.staging]` 섹션 부재로 별도 Worker 없음 확인), (c) 4 서비스 production 재배포 **4/4 성공** (Version ID 확보).
+- ✅ **TD-45 해소**: Phase 1 잔여 5 파일 fetch mock helper 재작성 — svc-extraction `llm.test.ts` 전체 재작성(OpenRouter chat-completions body/auth assertion) + `llm-matcher.test.ts` mockFetchSuccess/복합시나리오 2곳 + svc-skill `classifier.test.ts` llmResponse + markdown fence + URL/auth/error 4곳 + `evaluate.test.ts` stubLlmRouter + provider assertion 2곳 `anthropic/openai` → `openrouter` (TD-44 단일 provider 정책 반영) + `tacit-interview.test.ts` stubLlmSuccess. 전체 monorepo **12/12 tasks successful**, Test Files 총 114개 모두 PASS(svc-policy 12 + svc-extraction 21 + svc-skill 38 + svc-ontology 5 + svc-mcp-server 4 + svc-ingestion 19 + svc-queue-router 1 + api 6 + utils 5 + app-mockup 3).
+- 📊 **SPEC §8 업데이트**: TD-44 row ~~완전 해소~~ 마킹(Phase 1 + Phase 2 통합) + TD-45 row ~~해소~~ 마킹. §5 Last Updated 세션 238 계속 prepend.
+- 🟡 **legacy cleanup 이슈 분리**: svc-governance(HTTP 200, externalized) + recon-x-api(HTTP 503, dead) 2개 orphan worker는 Decode-X 운영 범위 밖 — 별도 이슈로 분리(현재 주 pipeline 영향 없음 확인).
+- 📌 **실 소요 ~40분**: 사용자 Phase 2 수행 5m + Master 진단 3m + TD-45 5 파일 재작성 20m + vitest 검증 + SPEC/CHANGELOG 10m.
+- 📌 **교훈**: (a) **Phase 2 사용자 수행 결과의 Service Binding 부수효과** — `wrangler delete` 경고에서 의존 Worker 자동 나열해줌. 의존 확인이 post-mortem보다 pre-check로 선행되면 더 안전. TD-44 성공했으나 svc-governance LLM 기능은 연결이 끊겼음(Decode-X 외부 운영). (b) **OpenRouter 단일 provider 통일로 benchmark 시나리오 의미 퇴화** — evaluate.test.ts의 multi-provider benchmark 검증은 provider "openrouter" 통일로 assertion 변경. 아키텍처 단순화 대가로 provider 비교 테스트 기능 상실은 수용 가능. (c) **sed 일괄 치환의 한계** — helper 함수 단일 패턴은 sed로 빠르게 처리 가능하나, URL/auth assertion이 embedded된 파일은 개별 Edit 필요. llm.test.ts는 전체 재작성이 더 깔끔. 다음 action: **세션 239에서 F356-B 전수 배치 Sprint 설계 착수** (API endpoint + D1 스키마 + 859 skill 전수 + KPI 집계, 1 Sprint ~8h).
+
 ### 세션 238 (2026-04-23)
 
 **TD-44 Phase 1 해소: svc-llm-router decommission + llm-client.ts OpenRouter via CF AI Gateway 전환 (Master pane %9)**:

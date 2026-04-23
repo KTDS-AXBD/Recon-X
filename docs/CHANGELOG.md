@@ -2,6 +2,27 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 237 계속 2 (2026-04-24)
+
+**B-02 F407 Phase 1~6 DONE + Phase 7~8 CF Access 공식 장애 대기 (Master pane %6)**:
+- ✅ **Phase 1 DNS 베이스라인**: dig 전수 — NS sunny+bill, 4 proxied subdomain(www/app/rx/api), CAA 10건, SPF(AWS SES). **신규 발견**: MX `mail.minu.best → feedback-smtp.us-*` + TXT `resend._domainkey` DKIM 공개키 = Resend 이메일 발송 연결(이전 apex MX 없음 판정은 subdomain 미포함 범위 한정). `api.minu.best /health` = `environment:production` 정상.
+- ✅ **Phase 2 zone 이관**: 사용자가 개인 계정(sinclair.seo@gmail.com)에서 `minu.best` delete → KTDS 계정(ktds.axbd@gmail.com) Add Site로 재등록. 새 NS pair **kayden.ns.cloudflare.com + liz.ns.cloudflare.com** 할당. SOA serial `2402340538 → 2402383747 → 2402384960` 증가로 계정 이관 확인.
+- ✅ **Phase 3 Registrar NS 전환**: RDAP 조회로 registrar 확정 — **Whois Corp** (whois.co.kr, IANA ID 100, 국내 등록, minu.best 2025-11-26~2028-11-26). 사용자 whois.co.kr 콘솔에서 NS를 bill/sunny → kayden/liz로 교체. 전파 확인: 시스템 resolver + 1.1.1.1 + 8.8.8.8 전수 kayden+liz 응답. downtime 0 관측(www/app/api HTTP 200 연속 유지).
+- ✅ **Phase 4 F406 코드 cherry-pick**: `afa061e` commit을 `afa642c`로 cherry-pick — apps/app-web/wrangler.toml(pages_build_output_dir → main + `[assets]` binding `not_found_handling="single-page-application"`) + apps/app-web/src/worker.ts 신규(`env.ASSETS.fetch(request)` SPA entry) + .github/workflows/deploy-pages.yml(pages deploy → `deploy --env production`). SPEC.md 충돌은 `git checkout --ours`로 세션 237 내용 보존. push 후 CI run **#24808297199 success** (Prepare ✅ + Build & Deploy production ✅). `app-web.ktds-axbd.workers.dev` HTTP 200 실측.
+- ✅ **Phase 5 Workers Custom Domain 연결**: KTDS Dashboard > Workers & Pages > app-web > Settings > 도메인 및 경로에 사용자 정의 도메인 **rx.minu.best** 등록 완료(스크린샷 확인). KTDS zone에 CNAME 자동 생성. cross-account 제약 없이 수락.
+- ✅ **Phase 6 Zero Trust 구성 확인**: Dashboard 스크린샷 3장 검증 — Applications 2건 존재, `Decode-X (Public)` hostname rx.minu.best + 4 path Bypass(welcome, assets/*, favicon, _routes.json, Include=1 Public Bypass), `Decode-X (Protected)` hostname rx.minu.best 전체 + Policy **KT DS Allowlist** (action=Allow, Include=12 gmail 개별 whitelist, 세션 236 메모리 "Allow @kt.com"과는 다른 이메일 개별 allow 구성).
+- 🚨 **Phase 7 차단: CF Access 공식 장애**: Cloudflare Status API 실시간 조회 결과 unresolved incident `"Intermittent 5xx errors for Cloudflare Access authentication requests"` — impact=**minor**, status=**identified**, 시작 **2026-04-23 21:05:59 UTC**, Components=Access. 현재 13/13 측정: Workers 서빙 정상(6/6 app path + 실 asset 번들 /assets/index-CQagB4bB.js 370KB + .css 75KB HTTP 200), Access 정책 미집행(`/` 200 대신 302, `/cdn-cgi/access/authorized` HTTP 400 — 이전 404→400은 Access middleware 일부 도달 신호, `/cdn-cgi/access/login` 404). Dashboard 상단에도 "Access 서비스에 지연이 있습니다" 공식 배너 노출.
+- 🔄 **해소 자동 감지 monitor 가동**: `/tmp/cf-access-recovery-monitor.sh` (PID 123540, nohup+disown), 2min 간격 × 60회(최대 2h), 성공 조건 = `/` 302 OR `/cdn-cgi/access/authorized` 302. 로그 `/tmp/cf-access-recovery-monitor.log`. 복구 감지 시 13-path 전수 재측정 자동 실행.
+- 📝 **부수 이슈 (B-02 영역 외)**: api/apex/minu.best HTTP 403 = zone 이관 후 개인 계정 Pages의 CF proxy IP(A 레코드) 기반 custom domain 연결 끊김. **Pages cross-account 지원은 CNAME 경유만 유효**(www는 CNAME `minu-web.pages.dev`로 정상 유지, app도 정상), A 레코드 경로(api/apex)는 계정 경계 불일치로 403. 개인 계정 Pages 프로젝트 > Custom Domains 재인증이 최소 조치. Resend MX는 DNS 자체로 계속 작동(외부 SMTP).
+- 📝 **문서 갱신**: `docs/01-plan/features/F407.plan.md` v2 (AIF-PLAN-039, 8 Phase + DNS 베이스라인 + 위험/롤백 matrix, commit `9f46a7f`), SPEC §8 B-02 row Phase 1~6 DONE + Phase 7~8 대기 상태 반영, `/tmp/cf-access-recovery-monitor.sh` 신규.
+- 📌 **실 소요 ~90min** (Phase 1 10m + Phase 2~3 30m + Phase 4 25m(cherry-pick 5m + CI 1m + 대기 2m) + Phase 5 5m + Phase 6 스크린샷 분석 15m + Phase 7 진단 + monitor 설정 15m).
+- 📌 **교훈 4종**:
+  (a) **Cloudflare 공식 장애는 외부에서 직접 확인 가능** — `https://www.cloudflarestatus.com/api/v2/incidents/unresolved.json`로 현재 진행 incident 자동 감지. Dashboard 상단 경고 배너와 정합. 장애 중에는 "설정 잘못됐나?" 의심으로 시간 낭비하지 말고 status API 선확인 원칙.
+  (b) **Pages cross-account 지원은 CNAME 한정** — 세션 236 "Pages는 cross-account 지원" 판정은 정확하지만 완결은 아님. A 레코드(proxy IP) 기반 custom domain은 same-account 필수. 이관 시 DNS 레코드 타입별 영향 재평가 필수.
+  (c) **RDAP 조회는 whois보다 현대적/정확** — whois는 서버별 rate-limit + 빈 응답 흔함, RDAP JSON은 IANA Registrar ID까지 구조화 반환. TLD별 RDAP endpoint(`rdap.centralnic.com/best/domain/{domain}`) 활용.
+  (d) **Cherry-pick SPEC 충돌은 `checkout --ours` 안전** — F406 cherry-pick 시 SPEC.md 충돌 발생, 현재 세션의 F407 내용이 더 최신이라 `--ours` 유지가 정답. F406 서술은 별도 section에 이미 보존됨.
+- 📌 **다음 action**: CF 장애 해소 시 monitor가 자동 감지 → 13/13 재측정 PASS 시 B-02 DONE 마킹 + Phase 8(cleanup + report) + session-end. 세션 종료 후에도 monitor는 nohup+disown으로 최대 2h 유지. 차기 세션 시작 시 로그 조회 + 상태 결정.
+
 ### 세션 238 계속 (2026-04-24)
 
 **TD-44 완전 해소 + TD-45 해소 (Master pane %9)**:

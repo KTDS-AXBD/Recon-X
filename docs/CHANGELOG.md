@@ -2,6 +2,20 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 238 계속 2 후반 (2026-04-24) — post-MERGE deploy + smoke + TD-47
+
+**Sprint 238 F356-B 배포 완결 + Production Smoke 실측 gap 발견 (Master pane %9)**:
+- ✅ **Queue 생성 + wrangler.toml fix + Deploy 재성공**: `ai-ready-queue` + `ai-ready-dlq` Master 즉시 생성(KTDS account `b6c06059`). 첫 deploy 실패 원인 = autopilot이 svc-skill wrangler.toml 최상단에 `[[queues.consumers]]`를 추가(svc-queue-router 주석으로 명문화된 "default env consumer 금지 — one-queue-one-consumer 제약" 위반). Commit `ffeb26b` top-level consumer 제거 후 Deploy Workers Services run `24870018659` SUCCESS(svc-skill + 6 service + D1 Migration).
+- 🧪 **Master 독립 Production smoke 실측**: (a) svc-skill /health 200 ✅, (b) GET /skills?organization_id=lpon total=8 ✅(Sprint 228 Tier-A 7 + 1), (c) GET /skills/{lpon-charge UUID=4591b69e-...} 200 ✅, (d) POST /skills/{id}/ai-ready/evaluate → **HTTP 404 "spec-container not found"** ❌. Phase 1(D1 skill 조회) 정상, Phase 2(R2 manifest 로드) 실패.
+- 📌 **TD-47 신규 등록 (F356-B production functional gap)**: `evaluator.loadSpecContent`가 R2 `spec-containers/{org}/{skillId}/manifest.json` 레이아웃 + 하위 파일 구조 기대, production R2는 Sprint 228 F397 packaging 결과 `skill-packages/{id}.skill.json` 번들만 존재(`wrangler r2 object list spec-containers/` = 0건). 해소 후보: (A) `scripts/migrate-spec-containers-to-r2.ts` 신설(7 Tier-A만 커버) / (B) `evaluator.loadSpecContent`를 `skill-packages/*.skill.json` 직접 파싱 전환. P1 + 차기 세션 처리(사용자 결정).
+- 📌 **feedback_autopilot_production_smoke 패턴 7회차 재현** (S215/S219/S220/S228/S230/S232/**S238**): Match 96% + CI 2/3 green + typecheck/lint/test 402/402 clean 조건 전부 충족에도 R2 경로 미스매치 자체 탐지 실패. Master 독립 smoke 3번째 호출에서 발견. `rules/development-workflow.md` 원칙 지속 유효.
+- 📌 **실 소요 ~55m (후반부)**: 점검 5m + PR merge 10m + Queue 생성 5m + wrangler.toml fix 10m + Deploy wait 10m + smoke 실측 15m.
+- 📌 **교훈 3종**:
+  (a) **autopilot이 인접 파일 주석 경고 위반** — svc-queue-router wrangler.toml 상단 `# NOTE: Default env must NOT have a queue consumer. ... one queue = one consumer` 명시적 경고가 있음에도 svc-skill에 동일 패턴 반복. post-merge wrangler-config-reviewer agent 자동 호출이 효과적인 예방 수단 후보.
+  (b) **R2 layout 가정과 실제 분리 감지 도구 부재** — 코드상 R2 경로(`spec-containers/{org}/{skillId}/manifest.json`)와 실제 R2 keyspace 간 일관성 검증이 단위 테스트 또는 integration 범위에 없음. `wrangler r2 object list --prefix` 자동화 검증 또는 integration test with 실 R2 바인딩 도입 후보.
+  (c) **Production smoke Phase별 단계 구분이 결과 해석 핵심** — `spec-container not found` 메시지가 Phase 1(skill 조회)인지 Phase 2(manifest 로드)인지 구분해서 보고하면 Code fix(B) vs Data migrate(A) 판단 즉시 가능. 에러 message에 phase prefix 추가 작업 후속 TODO.
+- 📌 **다음 action**: 차기 세션 TD-47 해소 → 해소 후 Master production smoke 재실측(Phase 2 PASS 도달 필수) → 사용자 터미널 전수 배치 실행(`batch-evaluate.ts --env production --model haiku --cross-check 100 --organization lpon`, 예상 $48/30~40분) → reports/ai-ready-full-{date}.{json,md} + D1 5,154 row → Sprint 238 DoD 전원 달성 선언.
+
 ### 세션 238 계속 2 (2026-04-24) — parallel to 세션 239
 
 **Sprint 238 ✅ MERGED PR #35 `fb5c8e2` — F356-B AI-Ready 채점기 Phase 2 (API + Queue + D1) (Master pane %9)**:

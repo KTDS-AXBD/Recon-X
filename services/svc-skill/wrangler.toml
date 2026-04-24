@@ -49,17 +49,13 @@ binding = "QUEUE_PIPELINE"
 queue = "ai-foundry-pipeline"
 
 # F356-B: AI-Ready evaluation queue
+# NOTE: Default env must NOT have queue consumer — same pattern as svc-queue-router.
+# One queue = one consumer in Cloudflare. Consumer is declared only in
+# [env.staging.queues.consumers] and [env.production.queues.consumers] blocks below.
+# Default env only declares producers (for local dev and type resolution).
 [[queues.producers]]
 binding = "AI_READY_QUEUE"
 queue = "ai-ready-queue"
-
-[[queues.consumers]]
-queue = "ai-ready-queue"
-max_batch_size = 1
-max_batch_timeout = 1
-max_concurrency = 10
-max_retries = 3
-dead_letter_queue = "ai-ready-dlq"
 
 [[queues.producers]]
 binding = "AI_READY_DLQ"

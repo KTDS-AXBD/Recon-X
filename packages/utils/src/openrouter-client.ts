@@ -5,6 +5,8 @@
  * Spec 문서 생성기 등 경량 LLM 호출용.
  */
 
+import { TIER_MODELS } from "@ai-foundry/types";
+
 export interface OpenRouterEnv {
   OPENROUTER_API_KEY: string;
 }
@@ -22,7 +24,7 @@ export interface OpenRouterResult {
   usage: { promptTokens: number; completionTokens: number; totalTokens: number };
 }
 
-const DEFAULT_MODEL = "anthropic/claude-haiku-4-5";
+const DEFAULT_MODEL = TIER_MODELS.haiku;
 
 /**
  * Call OpenRouter Chat Completions API. Returns the content string.

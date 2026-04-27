@@ -1,4 +1,12 @@
 import { z } from "zod";
+import {
+  MODEL_OPUS,
+  MODEL_SONNET,
+  MODEL_HAIKU,
+  OR_MODEL_OPUS,
+  OR_MODEL_SONNET,
+  OR_MODEL_HAIKU,
+} from "./model-defaults.js";
 
 export const LlmTierSchema = z.enum([
   "opus",     // Tier 1: complexity > 0.7 — Stage 3 policy inference (svc-policy only)
@@ -21,23 +29,24 @@ export type LlmProvider = z.infer<typeof LlmProviderSchema>;
 
 // OpenRouter model slugs per tier (TD-44, 2026-04-23: svc-llm-router → OpenRouter via CF Gateway)
 // tier "workers"는 OpenRouter chat-completions에서 미지원 → Workers AI 바인딩 직접 사용 권장
+// SSOT: model-defaults.ts (KT DS Foundry-X와 호환 유지)
 export const TIER_MODELS: Record<Exclude<LlmTier, "workers">, string> = {
-  opus: "anthropic/claude-opus-4-5",
-  sonnet: "anthropic/claude-sonnet-4-5",
-  haiku: "anthropic/claude-haiku-4-5",
+  opus: OR_MODEL_OPUS,
+  sonnet: OR_MODEL_SONNET,
+  haiku: OR_MODEL_HAIKU,
 };
 
 // Per-provider tier→model mapping (legacy; provider 분기 제거됨. 호환을 위해 유지)
 export const PROVIDER_TIER_MODELS: Record<LlmProvider, Partial<Record<LlmTier, string>>> = {
   openrouter: {
-    opus: "anthropic/claude-opus-4-5",
-    sonnet: "anthropic/claude-sonnet-4-5",
-    haiku: "anthropic/claude-haiku-4-5",
+    opus: OR_MODEL_OPUS,
+    sonnet: OR_MODEL_SONNET,
+    haiku: OR_MODEL_HAIKU,
   },
   anthropic: {
-    opus: "claude-opus-4-7",
-    sonnet: "claude-sonnet-4-6",
-    haiku: "claude-haiku-4-5-20251001",
+    opus: MODEL_OPUS,
+    sonnet: MODEL_SONNET,
+    haiku: `${MODEL_HAIKU}-20251001`, // dated variant for direct Anthropic API
     workers: "@cf/baai/bge-m3",
   },
   openai: {

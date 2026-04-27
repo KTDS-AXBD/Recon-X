@@ -73,7 +73,7 @@ matchRate: 98
   - **rubric 변경**: Java 코드 인용 → markdown rules/runbooks/tests 기반으로 평가 가이드 재작
 
 ### 2.4 Check (Gap Analysis)
-- **Analysis Document**: `docs/03-analysis/sprint-232.analysis.md` (AIF-ANLS-039)
+- **Analysis Document**: `docs/03-analysis/features/sprint-232.analysis.md` (AIF-ANLS-039)
 - **Match Rate**: 98% (Effective, WAIVED 제외) / 84% (Raw, WAIVED 포함)
 - **Design Match Breakdown**:
   - §2 Schema: 100% (1 WAIVED: skillId UUID → container name, 정당화)
@@ -143,7 +143,7 @@ matchRate: 98
   - Match Rate: 98%
   - 다음 phase: F356-B 승격 권고
 
-- ✅ `docs/03-analysis/sprint-232.analysis.md` (189줄)
+- ✅ `docs/03-analysis/features/sprint-232.analysis.md` (189줄)
   - 설계 vs 구현 완전 비교
   - WAIVED/ADDED/CHANGED 정당화
   - Match Rate 산출 (84% Raw → 98% Effective)
@@ -408,7 +408,7 @@ Design 문서의 아래 섹션 갱신 권장 (다음 Sprint 전):
 ### 8.3 Analysis & Documentation
 - Plan: `docs/01-plan/features/F356-A.plan.md` (AIF-PLAN-038)
 - Design: `docs/02-design/features/F356-A.design.md` (AIF-DSGN-038)
-- Analysis: `docs/03-analysis/sprint-232.analysis.md` (AIF-ANLS-039)
+- Analysis: `docs/03-analysis/features/sprint-232.analysis.md` (AIF-ANLS-039)
 - Report: `docs/04-report/features/sprint-232-F402.report.md` (본 파일, AIF-RPRT-039)
 
 ### 8.4 Commands

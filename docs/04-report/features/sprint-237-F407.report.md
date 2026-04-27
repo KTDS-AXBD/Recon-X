@@ -434,7 +434,25 @@ async fetch(request, env) {
 
 ### 9.6 후속
 
-- [ ] CI/CD 배포 완료 확인 (`gh run 24870450859` success)
-- [ ] Production curl 재측정 (login dispatcher 404 → SPA fallback 미흡수 확인)
-- [ ] welcome 페이지 시크릿 창 수동 버튼 클릭 테스트
+- [x] CI/CD 배포 완료 확인 (`gh run 24870450859` success, 2026-04-24)
+- [x] Production curl 재측정 (login dispatcher 404 → SPA fallback 미흡수 확인, `cf-version` 헤더 존재로 검증)
+- [ ] welcome 페이지 시크릿 창 수동 버튼 클릭 테스트 (CF Access 복구 후)
 - [ ] Phase 7 Gate 재측정 시 Phase 9 fix 포함 상태로 평가
+
+### 9.7 복구 시 동시 완결 트리거 (세션 240 기록)
+
+CF Access login dispatcher 복구가 감지되면 단일 `/ax:session-end` 실행으로 **Phase 9 + Phase 7 Gate**를 동시에 완결 처리한다.
+
+**복구 감지 조건 (택1):**
+- `curl -sI "https://rx.minu.best/cdn-cgi/access/login/rx.minu.best?redirect_url=..."` → **302** 응답 (현재 404 지속, 2026-04-27 09:41 KST 재확인)
+- 시크릿 창에서 `/welcome` → "Google로 로그인" 클릭 → IdP 화면 진입
+- CF Status incident `resolved` 상태 변경
+
+**동시 처리 항목:**
+1. **Phase 7 Gate**: 13경로 HTTP 스모크 (§3.3.4 matrix), login flow 수동 검증, `www/app/api.minu.best` 부수 서비스 200 확인
+2. **Phase 9 검증**: welcome → 버튼 클릭 → 302 → Google IdP → callback → `/` 진입 → JWT 쿠키 저장 → `AuthContext.loadUser()` 정상 → 페이지 렌더 확인
+3. **SPEC §8 B-02**: ✅ DONE 마킹 + 근거 링크 (§4.2 + §9.4)
+4. **Report 승격**: `1.0-draft` → `1.0`, `status: Partial` → `Complete`, `matchRate` 산출 입력
+5. **MEMORY.md**: B-02 active task 제거, `project_f407_recovery_trigger.md` 메모 삭제 (1회성 트리거)
+
+**근거**: Phase 9 hotfix는 commit `756d71c`로 이미 deployed → Access 복구 시 자동 정상 동작. Phase 7 Gate도 동일 외부 트리거 의존이므로 별도 세션 분리 시 SPEC §8 + 리포트 1.0 승격이 2회 반복되어 비효율. 단일 세션 일괄 완결이 거버넌스/효율 양면에서 최적.

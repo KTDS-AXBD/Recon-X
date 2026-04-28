@@ -60,7 +60,7 @@ After (fixed):
 | rx.minu.best/api/auth/me → JSON | 🚀 배포 후 확인 | INTERNAL_API_SECRET 미설정 시 502 |
 | rx.minu.best/api/skills → JSON | 🚀 배포 후 확인 | |
 | rx.minu.best/api/skills/org/Miraeasset/spec/business → JSON | 🚀 배포 후 확인 | |
-| poc-spec.spec.ts skip 0건 | ✅ 코드 완료 | 배포 후 E2E 실행 필요 |
+| poc-spec.spec.ts skip 0건 | ⏭️ post-merge smoke로 이관 | chicken-and-egg: pre-merge CI는 구버전 Worker 서빙 |
 | AIF-REQ-037 DONE 전환 | ✅ (본 리포트에서) | |
 | Plan/Design/Report 작성 | ✅ | AIF-PLAN-042 / AIF-DSGN-042 / AIF-RPT-042 |
 

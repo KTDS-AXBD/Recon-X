@@ -14,7 +14,7 @@ function mockFetchSuccess() {
   globalThis.fetch = vi.fn().mockImplementation(async () => {
     return Response.json({
       id: "chatcmpl-test",
-      model: "anthropic/claude-sonnet-4-5",
+      model: "anthropic/claude-sonnet-4-6",
       choices: [{ message: { role: "assistant", content: mockLlmResponse }, finish_reason: "stop" }],
       usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
     });
@@ -276,7 +276,7 @@ describe("llmSemanticMatch", () => {
       callCount++;
       return Response.json({
         id: "chatcmpl-test",
-        model: "anthropic/claude-sonnet-4-5",
+        model: "anthropic/claude-sonnet-4-6",
         choices: [{ message: { role: "assistant", content: resp }, finish_reason: "stop" }],
         usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
       });

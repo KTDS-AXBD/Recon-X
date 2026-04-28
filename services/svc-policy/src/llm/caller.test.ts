@@ -13,7 +13,7 @@ function openRouterResponse(content: string): Response {
   return new Response(
     JSON.stringify({
       id: "chatcmpl-test",
-      model: "anthropic/claude-opus-4-5",
+      model: "anthropic/claude-opus-4-7",
       choices: [{ message: { role: "assistant", content }, finish_reason: "stop" }],
       usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
     }),
@@ -49,7 +49,7 @@ describe("callOpusLlm (via OpenRouter @ CF AI Gateway)", () => {
     expect(headers["Content-Type"]).toBe("application/json");
 
     const body = JSON.parse(opts.body as string) as Record<string, unknown>;
-    expect(body["model"]).toBe("anthropic/claude-opus-4-5");
+    expect(body["model"]).toBe("anthropic/claude-opus-4-7");
     const messages = body["messages"] as Array<{ role: string; content: string }>;
     expect(messages[0]).toEqual({ role: "system", content: "sys-prompt" });
     expect(messages[1]).toEqual({ role: "user", content: "user-msg" });

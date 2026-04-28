@@ -23,7 +23,7 @@ function llmSuccess(content: string): Response {
   return new Response(
     JSON.stringify({
       id: "chatcmpl-test",
-      model: "anthropic/claude-opus-4-5",
+      model: "anthropic/claude-opus-4-7",
       choices: [{ message: { role: "assistant", content }, finish_reason: "stop" }],
       usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
     }),

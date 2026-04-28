@@ -22,7 +22,7 @@ function mockEnv(): LlmClientEnv {
   };
 }
 
-function openRouterResponse(content: string, model = "anthropic/claude-sonnet-4-5"): Response {
+function openRouterResponse(content: string, model = "anthropic/claude-sonnet-4-6"): Response {
   return new Response(
     JSON.stringify({
       id: "chatcmpl-test",
@@ -66,7 +66,7 @@ describe("callLlm (via OpenRouter @ CF AI Gateway)", () => {
     expect(headers["X-Title"]).toBe("Decode-X/svc-extraction");
 
     const body = JSON.parse(opts.body as string) as Record<string, unknown>;
-    expect(body["model"]).toBe("anthropic/claude-sonnet-4-5");
+    expect(body["model"]).toBe("anthropic/claude-sonnet-4-6");
     expect(body["max_tokens"]).toBe(8192);
     expect(body["messages"]).toEqual([{ role: "user", content: "test-prompt" }]);
   });

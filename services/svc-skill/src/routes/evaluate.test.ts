@@ -81,7 +81,7 @@ function mockR2Null() {
   return { get: vi.fn().mockResolvedValue(null) } as unknown as R2Bucket;
 }
 
-function stubLlmRouter(content: string, _provider = "anthropic", model = "anthropic/claude-sonnet-4-5") {
+function stubLlmRouter(content: string, _provider = "anthropic", model = "anthropic/claude-sonnet-4-6") {
   // OpenRouter chat-completions response (TD-44 Phase 1)
   vi.stubGlobal("fetch", vi.fn().mockImplementation(() =>
     Promise.resolve(

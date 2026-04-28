@@ -22,7 +22,7 @@ function makeLlmResponse(dimensions: Record<string, number>): Response {
   return new Response(
     JSON.stringify({
       id: "chatcmpl-test",
-      model: "anthropic/claude-sonnet-4-5",
+      model: "anthropic/claude-sonnet-4-6",
       choices: [
         { message: { role: "assistant", content: JSON.stringify(dimensions) }, finish_reason: "stop" },
       ],

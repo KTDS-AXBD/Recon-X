@@ -21,7 +21,7 @@ export default defineConfig({
 
   projects: [
     // Setup: login once, save storageState
-    { name: "setup", testMatch: /auth\.setup\.ts/, use: { storageState: undefined } },
+    { name: "setup", testMatch: /auth\.setup\.ts/, use: { storageState: { cookies: [], origins: [] } } },
 
     // All tests depend on setup
     {

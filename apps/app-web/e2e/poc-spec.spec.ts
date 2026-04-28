@@ -26,12 +26,10 @@ test.describe("PoC & Spec pages (Sprint 209~210)", () => {
     await expect(page.getByRole("tab", { name: /Quality/ })).toBeVisible();
   });
 
-  // TODO(AIF-REQ-037): production rx.minu.best `/api/*` proxy returns HTML 200
-  // (SPA fallback) for /api/skills/org/:org/spec/:type → fetchOrgSpec throws JSON
-  // parse error → SpecTabContent renders null. 또한 page는 empty-state UI 없이
-  // `!doc`이면 null만 반환하므로 (생성하기 CTA 부재 — 커밋 0b60a30 자동 로딩 전환
-  // 시 누락) 정상 path "Spec 요약"만 검증해도 production API 미동작 시 fail.
-  // production proxy 수정 후 skip 해제하고 "Spec 요약" 검증으로 전환.
+  // TODO(AIF-REQ-037): proxy fix is in src/worker.ts but takes effect only after
+  // production deploy (post-merge). Pre-merge CI uses rx.minu.best which still runs
+  // the old Worker (SPA fallback) → fetchOrgSpec receives HTML → fail.
+  // Verification moved to post-merge production smoke (AIF-RPT-042 §DoD).
   test.skip("Org Spec — Business 탭 로딩", async ({ page }) => {
     await page.goto("/org-spec");
     await page.getByRole("tab", { name: /Business/ }).click();

@@ -6,7 +6,7 @@ function openRouterResponse(content: string): Response {
   return new Response(
     JSON.stringify({
       id: "chatcmpl-test",
-      model: "anthropic/claude-sonnet-4-5",
+      model: "anthropic/claude-sonnet-4-6",
       choices: [{ message: { role: "assistant", content }, finish_reason: "stop" }],
       usage: { prompt_tokens: 8, completion_tokens: 4, total_tokens: 12 },
     }),
@@ -46,7 +46,7 @@ describe("callSonnetLlm (via OpenRouter @ CF AI Gateway)", () => {
     expect(headers["X-Title"]).toBe("Decode-X/svc-skill");
 
     const body = JSON.parse(opts.body as string) as Record<string, unknown>;
-    expect(body["model"]).toBe("anthropic/claude-sonnet-4-5");
+    expect(body["model"]).toBe("anthropic/claude-sonnet-4-6");
     expect(body["max_tokens"]).toBe(2048);
     const messages = body["messages"] as Array<{ role: string; content: string }>;
     expect(messages[0]).toEqual({ role: "system", content: "sys" });

@@ -2,6 +2,23 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 242 (2026-04-28~29) — Sprint 242 F409 MERGED: AIF-REQ-037 production `/api/*` 프록시 미동작 해소
+
+**Master pane %15 — `/ax:e2e-audit run` 실행 → 잠재 갭 발견 → 별도 Sprint 242 격리 → 자동 PDCA 완결**:
+
+- 🔍 **Discovery (Master, 2026-04-28)**: `/ax:e2e-audit run` 중 `e2e/poc-spec.spec.ts:29 Org Spec Business 탭 로딩` 실패 추적. `fetchOrgSpec` → `rx.minu.best/api/skills/org/Miraeasset/spec/business?llm=false` 요청이 **HTTP 200 + Content-Type: text/html + cf-cache-status: HIT** (SPA index.html) 반환. Gateway Worker 직접 호출은 401 application/json 정상 → CF Pages → Workers 레이어 갭. 재현 범위: `/api/auth/me`, `/api/skills`, `/api/test-undefined-route-{ts}` 모두 동일 증상 (모든 `/api/*` 영향). **rules/development-workflow.md "Autopilot Production Smoke Test" 7회차 재현**.
+- 📋 **Plan/Register (Master)**: AIF-REQ-037 `Bug/Infra/P1` 등록(SPEC §7) + Sprint 242 F409 신규 등록(SPEC §6) — 4 Step 진단 가설(Pages Functions 빌드/배포, `_routes.json`, 캐시 룰, TDZ 잠재 버그). 사전 정리: `apps/app-web/playwright.config.ts` `webServer.env.VITE_DEMO_MODE: "1"` 주입(`b26419b`, ci.yml env 블록과 동일 값) + `e2e/poc-spec.spec.ts:29` test.skip + AIF-REQ-037 link(`b531716`). 3 commit push 후 WT 생성.
+- 🔧 **Sprint 242 (WT, autopilot Sonnet 4.6)**: bashrc `sprint 242` 정상 동작(WT + tmux + signal CREATED + task-daemon + watch-daemon). 단 `.sprint-context`가 sprint-238 정보로 잔존(bashrc 갱신 누락) → master 명시 갱신. autopilot이 코드 직접 검증 후 **모든 가설 reject + 5번째 답 발견**: F406 Workers 이전 시 `functions/api/[[path]].ts` dead code화 + `src/worker.ts`에 `/api/*` 라우팅 누락. `src/worker.ts` 65줄 추가로 Gateway 프록시 분기 구현(`45c99df`). Match Rate **98%**.
+- 🔁 **3차 CI iteration**: 1차 push CI 2 fail (E2E setup ENOENT + LLM caller test stale model). 2차 fix(`5f519a0`) — `playwright.config.ts` setup `storageState: { cookies: [], origins: [] }` 명시 + svc-policy/llm/caller.test.ts 모델 버전 bump. 2차 CI 다시 fail (poc-spec staging chicken-and-egg + svc-extraction llm.test.ts 누락). 3차 fix(`7104698`) — poc-spec.spec.ts:33 test.skip 복원 + post-merge production smoke로 이관 + 모델 SSOT cross-file sweep 5 파일(claude-sonnet-4-5/4-6, claude-opus-4-5/4-7) + signal STATUS=FAILED→IN_PROGRESS reset. 3차 CI **all green**.
+- ✅ **MERGED**: Sprint pane STATUS=DONE 갱신 → task-daemon 자동 squash merge + WT/branch cleanup. PR #36 `2026-04-28T02:02:32Z` (`ae0dfd4 fix(f409): proxy /api/* to Gateway Worker — AIF-REQ-037`). deploy-services.yml + deploy-pages.yml 모두 SUCCESS.
+- 🔍 **Post-merge Production Smoke (Master, 2026-04-29)**: `/api/{auth/me, skills, skills/org/Miraeasset/spec/business}` 모두 **HTTP 302 → CF Access 로그인 리다이렉트**(`location: axconsulting.cloudflareaccess.com/cdn-cgi/access/login/rx.minu.best`, `www-authenticate: Cloudflare-Access`). 이전 HTML 200 SPA fallback 패턴 완전 해소 — 라우팅 매칭 + CF Access 인증 게이트 정상 동작 확인. 인증된 세션 JSON 응답은 UI 통한 사용자 검증 예정.
+- 📌 **잔여**: (a) INTERNAL_API_SECRET secret 상태 확인(인증 통과 후 Gateway 401 발생 시 재설정), (b) `e2e/poc-spec.spec.ts:33` skip 해제(별도 Sprint, post-deploy verified 후), (c) Sprint 241 (e) 종속 자동 해소 — Sprint 242 선행 필수가 충족됨.
+- 📌 **교훈 4종**:
+  (a) **pre-merge CI에서 production smoke 의존 테스트는 false fail 트랩** — Sprint 242 본 fix가 production deploy 후에야 staging API 갱신되는데, PR gate가 그걸 막아 chicken-and-egg. SPEC DoD 분류에 "pre-merge / post-merge" 라벨링이 필요.
+  (b) **모델 SSOT cross-file sync** — 단일 리포 내 여러 test fixture가 동일 모델 string literal을 박아둠. `model-defaults.ts` SSOT import로 리팩토링 후보 (메모리 "모델 SSOT 양쪽 동기 의무"의 단일 리포 sub-pattern).
+  (c) **bashrc `sprint()` 함수의 SPEC parsing 갭** — `Sprint 242` 헤더 매칭에 다른 Sprint의 F-item을 끌어와 `.sprint-context` F_ITEMS=F356-B로 잘못 작성. autopilot이 mismatch 감지 후 사용자 확인을 요청한 안전망이 작동했지만, 정확 매칭 로직 개선 후보.
+  (d) **autopilot의 가설 reject 능력 입증** — SPEC에 작성된 4가지 root cause 후보 모두 틀렸지만 코드를 직접 읽어 5번째 답(F406 마이그레이션 누락) 도달. 가설 명시 → autopilot이 코드 검증 후 모두 reject + 신규 발견 → context 자가 갱신 흐름이 작동.
+
 ### 세션 240 (2026-04-28) — daily-check + selfcheck + todo plan: Sprint 239~241 등록 + 정비
 
 **Master pane %21 — plan-only 세션 (코드 변경 0). Pipeline 등록 + 메타 정비 5축**:

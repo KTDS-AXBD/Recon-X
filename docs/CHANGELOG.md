@@ -74,6 +74,22 @@
   (c) **CF Access dispatcher URL은 client가 만들 수 없음**: `kid` + `meta` 둘 다 CF edge가 동적으로 생성(짧은 nbf/exp + 서명). client가 직접 호출 시도는 무조건 실패. 정석은 protected path navigate → middleware 위임.
 - 💰 **6일 손실 비용**: ~6h(점검+monitor PID 123540 60 iter+가설 검증). 즉시 진단 가능했던 단순 curl 1회를 4일간 미실행한 게 핵심 시간 낭비.
 
+#### 세션 241 후반 — B-02 fix 후 양파 까기 (B-03 ✅ DONE + B-04/B-05 신규 등록)
+
+- 🧅 **B-03 즉시 노출 + 해소**: B-02 fix로 welcome 페이지 정상 렌더 → AuthContext mount → 콘솔 `GET http://localhost:8705/auth/me net::ERR_CONNECTION_REFUSED`. **원인**: AuthContext.tsx:10이 `VITE_API_BASE_URL` (다른 14개 api 모듈은 `VITE_API_BASE`) + `http://localhost:8705` fallback (다른 모듈은 `/api` relative). production build에 dev URL이 leak. **Fix**: 다른 모듈 패턴으로 통일 (commit `4cc8b12`, 5 line). 새 deploy 후 콘솔 에러 → `GET https://rx.minu.best/api/auth/me 401` (URL 정상화 ✅, 다음 layer 노출).
+- 🧅 **B-04 발견 (Gateway routing 누락)**: 401이 잠시 후 **404로 변화**. Master grep으로 `/auth/me` handler가 svc-skill (`src/index.ts:85` + `src/routes/auth.ts`)에 정상 구현되어 있음을 확인. 그러나 `recon-x-api` Gateway에 `/api/auth/me → svc-skill` routing 누락. worker.ts F409 `/api/*` proxy는 정상 작동, Gateway 측 routing table 미갱신이 원인. **차기 세션 fix 후보**: (1) worker.ts에 /api/auth/me 전용 분기 + SVC_SKILL Service Binding 추가 (권장, 30분), (2) Gateway 코드 위치 조사 + 직접 routing 추가.
+- 🧅 **B-05 발견 (CF Access callback "Invalid login session")**: 사용자 검증에서 Google OAuth 로그인 성공 → callback URL (`axconsulting.cloudflareaccess.com/cdn-cgi/access/callback`) 도달 → `<title>Error ・ Cloudflare Access</title>` + `<h1>Invalid login session.</h1>` 응답. Application AUD `e6843d85...`는 dispatcher와 middleware에서 정상 lookup되나 callback handler에서만 reject. **원인 후보**: state JWT nbf/exp 검증 fail / state 형식 mismatch / Application metadata 손상. **Master 직접 검증**으로 callback 도메인의 4xx 응답 본문 확인. **차기 세션**: B-04 fix 후 OAuth chain 끝까지 재시도 → B-05 재현 여부 확인.
+- 📊 **Master 자동 검증 결과 (3축 모두 PASS)**:
+  - `GET https://rx.minu.best/welcome` → HTTP 200 ✅
+  - `GET https://rx.minu.best/` → HTTP 302 + dispatcher Location with valid kid+meta ✅
+  - dispatcher follow → `https://accounts.google.com/v3/signin/identifier?...` HTTP 200 ✅ (Google OAuth client/redirect_uri valid)
+- 📝 **SPEC §8 갱신**: B-02 ✅ DONE + B-03 ✅ DONE + B-04 신규 + B-05 신규 (B-04와 B-05는 별개 문제로 분리 추적).
+- 📌 **메타 교훈 3종 (양파 까기 패턴)**:
+  (M1) **외층 버그가 내층 버그를 가리는 패턴 (Onion bug)**: B-02 fix 전에는 welcome 페이지 자체가 dispatcher 404로 막혀서 AuthContext가 mount 안 됨 → B-03/B-04가 보이지 않음. B-02 fix 즉시 다음 layer 노출.
+  (M2) **세션 시간 vs 진단 깊이 trade-off**: 단일 layer 진단을 깊게 파면 B-02 같은 6일 가설을 즉시 반박 가능. 그러나 B-03/B-04/B-05 같은 cascading 문제는 한 세션에 모두 처리하면 너무 길어짐 (이번 세션 ~3.5h). **권장**: 외층 fix → smoke 검증 → 다음 layer 등록 → 분리 (이번 세션이 정확히 이 패턴).
+  (M3) **HTTP status code 변화의 정보**: 401 → 404 변화는 단순 "여전히 fail"이 아니라 "다른 layer 진입"의 신호. 매번 status 변화를 기록하면 layer 분리 빠름.
+- 💰 **세션 241 총 비용**: ~3.5h (B-02 진단 1h + B-02 fix 30min + B-03 fix 15min + B-04/B-05 발견 30min + 문서 갱신 30min + Q&A 사용자 응답 대기). 산출: B-02 close + B-03 close + B-04/B-05 신규 등록 + commits `30baa5c`, `4cc8b12`.
+
 ### 세션 242 (2026-04-28~29) — Sprint 242 F409 MERGED: AIF-REQ-037 production `/api/*` 프록시 미동작 해소
 
 **Master pane %15 — `/ax:e2e-audit run` 실행 → 잠재 갭 발견 → 별도 Sprint 242 격리 → 자동 PDCA 완결**:

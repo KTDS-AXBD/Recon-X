@@ -11,6 +11,7 @@
 - 🔁 **Rotation 결정**: Cloudflare secret API는 write-only(값 read 불가). `~/.bashrc`/runtime env/`.env`/`.dev.vars` 모두 INTERNAL_API_SECRET 보관 없음 → **기존 Gateway 값 회수 불가** → app-web만 추측한 값 설정 시 mismatch로 401 지속. AskUserQuestion 결과 "9개 Worker 신규 값 동시 교체 (Recommended)" 선택.
 - ✅ **실 적용 (9 worker)**: `openssl rand -hex 32` 64자 신규 값 생성 → `printf '%s' | wrangler secret put INTERNAL_API_SECRET --env production`로 svc-{ingestion,extraction,policy,ontology,skill,queue-router,mcp-server} + app-web + recon-x-api 일괄 적용. **버그 1건**: app-web 단계 cd 누락으로 svc-mcp-server에 중복 적용됨 → 정합성 verify에서 즉시 발견 → 정확한 cwd로 재적용.
 - 🛡️ **정합성 검증**: 9 Worker 전수 `wrangler secret list --env production` 재실행 → 모두 INTERNAL_API_SECRET PRESENT 확인. 임시 secret 파일(`/tmp/.new-internal-api-secret-$$`) shred 삭제 + shell `NEW_SECRET` env unset.
+- 🩺 **기능 실측 (보너스, post-push)**: Gateway `https://recon-x-api.ktds-axbd.workers.dev/health` 응답 → overall=degraded, **10/11 services healthy** (ingestion/ontology/analytics/skill/notification/mcp/policy/extraction/governance/security 모두 9~85ms). 유일한 unreachable=`llm` (pre-existing, svc-llm-router 분리 후 inline 호출 전환 영향). Gateway가 각 service에 `X-Internal-Secret`으로 새 값을 전달 → 200 응답 = **rotation 후 inter-service auth 정상 동작 실측 확인**. CF Access 인증 세션 없이도 백엔드 secret 흐름 검증 가능 (Gateway는 `/health` aggregator 경로에서 INTERNAL_API_SECRET 사용).
 - 📌 **잔여**:
   - 사용자 브라우저 production 로그인 → `/api/auth/me` 200 JSON 응답 실측 (final smoke, CF Access 인증 세션 필요)
   - `.dev.vars` 7개 SVC 로컬 dev 동기 (선택, 로컬 inter-service 호출 테스트 시 필요)

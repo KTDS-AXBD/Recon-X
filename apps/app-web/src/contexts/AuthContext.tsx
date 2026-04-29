@@ -7,7 +7,11 @@ import { getCfJwtFromCookie } from "@/lib/auth";
 import { setAuthUser } from "@/api/auth-store";
 import type { CfUser } from "@/api/auth-store";
 
-const API_BASE = import.meta.env['VITE_API_BASE_URL'] ?? "http://localhost:8705";
+// Match the convention used by every other api module (api/analysis.ts, api/skill.ts, ...).
+// "/api" is relative — production hits worker.ts /api/* → Gateway proxy (F409),
+// dev hits vite.config.ts /api/* proxy. The previous "VITE_API_BASE_URL" + localhost
+// fallback was inconsistent and leaked dev URL into production builds (B-03).
+const API_BASE = (import.meta.env['VITE_API_BASE'] as string | undefined) ?? "/api";
 // CI E2E demo mode — never set in production builds
 const VITE_DEMO_MODE = (import.meta.env as Record<string, string>)['VITE_DEMO_MODE'];
 const DEMO_STORAGE_KEY = '__demo_user__';

@@ -33,6 +33,7 @@
 
 ## 최근 세션 흐름 (v0.7 마일스톤 기준)
 
+- 세션 244 (2026-04-29): Sprint 242 잔여 (a) ✅ DONE — INTERNAL_API_SECRET 9 Worker rotation. app-web Pages→Worker 이전(F406) 시 secret migration 누락 발견 + 9개 일괄 신규 값 교체. F-item 후보 1건(worker.ts:33 silent fail → explicit throw) 등록 보류.
 - 세션 196~198: API Gateway(Hono+JWT) + 11 Service Bindings + 하이브리드 라우팅 완성
 - 세션 199: 도메인 `ai-foundry.minu.best` → `rx.minu.best` 리브랜딩 (AIF-REQ-032)
 - 세션 200: Pilot Core 종료 선언 (REQ 24/32 DONE, E2E 43/43, 0 flaky), AIF-REQ-028 소급 DONE, v0.7.0 태그 + 회고

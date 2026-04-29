@@ -2,6 +2,26 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 244 (2026-04-29) — Sprint 242 잔여 (a) ✅ DONE: INTERNAL_API_SECRET 9개 Worker 일괄 rotation
+
+**Master pane %25 — secret 점검 → 누락 1건 발견 → rotation 결정 → 실 적용 + 검증**:
+
+- 🔍 **Discovery**: 사용자 요청 "INTERNAL_API_SECRET secret 상태 확인 (Sprint 242 잔여 (a))". 8 Worker(7 SVC + app-web) + 1 Gateway(recon-x-api) 대상 `wrangler secret list` 점검. 결과: 7 SVC + Gateway는 PRESENT, **app-web Worker production은 secret 목록이 빈 `[]`** — F406 Pages → Worker 이전 시점에 secret migration 누락 확인.
+- 📐 **근본 원인 분석**: `apps/app-web/src/worker.ts:33` `if (env.INTERNAL_API_SECRET) { headers.set("X-Internal-Secret", env.INTERNAL_API_SECRET); }` 조건부 분기가 **silent fail** 발생원. secret 부재 시 헤더 미주입 → Gateway에서 Cloudflare Workers 401만 발생. CF Access 인증 게이트 통과 후에만 도달하는 사각지대라 Sprint 242 production smoke(인증 미경유 302 redirect 검증)에서 미감지.
+- 🔁 **Rotation 결정**: Cloudflare secret API는 write-only(값 read 불가). `~/.bashrc`/runtime env/`.env`/`.dev.vars` 모두 INTERNAL_API_SECRET 보관 없음 → **기존 Gateway 값 회수 불가** → app-web만 추측한 값 설정 시 mismatch로 401 지속. AskUserQuestion 결과 "9개 Worker 신규 값 동시 교체 (Recommended)" 선택.
+- ✅ **실 적용 (9 worker)**: `openssl rand -hex 32` 64자 신규 값 생성 → `printf '%s' | wrangler secret put INTERNAL_API_SECRET --env production`로 svc-{ingestion,extraction,policy,ontology,skill,queue-router,mcp-server} + app-web + recon-x-api 일괄 적용. **버그 1건**: app-web 단계 cd 누락으로 svc-mcp-server에 중복 적용됨 → 정합성 verify에서 즉시 발견 → 정확한 cwd로 재적용.
+- 🛡️ **정합성 검증**: 9 Worker 전수 `wrangler secret list --env production` 재실행 → 모두 INTERNAL_API_SECRET PRESENT 확인. 임시 secret 파일(`/tmp/.new-internal-api-secret-$$`) shred 삭제 + shell `NEW_SECRET` env unset.
+- 📌 **잔여**:
+  - 사용자 브라우저 production 로그인 → `/api/auth/me` 200 JSON 응답 실측 (final smoke, CF Access 인증 세션 필요)
+  - `.dev.vars` 7개 SVC 로컬 dev 동기 (선택, 로컬 inter-service 호출 테스트 시 필요)
+  - Sprint 242 잔여 (b): `e2e/poc-spec.spec.ts:33` skip 해제 — Sprint 243 F410으로 별도 완결됨
+  - Sprint 242 잔여 (c): Sprint 241 F403 (e) 종속 — Sprint 242 선행 충족, 후속 Sprint 가능
+- 📌 **F-item 후보 (등록 보류)**: `apps/app-web/src/worker.ts:33` 조건부 분기 → explicit fail (secret 부재 시 즉시 503 throw + log) 전환. deploy smoke 시점에 secret 누락을 즉시 감지 가능. Match Rate 100% deploy + production silent fail 사각지대 보강 패턴.
+- 📌 **교훈 3종**:
+  (a) **Wrangler `--env <name>` cwd 의존성** — `wrangler secret put --env production`은 wrangler.toml `[env.production]` 섹션을 읽으므로 **현재 디렉토리 기반**. 자동화 스크립트에서 매 호출마다 명시 cd 또는 `--config <path>` 사용 필수. cd 누락 시 직전 cwd의 wrangler.toml에 silent로 적용됨 (wrangler가 worker 이름만 stdout 출력해서 사람이 검출 가능).
+  (b) **Silent fail vs explicit error** — `if (env.SECRET)` 가드는 환경 헬스에 대한 **잘못된 추상화**. secret이 의무인 경로에서는 부재 = 즉시 throw가 표준. deploy smoke에서 explicit fail이 감지되면 Master CHANGELOG가 아닌 GitHub Actions에서 차단 가능.
+  (c) **Secret SSOT 부재의 비용** — Cloudflare secret은 read 불가 + 로컬 ~/.bashrc 정리됨 → 한 곳 누락 발견 시 **9개 일괄 rotation 외 옵션 없음**. Password manager 또는 1Password CLI로 SSOT 보관이 안전. 다음 rotation 시 신규 값 SSOT 등록 결정 필요.
+
 ### 세션 243 (2026-04-29) — Sprint 243 F410 ✅ MERGED: AIF-REQ-038 poc-spec skip 해제 + task-daemon idle silence 패턴 rules 승격
 
 **Master pane %25 — SPEC 등록 → autopilot Discovery → 1차 CI fail 진단/처방 → 자동 merge → task-daemon 패턴 정착**:
@@ -19,7 +39,7 @@
   - ax-config 리포 commit `3182c5b` push
 - 📌 **병행 흡수** (다른 pane 작업, master에 push됨): `30baa5c` fix(b-02) welcome.tsx dispatcher URL + worker.ts /cdn-cgi/* handler 제거, `4cc8b12` fix(b-03) AuthContext API_BASE — localhost fallback 제거 + /api 표준화. 본 pane은 SPEC/Sprint 243/rules 작업에만 집중.
 - 📌 **잔여 후속**:
-  - INTERNAL_API_SECRET secret 상태 확인 (Sprint 242 잔여 (a) — 인증 통과 후 Gateway 401 발생 시 재설정)
+  - ~~INTERNAL_API_SECRET secret 상태 확인 (Sprint 242 잔여 (a))~~ ✅ DONE 세션 244 (9 worker rotation)
   - Sprint 241 F403 잔여 (a~d) 진행 — Phase 9 신규 라우트 E2E 4 spec
   - bashrc `sprint()` SPEC parsing 갭 (S242 (c) → S243 2회차) 정규식 보강 후보
 - 📌 **교훈**:
@@ -63,7 +83,7 @@
 - 🔁 **3차 CI iteration**: 1차 push CI 2 fail (E2E setup ENOENT + LLM caller test stale model). 2차 fix(`5f519a0`) — `playwright.config.ts` setup `storageState: { cookies: [], origins: [] }` 명시 + svc-policy/llm/caller.test.ts 모델 버전 bump. 2차 CI 다시 fail (poc-spec staging chicken-and-egg + svc-extraction llm.test.ts 누락). 3차 fix(`7104698`) — poc-spec.spec.ts:33 test.skip 복원 + post-merge production smoke로 이관 + 모델 SSOT cross-file sweep 5 파일(claude-sonnet-4-5/4-6, claude-opus-4-5/4-7) + signal STATUS=FAILED→IN_PROGRESS reset. 3차 CI **all green**.
 - ✅ **MERGED**: Sprint pane STATUS=DONE 갱신 → task-daemon 자동 squash merge + WT/branch cleanup. PR #36 `2026-04-28T02:02:32Z` (`ae0dfd4 fix(f409): proxy /api/* to Gateway Worker — AIF-REQ-037`). deploy-services.yml + deploy-pages.yml 모두 SUCCESS.
 - 🔍 **Post-merge Production Smoke (Master, 2026-04-29)**: `/api/{auth/me, skills, skills/org/Miraeasset/spec/business}` 모두 **HTTP 302 → CF Access 로그인 리다이렉트**(`location: axconsulting.cloudflareaccess.com/cdn-cgi/access/login/rx.minu.best`, `www-authenticate: Cloudflare-Access`). 이전 HTML 200 SPA fallback 패턴 완전 해소 — 라우팅 매칭 + CF Access 인증 게이트 정상 동작 확인. 인증된 세션 JSON 응답은 UI 통한 사용자 검증 예정.
-- 📌 **잔여**: (a) INTERNAL_API_SECRET secret 상태 확인(인증 통과 후 Gateway 401 발생 시 재설정), (b) `e2e/poc-spec.spec.ts:33` skip 해제(별도 Sprint, post-deploy verified 후), (c) Sprint 241 (e) 종속 자동 해소 — Sprint 242 선행 필수가 충족됨.
+- 📌 **잔여**: ~~(a) INTERNAL_API_SECRET secret 상태 확인~~ ✅ DONE 세션 244 (9 worker rotation), ~~(b) `e2e/poc-spec.spec.ts:33` skip 해제~~ ✅ DONE Sprint 243 F410, (c) Sprint 241 (e) 종속 자동 해소 — Sprint 242 선행 필수가 충족됨.
 - 📌 **교훈 4종**:
   (a) **pre-merge CI에서 production smoke 의존 테스트는 false fail 트랩** — Sprint 242 본 fix가 production deploy 후에야 staging API 갱신되는데, PR gate가 그걸 막아 chicken-and-egg. SPEC DoD 분류에 "pre-merge / post-merge" 라벨링이 필요.
   (b) **모델 SSOT cross-file sync** — 단일 리포 내 여러 test fixture가 동일 모델 string literal을 박아둠. `model-defaults.ts` SSOT import로 리팩토링 후보 (메모리 "모델 SSOT 양쪽 동기 의무"의 단일 리포 sub-pattern).

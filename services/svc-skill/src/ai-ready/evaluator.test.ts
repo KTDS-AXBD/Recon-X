@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { runSixCriteriaEvaluation, loadSpecContent } from "./evaluator.js";
+import { runSixCriteriaEvaluation, loadSpecContent, loadSpecContentLegacy } from "./evaluator.js";
 import type { Env } from "../env.js";
 
 // ── Mock factories ──────────────────────────────────────────────────
@@ -151,8 +151,44 @@ describe("runSixCriteriaEvaluation", () => {
   });
 });
 
+const validSkillPackage = {
+  $schema: "https://ai-foundry.ktds.com/schemas/skill/v1",
+  skillId: "4591b69e-4e6a-4ac8-8261-ce177c35f994",
+  metadata: {
+    domain: "LPON",
+    subdomain: "charge",
+    language: "ko",
+    version: "1.0.0",
+    createdAt: "2026-04-01T00:00:00.000Z",
+    updatedAt: "2026-04-01T00:00:00.000Z",
+    author: "decode-x",
+    tags: [],
+  },
+  policies: [
+    {
+      code: "POL-LPON-CHARGE-001",
+      title: "충전 잔액 검증",
+      condition: "충전 요청 시 출금계좌 잔액 확인",
+      criteria: "출금계좌 잔액 ≥ 충전 요청 금액",
+      outcome: "출금 처리를 진행한다",
+      source: { documentId: "doc-001", excerpt: "잔액 부족 시 출금 실패 에러 반환" },
+      trust: { level: "reviewed", score: 0.9 },
+      tags: [],
+    },
+  ],
+  trust: { level: "reviewed", score: 0.9 },
+  ontologyRef: { graphId: "g-001", termUris: [] },
+  provenance: {
+    sourceDocumentIds: ["doc-001"],
+    organizationId: "LPON",
+    extractedAt: "2026-04-01T00:00:00.000Z",
+    pipeline: { stages: ["ingestion", "extraction"], models: { extraction: "claude-sonnet" } },
+  },
+  adapters: {},
+};
+
 describe("loadSpecContent", () => {
-  it("returns null when manifest not found in R2", async () => {
+  it("returns null when skill package not found in R2", async () => {
     const env = {
       R2_SKILL_PACKAGES: {
         get: vi.fn().mockResolvedValue(null),
@@ -160,6 +196,42 @@ describe("loadSpecContent", () => {
     } as unknown as Env;
 
     const result = await loadSpecContent(env, "missing-skill", "LPON");
+    expect(result).toBeNull();
+  });
+
+  it("parses skill-packages/{id}.skill.json and returns SpecContent", async () => {
+    const env = {
+      R2_SKILL_PACKAGES: {
+        get: vi.fn().mockImplementation((key: string) => {
+          if (key === "skill-packages/4591b69e-4e6a-4ac8-8261-ce177c35f994.skill.json") {
+            return Promise.resolve({ text: () => Promise.resolve(JSON.stringify(validSkillPackage)) });
+          }
+          return Promise.resolve(null);
+        }),
+      },
+    } as unknown as Env;
+
+    const result = await loadSpecContent(
+      env,
+      "4591b69e-4e6a-4ac8-8261-ce177c35f994",
+      "LPON",
+    );
+    expect(result).not.toBeNull();
+    expect(result?.skillName).toBe("lpon-charge");
+    expect(result?.specContent.originalRules).toHaveLength(1);
+    expect(result?.specContent.runbooks).toHaveLength(1);
+  });
+});
+
+describe("loadSpecContentLegacy", () => {
+  it("returns null when manifest not found in R2", async () => {
+    const env = {
+      R2_SKILL_PACKAGES: {
+        get: vi.fn().mockResolvedValue(null),
+      },
+    } as unknown as Env;
+
+    const result = await loadSpecContentLegacy(env, "missing-skill", "LPON");
     expect(result).toBeNull();
   });
 });

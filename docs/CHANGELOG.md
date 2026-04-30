@@ -2,6 +2,35 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 245 (2026-04-30) — Production 401 mismatch 재발 → 9-worker 재rotation ✅
+
+**Master pane — `/executive/evidence` 사용자 보고 → layer 분리 진단 → 재rotation + verify**:
+
+- 🔍 **Discovery**: 사용자 보고 "https://rx.minu.best/executive/evidence — 분석 리포트/조직 종합 Spec 데이터 미표시". 콘솔 로그 `GET /api/analysis/triage?organizationId=LPON 401`, `GET /api/documents?limit=2000 401`. CF Access 인증 통과 상태에서 발생.
+- 🧅 **Onion 패턴 layer 분리** (rules/development-workflow.md "Source-First Fix Order" 적용):
+  - Test 1: `curl https://rx.minu.best/api/analysis/triage` → 302 to CF Access (curl 미인증, Worker 미도달)
+  - Test 2: `curl https://recon-x-api.ktds-axbd.workers.dev/api/analysis/triage` (직접) → **401** + `{"error":{"message":"Missing Bearer token or internal secret"}}` → Gateway authMiddleware 단계 거부 확정
+  - 결론: app-web → Gateway 사이 X-Internal-Secret mismatch 가설 (session-244 rotation 직후 동일 패턴 재발)
+- 📐 **Session-244 verify 갭 발견**: `packages/api/src/routes/health.ts:13` `fetcher.fetch(new Request("https://internal/health"))` — **/health 핸들러는 X-Internal-Secret을 downstream에 전달하지 않음**. Service Binding direct fetch는 fetcher의 도달 여부만 확인할 뿐 cross-service auth secret 매칭은 검증하지 못함. Session-244의 "10/11 services healthy via Gateway" 판정은 **secret 일치 검증으로는 false positive**. 실제 cross-service auth 동작은 INTERNAL_API_SECRET을 사용하는 일반 API path에서만 검증 가능.
+- 🔁 **9-worker 재rotation (사용자 결정 via AskUserQuestion)**: `openssl rand -hex 32` 64자 신규 값 생성. 정확한 cwd + correct flag:
+  - **Gateway**: `cd packages/api && wrangler secret put INTERNAL_API_SECRET` (top-level, NO --env). 이유: `[env.production].name = "recon-x-api-production"`이지만 해당 worker 미존재 → `--env production` 사용 시 처리 동작 불명확. 실제 트래픽 받는 top-level `recon-x-api`가 명확한 target.
+  - **7 SVC** (ingestion/extraction/skill/ontology/policy/mcp-server/queue-router): `cd services/svc-X && wrangler secret put INTERNAL_API_SECRET` (top-level, NO --env). `[env.production]`은 vars/d1만 override, name unchanged.
+  - **app-web**: `cd apps/app-web && wrangler secret put INTERNAL_API_SECRET --env production`. `[env.production].name = "app-web"` 동일 이름이지만 deploy도 `--env production` 사용하므로 일관성.
+- ✅ **검증 (Direct curl, secret 일치 확인)**:
+  - Test 1 (no header): 401 ✅ (auth 정상 거부)
+  - Test 2 (`X-Internal-Secret: <new>` + `/api/analysis/triage`): **200** + 실제 triage 데이터 (LPON 조직 documents 다건, processCount/ruleCount/triageRank 정상 응답) ✅
+  - Test 3 (same secret + `/api/documents?limit=10`): **200** ✅
+  - 결론: Gateway 인증 통과 + Gateway → svc-extraction/svc-ingestion 인증 통과 = **9-worker 모두 동기 매칭 확정**
+- ✅ **사용자 브라우저 verify**: rx.minu.best/executive/evidence 새로고침 → 데이터 표시 확인 (사용자 보고 "200/데이터 표시 확인").
+- 🧠 **신규 교훈**:
+  (a) **/health은 cross-service auth verify에 부적합** — health 핸들러는 단순 fetcher.fetch이며 X-Internal-Secret 미전파. cross-service auth 검증은 일반 API path 호출 (e.g., Gateway에서 SVC로 RBAC 헤더 forward하는 경로)로만 가능. session-244의 verify 패턴 재사용 금지.
+  (b) **Cloudflare wrangler env 처리 모호성** — `[env.production]` block이 있는데 해당 worker가 미존재할 때 `wrangler secret put --env production` 동작이 명시 문서화 안 됨. **Top-level (no --env)이 가장 안전한 default**, env override 필요 시 wrangler.toml에 정확한 name + 실 deploy 확인 후 사용. session-244의 "9 worker 일괄 --env production" 패턴은 Gateway에 대해 잘못된 target 가능성 있었음.
+  (c) **Layer separation by single curl** — 이번에도 1 curl (rx.minu.best vs *.workers.dev 직접)로 Worker 도달 여부 분리 → CF Access 미통과(302) vs Gateway authMiddleware 거부(401)를 즉시 구분. rules/memory-lifecycle "Layer separation by curl" 패턴 재확인.
+- 📌 **SSOT (실제 적용)**: 사용자 1차 선택 "1Password CLI" 설치는 완료(`/usr/bin/op` 2.34.0)되었으나 Secret Key 미보유로 `op account add` 미완. **fallback 결정 → GH repo secret**(`KTDS-AXBD/Decode-X`)에 INTERNAL_API_SECRET 저장 완료(`2026-04-30T05:39:01Z`). 다음 rotation 시 `gh secret list`로 존재 확인 가능(write-only API라 값 read는 불가). 추후 1Password 계정 정리 후 마이그레이션 후보. 임시 파일 `/tmp/.new-internal-api-secret-2007775` shred 완료 + 환경변수 unset 완료.
+- ⚠️ **보안 노트**: 사용자 대화 로그에 `demian1015!`(Master Password 의심값) 노출 — 즉시 변경 권장.
+
+---
+
 ### 세션 244 후속 (2026-04-30) — B-02/03/04/05 Onion bug 4-layer 종결 ✅
 
 **Master pane %21 — B-04 Service Binding 우회 fix + B-05 자연 해소 검증**:

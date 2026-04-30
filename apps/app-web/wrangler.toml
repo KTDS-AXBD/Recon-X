@@ -11,6 +11,13 @@ not_found_handling = "single-page-application"
 ENVIRONMENT = "development"
 DEPLOY_ENV = "staging"
 
+# B-04: Service Binding for /api/auth/me direct routing (Gateway bypass).
+# Gateway routing table에 /auth/me 매핑 부재로 404 발생 → worker.ts에서
+# /api/auth/me만 svc-skill로 직접 invocation.
+[[services]]
+binding = "SVC_SKILL"
+service = "svc-skill"
+
 # ---------------------------------------------------------------------------
 # Preview environment (wrangler-action deploy --env preview)
 # ---------------------------------------------------------------------------
@@ -23,6 +30,10 @@ directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
 
+[[env.preview.services]]
+binding = "SVC_SKILL"
+service = "svc-skill-staging"
+
 # ---------------------------------------------------------------------------
 # Production environment (wrangler-action deploy --env production)
 # ---------------------------------------------------------------------------
@@ -34,3 +45,7 @@ vars = { ENVIRONMENT = "production", DEPLOY_ENV = "production" }
 directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
+
+[[env.production.services]]
+binding = "SVC_SKILL"
+service = "svc-skill-production"

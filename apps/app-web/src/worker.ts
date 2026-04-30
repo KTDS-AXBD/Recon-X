@@ -6,6 +6,7 @@
 
 export interface Env {
   ASSETS: Fetcher;
+  SVC_SKILL: Fetcher;
   ENVIRONMENT: string;
   DEPLOY_ENV: string;
   INTERNAL_API_SECRET: string;
@@ -24,6 +25,44 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Organization-Id, X-User-Id, X-User-Role",
   "Access-Control-Max-Age": "86400",
 };
+
+// B-04: Direct routing to svc-skill for /api/auth/me (Gateway bypass).
+// Gateway routing table missing /auth/me → 404. Service Binding skips Gateway
+// entirely, with /api prefix stripped to match svc-skill's /auth/me handler.
+async function proxyToSvcSkill(request: Request, url: URL, env: Env): Promise<Response> {
+  const targetUrl = new URL(url);
+  targetUrl.pathname = url.pathname.replace(/^\/api/, "");
+
+  const headers = new Headers(request.headers);
+  if (env.INTERNAL_API_SECRET) {
+    headers.set("X-Internal-Secret", env.INTERNAL_API_SECRET);
+  }
+  headers.delete("host");
+
+  const proxyRequest = new Request(targetUrl.toString(), {
+    method: request.method,
+    headers,
+    body: request.body,
+    // @ts-expect-error — duplex required for streaming body but not in all type defs
+    duplex: request.body ? "half" : undefined,
+  });
+
+  try {
+    const response = await env.SVC_SKILL.fetch(proxyRequest);
+    const corsHeaders = new Headers(response.headers);
+    for (const [k, v] of Object.entries(CORS_HEADERS)) corsHeaders.set(k, v);
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: corsHeaders,
+    });
+  } catch (err) {
+    return Response.json(
+      { success: false, error: "SVC_SKILL binding error", detail: err instanceof Error ? err.message : String(err) },
+      { status: 502 },
+    );
+  }
+}
 
 async function proxyToGateway(request: Request, url: URL, env: Env): Promise<Response> {
   const gatewayBase = getGatewayUrl(env.DEPLOY_ENV ?? "production");
@@ -72,6 +111,12 @@ export default {
     // /cdn-cgi/* is reserved by Cloudflare edge — handled before Worker runs.
     // No bypass handler needed (verified: GET https://rx.minu.best/ returns
     // 302 to dispatcher with proper kid+meta, confirming middleware works).
+
+    // B-04: /api/auth/me is missing from Gateway routing table — invoke svc-skill
+    // directly via Service Binding. Must come before the generic /api/* branch.
+    if (url.pathname === "/api/auth/me") {
+      return proxyToSvcSkill(request, url, env);
+    }
 
     // F409: proxy /api/* to Gateway Worker. Pages Functions (functions/api/[[path]].ts)
     // are inactive in Workers mode — this handler replaces that dead code path.

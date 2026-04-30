@@ -2,6 +2,21 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 244 후속 (2026-04-30) — B-02/03/04/05 Onion bug 4-layer 종결 ✅
+
+**Master pane %21 — B-04 Service Binding 우회 fix + B-05 자연 해소 검증**:
+
+- 🎯 **B-04 fix (`ada5898`)**: `apps/app-web/wrangler.toml` SVC_SKILL Service Binding × 3 env (`svc-skill` / `-staging` / `-production`) + `apps/app-web/src/worker.ts` `Env.SVC_SKILL: Fetcher` + `proxyToSvcSkill()` + `/api/auth/me` 분기 (generic `/api/*` Gateway proxy 직전, first-match 보장). `/api` prefix strip 후 svc-skill `/auth/me` handler 직접 호출, X-Internal-Secret forward(방어적). SPEC §8 B-04 권장 (1) 적용.
+- 🛡️ **사용자 design 결정 (AskUserQuestion 2종)**: (1) 분기 scope = `/api/auth/me` 단일 (narrow, SPEC 권장), (2) X-Internal-Secret forward 추가 (방어적, 향후 확장 대비).
+- 🚀 **Deploy + smoke**: Deploy app-web run `25140210640` SUCCESS (Workers production). Master `curl -I https://rx.minu.best/api/auth/me` → **HTTP 302** + Location=`https://axconsulting.cloudflareaccess.com/cdn-cgi/access/login/...?kid=e6843d85...&meta=...&redirect_url=%2Fapi%2Fauth%2Fme` (이전 404 해소 ✅). 비교군 `/api/skills`도 동일 302 → CF Access middleware가 hostname-level 게이팅하는 정상 동작.
+- ✅ **B-05 자연 해소 검증 (사용자 브라우저 OAuth chain)**: 1차 로그인 ✅ → 로그아웃 ✅("You successfully logged out") → 재로그인 시도 → Google OAuth 이동 → callback 정상 통과 → 로그인 성공. **"Invalid login session" 본문 미발생**. 사용자 인지 콘솔 "에러"는 CF Access 호스팅 페이지 자체의 **CSP SVG 로고 차단**(`Refused to load 'data:image/svg+xml,...' violates "default-src https: 'unsafe-inline'", img-src not explicitly set`) — Cloudflare 호스팅 영역 + cosmetic(로고만 안 보임) → 무시 (사용자 결정).
+- 🧅 **Onion bug pattern 4-layer 완전 종결** (세션 241~244): B-02 (dispatcher URL 형식, welcome.tsx) → B-03 (AuthContext API_BASE localhost fallback leak) → B-04 (Gateway routing 누락) → B-05 (callback 일시 이슈, 재현 안 됨). 6일 손실(B-02 misdiagnosis "CF 인프라 장애")이 단일 세션 양파 까기로 완결.
+- 🧠 **신규 feedback memory**: `feedback_service_binding_gateway_bypass.md` — Gateway routing 갭은 외부 리포 PR 없이 worker.ts + Service Binding으로 단일 endpoint 우회 가능 (30분 작업). narrow scope + X-Internal-Secret forward + first-match 위치 + path strip 패턴.
+- 📌 **차기 세션 우선**: TD-47 (P1, F356-B Phase 2 전수 배치 차단) — evaluator R2 layout vs production 미스매치, 2안 (A. migrate-spec-containers.ts, B. evaluator를 skill-packages/.skill.json 직접 파싱) 중 결정 필요. 원 가설 B-05 재발 시 재오픈.
+- 🔁 **커밋 3건**: `ada5898` fix(b-04) + `4772da8` docs B-04 DONE + `9cc4a48` docs B-05 DONE 자연 해소.
+
+---
+
 ### 세션 244 (2026-04-29) — Sprint 242 잔여 (a) ✅ DONE: INTERNAL_API_SECRET 9개 Worker 일괄 rotation
 
 **Master pane %25 — secret 점검 → 누락 1건 발견 → rotation 결정 → 실 적용 + 검증**:

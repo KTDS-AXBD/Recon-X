@@ -12,10 +12,12 @@ import {
   AIReadyEvaluationSchema,
   type AIReadyEvaluation,
   type AIReadyCriterion,
+  SkillPackageSchema,
 } from "@ai-foundry/types";
 import { callLlmRouterWithMeta, createLogger } from "@ai-foundry/utils";
 import type { LlmTier } from "@ai-foundry/types";
 import { buildPrompt, buildSystemPrompt, type SpecContent } from "./prompts.js";
+import { skillPackageToSpecContent } from "./spec-content-adapter.js";
 import type { Env } from "../env.js";
 
 const logger = createLogger("svc-skill:ai-ready:evaluator");
@@ -51,7 +53,31 @@ async function loadTextFromR2(env: Env, key: string): Promise<string> {
   return obj.text();
 }
 
+// Primary path — reads skill-packages/{skillId}.skill.json (production R2 레이아웃)
 export async function loadSpecContent(
+  env: Env,
+  skillId: string,
+  _organizationId: string,
+): Promise<{ specContent: SpecContent; skillName: string } | null> {
+  const r2Key = `skill-packages/${skillId}.skill.json`;
+  const obj = await env.R2_SKILL_PACKAGES.get(r2Key);
+  if (!obj) {
+    logger.warn("skill package not found in R2", { skillId, r2Key });
+    return null;
+  }
+
+  const raw = JSON.parse(await obj.text()) as unknown;
+  const parsed = SkillPackageSchema.safeParse(raw);
+  if (!parsed.success) {
+    logger.warn("invalid skill package schema", { skillId, issues: parsed.error.issues });
+    return null;
+  }
+
+  return skillPackageToSpecContent(parsed.data);
+}
+
+// Legacy path — reads spec-containers/{org}/{skillId}/manifest.json (Tier-A 7건 디버깅용)
+export async function loadSpecContentLegacy(
   env: Env,
   skillId: string,
   organizationId: string,

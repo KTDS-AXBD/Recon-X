@@ -123,6 +123,42 @@ describe("POST /skills/:id/ai-ready/evaluate", () => {
       },
     });
 
+    const skillPackageContent = JSON.stringify({
+      $schema: "https://ai-foundry.ktds.com/schemas/skill/v1",
+      skillId: "00000000-0000-0000-0000-000000000001",
+      metadata: {
+        domain: "LPON",
+        subdomain: "charge",
+        language: "ko",
+        version: "1.0.0",
+        createdAt: "2026-04-01T00:00:00.000Z",
+        updatedAt: "2026-04-01T00:00:00.000Z",
+        author: "decode-x",
+        tags: [],
+      },
+      policies: [
+        {
+          code: "POL-LPON-CHARGE-001",
+          title: "충전 잔액 검증",
+          condition: "충전 요청 시 출금계좌 잔액 확인",
+          criteria: "출금계좌 잔액 ≥ 충전 요청 금액",
+          outcome: "출금 처리를 진행한다",
+          source: { documentId: "doc-001", excerpt: "잔액 부족 시 출금 실패 에러 반환" },
+          trust: { level: "reviewed", score: 0.9 },
+          tags: [],
+        },
+      ],
+      trust: { level: "reviewed", score: 0.9 },
+      ontologyRef: { graphId: "g-001", termUris: [] },
+      provenance: {
+        sourceDocumentIds: ["doc-001"],
+        organizationId: "LPON",
+        extractedAt: "2026-04-01T00:00:00.000Z",
+        pipeline: { stages: ["ingestion", "extraction"], models: { extraction: "claude-sonnet" } },
+      },
+      adapters: {},
+    });
+
     let prepareCount = 0;
     const env = makeEnv({
       DB_SKILL: {
@@ -143,10 +179,10 @@ describe("POST /skills/:id/ai-ready/evaluate", () => {
       } as unknown as D1Database,
       R2_SKILL_PACKAGES: {
         get: vi.fn().mockImplementation((key: string) => {
-          if (key.includes("manifest")) {
-            return Promise.resolve({ text: () => Promise.resolve(manifestContent) });
+          if (key.startsWith("skill-packages/")) {
+            return Promise.resolve({ text: () => Promise.resolve(skillPackageContent) });
           }
-          return Promise.resolve({ text: () => Promise.resolve("# content") });
+          return Promise.resolve(null);
         }),
       } as unknown as R2Bucket,
     });

@@ -42,3 +42,18 @@ test.describe("Error handling", () => {
     await expect(page.getByText("페이지를 찾을 수 없습니다")).toBeVisible();
   });
 });
+
+// F403 (F382/F387): /admin 대시보드 + AuditLog 탭
+test.describe("Admin dashboard (F403)", () => {
+  test("admin page renders dashboard heading", async ({ page }) => {
+    await page.goto("/admin");
+    await expect(page.getByRole("heading", { name: /Admin 대시보드/ })).toBeVisible();
+  });
+
+  test("AuditLog tab switch renders audit tab content", async ({ page }) => {
+    await page.goto("/admin");
+    await page.getByRole("tab", { name: /감사 로그/ }).click();
+    // 감사 로그 탭이 활성화된 후 AuditLog 영역 가시 확인
+    await expect(page.getByRole("tab", { name: /감사 로그/ })).toHaveAttribute("data-state", "active");
+  });
+});

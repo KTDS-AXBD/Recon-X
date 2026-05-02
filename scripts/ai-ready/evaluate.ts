@@ -28,6 +28,14 @@ import {
   AIReadyBatchReportSchema,
 } from "../../packages/types/src/ai-ready.js";
 import type { AIReadyEvaluation, AIReadyScore, AIReadyCriterion } from "../../packages/types/src/ai-ready.js";
+import {
+  MODEL_HAIKU,
+  MODEL_SONNET,
+  MODEL_OPUS,
+  OR_MODEL_HAIKU,
+  OR_MODEL_SONNET,
+  OR_MODEL_OPUS,
+} from "../../packages/types/src/model-defaults.js";
 import { buildPrompt } from "../../services/svc-skill/src/ai-ready/prompts.js";
 import type { PromptInput } from "../../services/svc-skill/src/ai-ready/prompts.js";
 import { loadSpecContainers } from "./sample-loader.js";
@@ -114,9 +122,9 @@ async function callAnthropicDirect(
   const apiKey = process.env["ANTHROPIC_API_KEY"] ?? "";
   if (!apiKey) throw new Error("ANTHROPIC_API_KEY 미설정 (--direct-anthropic 사용 시 필수)");
   const modelMap = {
-    haiku: "claude-haiku-4-5-20251001",
-    sonnet: "claude-sonnet-4-5-20250929",
-    opus: "claude-opus-4-5-20250514",
+    haiku: MODEL_HAIKU,
+    sonnet: MODEL_SONNET,
+    opus: MODEL_OPUS,
   } as const;
   const model = modelMap[tier];
 
@@ -167,9 +175,9 @@ async function callOpenRouterJson(
   const apiKey = process.env["OPENROUTER_API_KEY"] ?? "";
   if (!apiKey) throw new Error("OPENROUTER_API_KEY 미설정 (--openrouter 사용 시 필수)");
   const modelMap = {
-    haiku: "anthropic/claude-haiku-4-5",
-    sonnet: "anthropic/claude-sonnet-4-5",
-    opus: "anthropic/claude-opus-4-5",
+    haiku: OR_MODEL_HAIKU,
+    sonnet: OR_MODEL_SONNET,
+    opus: OR_MODEL_OPUS,
   } as const;
   const model = modelMap[tier];
 

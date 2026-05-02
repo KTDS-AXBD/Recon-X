@@ -13,7 +13,8 @@ test.describe("Guest demo mode", () => {
     // 차단 라우트 이동
     await page.goto("/upload");
     await expect(page.getByText(/데모 모드에서 사용할 수 없는 기능/)).toBeVisible();
-    await expect(page.getByRole("link", { name: /로그인하기/ })).toBeVisible();
+    // <main> 스코프로 격리 — Sidebar의 동일 텍스트 링크와 strict mode 충돌 방지
+    await expect(page.locator("main").getByRole("link", { name: /로그인하기/ })).toBeVisible();
   });
 
   test("demo=guest shows Demo Mode badge in sidebar", async ({ page }) => {

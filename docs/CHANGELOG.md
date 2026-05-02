@@ -2,6 +2,46 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 250 (2026-05-02) — Sprint 240 F411 ✅ MERGED + Production verified
+
+**Master 후속 (autopilot 세션 249 완결 → daemon FAILED → Master 개입)**:
+
+- **autopilot 자체 완결** (세션 249, 19분): Match 97%, PR #39 생성, push 완료
+- **daemon FAILED** (CI Typecheck): autopilot이 작성한 `services/svc-ingestion/src/__tests__/zip-extractor-stats.test.ts` 10건이 `Record<string, unknown>`에 dot notation 접근 → TS4111 `noPropertyAccessFromIndexSignature` 위반
+- **Master 개입 5분**:
+  - sed 일괄 변환: `parsed.stats.totalEntriesInZip` → `parsed.stats["totalEntriesInZip"]` 등 10건
+  - Local 검증: typecheck 14/14 PASS, svc-ingestion test 319/362 (43 skipped, 19 passed test files)
+  - Commit `991e33b` push → sprint/240 브랜치 갱신
+- **CI rerun 통과**: Migration ✅ / E2E ✅ 1m30s / Typecheck ✅ 1m20s
+- **수동 squash merge** (daemon이 트리거 안 했음, mergeStateStatus CLEAN): `c50041c8` MERGED, sprint/240 자동 삭제
+- **WT/tmux/branch cleanup**: `git worktree remove` + `git branch -D sprint/240` + tmux session 자동 종료
+- **Workers + Pages 자동 배포 success** (run 25247740008/12, ~3분)
+
+**Production smoke (Master 독립 실측)**:
+
+- 7 worker `/health` GET 200 (svc-ingestion/extraction/skill/policy/ontology/mcp-server/queue-router)
+- recon-x-api `/health` 503 = known dead legacy (LLM unreachable, rules/development-workflow.md)
+- `rx.minu.best /` 302 = CF Access redirect 정상
+- `/api/analysis/triage` 302 = CF Access 게이트 정상
+- **Master 직접 호출 (X-Internal-Secret)**: `GET /api/analysis/triage?organizationId=LPON` → 114 docs / **25 zip docs에 `chunkSummary` 정상 응답**
+- Sample (`lpon-src-companybatch-master`): chunkSummary 9 stats 필드 정상 / `isLibOnly: false` / `partialExtraction: null` (기존 zip R1 fallback)
+
+**3목표 Production 검증**:
+
+- ✅ chunk 매트릭스 가시화: 25/27 zip 실 응답
+- ✅ lib-only 식별 로직: 정확 판정 (mapperCount > 0이라 false)
+- ⚠️ partial extraction 경고: 기존 zip 미보유 (Plan §7 R1 그대로 — TD-52 backfill 후속)
+
+**신규 교훈 2건 (feedback 후보)**:
+
+1. **autopilot noPropertyAccessFromIndexSignature 함정**: `JSON.parse() as Record<string, unknown>` 패턴 사용 시 dot access 시도 → TS4111. tsconfig.base.json strict 옵션 때문에 무조건 bracket 강제. autopilot이 dot notation으로 작성하는 경향 → push 전 typecheck 필수
+2. **daemon CI timeout false negative**: PR OPEN + CI in_progress 상태에서 daemon이 짧게 FAILED 마킹. 실 fail은 별개 (typecheck) — daemon log와 실 CI 결과 분리 확인 필수
+
+**잔여 후속**:
+
+- TD-52 (P3, backfill): 기존 27 zip의 SourceProjectSummary chunk 재생성 — 별도 Sprint 등록 후보
+- F356-B (Sprint 240 BLOCKED): TD-49 4분기 매트릭스 보류 그대로 유지
+
 ### 세션 249 (2026-05-02) — Sprint 240 F411 autopilot 완결: zip spec coverage 가시화 3목표 ✅ DONE
 
 **Sprint 240 WT autopilot — Step 4(구현) → Step 5(분석) → Step 6(리포트) → Step 7(session-end)**:

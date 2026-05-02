@@ -82,14 +82,14 @@ describe("parseSourceProject — stats 14 fields", () => {
     expect(summary).toBeDefined();
     const parsed = JSON.parse(summary!.text) as { projectName: string; stats: Record<string, unknown> };
     expect(parsed.projectName).toBe("test-project");
-    expect(parsed.stats.totalEntriesInZip).toBeDefined();
-    expect(parsed.stats.skippedBinaryCount).toBeDefined();
-    expect(parsed.stats.oversizedSkippedCount).toBeDefined();
-    expect(parsed.stats.extractionRate).toBeDefined();
-    expect(parsed.stats.cappedAtMaxFiles).toBeDefined();
+    expect(parsed.stats["totalEntriesInZip"]).toBeDefined();
+    expect(parsed.stats["skippedBinaryCount"]).toBeDefined();
+    expect(parsed.stats["oversizedSkippedCount"]).toBeDefined();
+    expect(parsed.stats["extractionRate"]).toBeDefined();
+    expect(parsed.stats["cappedAtMaxFiles"]).toBeDefined();
     // oversized=1, total=2 → rate = 0.5
-    expect(parsed.stats.extractionRate).toBe(0.5);
-    expect(parsed.stats.oversizedSkippedCount).toBe(1);
+    expect(parsed.stats["extractionRate"]).toBe(0.5);
+    expect(parsed.stats["oversizedSkippedCount"]).toBe(1);
   });
 
   it("extractionRate is 1 when no entries are skipped", () => {
@@ -100,7 +100,7 @@ describe("parseSourceProject — stats 14 fields", () => {
     const elements = parseSourceProject(files, "clean-project", stats);
     const summary = elements.find((e) => e.type === "SourceProjectSummary");
     const parsed = JSON.parse(summary!.text) as { stats: Record<string, unknown> };
-    expect(parsed.stats.extractionRate).toBe(1);
+    expect(parsed.stats["extractionRate"]).toBe(1);
   });
 
   it("omits new stats fields when extractionStats not provided", () => {
@@ -110,7 +110,7 @@ describe("parseSourceProject — stats 14 fields", () => {
     const elements = parseSourceProject(files, "no-stats");
     const summary = elements.find((e) => e.type === "SourceProjectSummary");
     const parsed = JSON.parse(summary!.text) as { stats: Record<string, unknown> };
-    expect(parsed.stats.totalEntriesInZip).toBeUndefined();
-    expect(parsed.stats.extractionRate).toBeUndefined();
+    expect(parsed.stats["totalEntriesInZip"]).toBeUndefined();
+    expect(parsed.stats["extractionRate"]).toBeUndefined();
   });
 });

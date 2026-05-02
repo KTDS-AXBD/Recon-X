@@ -2,6 +2,61 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 246 후속 #2 (2026-05-02) — TD-47 완전 해소 + secret 환경 재구성 + F408 LLM call 검증 + Sprint 240 보류 판정
+
+**Master pane — Sprint 239 F408 PR #38 squash merged 후 production smoke (404→401 차단 해소) → secret 환경 재구성 → LLM call 검증**:
+
+- 🟢 **Sprint 239 F408 PR #38 ✅ MERGED**: `c61e839` squash + Deploy Workers Services run `25151252220` SUCCESS (svc-skill production 재배포 + D1 migrations + Typecheck). Worktree + sprint/239 branch + remote 정리 완료. Signal STATUS=MERGED.
+- 🔍 **TD-47 차단 해소 1차 (deploy-level)**: Master 독립 production smoke `POST /skills/{4591b69e=lpon-charge}/ai-ready/evaluate` 응답 변화 **HTTP 404 → 401** = 라우팅 + auth middleware + evaluator 진입 정상화 확정.
+- 🔑 **사용자 옵션 C 선택 (직접 secret 환경 재구성)**:
+  - **Phase A (5분)**: 기존 secret 복원 시도 — `~/.secrets/decode-x-internal` 부재 + 1Password Secret Key 미보유 + bash history 평문 0건 + wrangler 로그는 secret name만 기록 + commit `6ffb325` 메시지에 "임시 파일 shred + env unset" 명시 = **의도적 일회성 폐기 흔적 확정** → 복원 경로 0건.
+  - **Phase B (30분)**: Rotation 자동 실행
+    - `~/.secrets/decode-x-internal` 64자 hex 신규 (chmod 600) + `~/.secrets/openrouter-api-key` 정착
+    - 9-worker INTERNAL_API_SECRET rotation (Gateway top-level + 7 SVC top-level + app-web --env production)
+    - 4-worker (svc-skill/policy/extraction/ontology) CLOUDFLARE_AI_GATEWAY_URL full-path(`/openrouter/v1/chat/completions`) 갱신
+    - 4-worker OPENROUTER_API_KEY 갱신 (`.dev.vars` 값 활성화)
+    - CF AI Gateway `axbd-team` authentication=False 변경 (PUT method, BYOK 모드)
+    - GH Actions secret INTERNAL_API_SECRET 갱신
+    - svc-skill 4번 redeploy (secret 갱신 isolate cold start)
+- ✅ **F408 LLM call 검증 (haiku, force=true)**: HTTP 200 + 6 LLM calls SUCCESS (`evaluatedAt 2026-05-02T06:30:08Z`, $0.0036, 9.4s). 5/6 criteria 정상 score 반환 (1/6 source_consistency JSON parse error 1회 stability 이슈). totalScore 0.505. **F408 evaluator + adapter 코드 100% 정상 동작 확정 ✅**.
+- 📊 **S235 baseline 비교 (rubric v2 lpon-charge 7전수 재측정)**:
+  | Criterion | S235 | F408 | Δ | Verdict |
+  |---|---|---|---|---|
+  | source_consistency | 0.920 | 0.000 | -0.92 | ❌ (parse fail) |
+  | comment_doc_alignment | 0.620 | 0.950 | **+0.33** | ❌ |
+  | io_structure | 0.720 | 0.420 | -0.30 | ❌ |
+  | exception_handling | 0.820 | 0.620 | -0.20 | 🟡 |
+  | srp_reusability | 0.720 | 0.620 | -0.10 | 🟡 |
+  | testability | 0.720 | 0.420 | -0.30 | ❌ |
+- 🟡 **DoD 4분기 매트릭스 판정 → Sprint 240 보류**: |Δ|≤0.05 = 0/6 (≥4 GO 미충족), |Δ|>0.20 = 4/6 (≥2 보류 트리거). Plan/Design R1 위험(skill-package에 runbooks/tests 부재) 그대로 실현. comment_doc_alignment는 **+0.33 상승**(skill-package policies가 더 정합) — 단순 회귀 아닌 **데이터 소스 본질적 차이**. 사용자 결정 4안: (A) 그대로 진입 새 baseline 산출 $48 / (B) Adapter 개선 1~2 Sprint / (C) Rubric v3 0.5 Sprint / (D) Tier-A spec-containers fallback.
+- 📝 **신규 TD 4건 등록**:
+  - TD-48 (P2): Production secret 저장 위치 SSOT 부재 — 부분 해소 (~/.secrets/ 정착)
+  - TD-49 (P1): F408 |Δscore| 4분기 매트릭스 보류 — Sprint 240 차단
+  - TD-50 (P3): wrangler `<name>` (default env) vs `<name>-production` 분리 — secret rotation governance
+  - TD-51 (P3): CF AI Gateway URL은 full chat-completions path 필수
+- 📚 **신규 feedback memory 4건 정착**:
+  - `feedback_smoke_status_progression.md` (1차) — 404→401 변화는 차단 해소 신호
+  - `feedback_cf_aigateway_full_path.md` (후속 #2) — Gateway URL은 base 아닌 full chat-completions path
+  - `feedback_evaluator_cache_force.md` (후속 #2) — evaluator 1h cache + force=true 우회
+  - `feedback_wrangler_default_vs_production_env.md` (후속 #2) — default env vs --env production worker 분리
+- ⚠️ **보안 후속 (악화 누적)**:
+  - `demian1015!` Master Password 추정값 채팅 로그 3회 노출 (1Password Secret Key 입력란 오인) → **변경 강력 권장**
+  - OpenRouter API key `sk-or-v1-ade1a7a5...` 평문 노출 (`.dev.vars` cat 결과) → **OpenRouter 대시보드 rotation 권장**
+  - 부분 해소: ~/.secrets/ 영구 저장 + 9-worker rotation + GH Actions secret 갱신
+  - 잔여: 1Password vault 백업 + Secret Key 회수 + Master Password 변경 + OpenRouter rotation
+
+**검증 결과**:
+- ✅ Sprint 239 PR #38 `c61e839` squash merged
+- ✅ Deploy `25151252220` SUCCESS
+- ✅ Production svc-skill `/health` HTTP 200
+- ✅ F408 LLM call HTTP 200 + 6 calls SUCCESS + 5/6 criteria 정상
+- 🟡 Sprint 240 진입 보류 — 사용자 4안 결정 대기
+- ✅ ~/.secrets/ governance 부분 정착
+
+**비용 (실측)**: ~$0.018 (5번 LLM call 시도 × 6 criteria × $0.0006)
+
+---
+
 ### 세션 245 (2026-04-30) — Production 401 mismatch 재발 → 9-worker 재rotation ✅
 
 **Master pane — `/executive/evidence` 사용자 보고 → layer 분리 진단 → 재rotation + verify**:

@@ -220,10 +220,36 @@ Phase 1 ✅ → 2 ✅ → 3 ✅ → 4 ✅ → **5 ✅** (MSA 재조정 완료). 
 
 ### Inter-Service Communication
 - **인증**: 모든 내부 호출에 `X-Internal-Secret` 헤더 필수 (값: `INTERNAL_API_SECRET` secret)
-- **예외**: `/health` 엔드포인트는 인증 없이 접근 가능
-- **LLM 호출**: `packages/utils/src/llm-client.ts`의 `callLlm()` — 외부 svc-llm-router에 HTTP REST. ~~service binding 아님~~
+- **예외**: `/health` 엔드포인트는 인증 없이 접근 가능. ⚠️ `/health`는 cross-service auth verify에 부적합 — `fetcher.fetch`만 수행하고 `X-Internal-Secret` 미전파 → secret 매칭 검증 못 함. 실 API path 호출로만 verify (S245 교훈)
+- **LLM 호출**: `packages/utils/src/llm-client.ts`의 `callLlm()` — TD-44로 svc-llm-router decommissioned. 현재는 OpenRouter direct (CF AI Gateway 경유) HTTP REST. ~~service binding 아님~~
 - **LlmRequestSchema 필수 필드**: `tier`, `messages[]`, `callerService`
 - **RBAC**: `packages/utils/src/rbac.ts`의 `checkPermission()` — inline 호출. ~~svc-security 경유 아님~~
+
+#### Worker Secret Store — Env-Scoped Divergence ⚠️
+
+각 worker의 secret store는 wrangler env 단위로 분리되어 있다. **rotation 시 양쪽 모두 동기 필수.** (S246 + S260 누적 교훈)
+
+| 식별자 | wrangler.toml | secret store | HTTP traffic | Queue consumer |
+|--------|---------------|--------------|--------------|----------------|
+| `<name>` (default env) | top-level `[name]` | 독립 | ✅ 실 production routing (예: `svc-skill.ktds-axbd.workers.dev`) | ❌ |
+| `<name>-production` (`--env production`) | `[env.production]` | 독립 | ❌ (대부분 미라우팅) | ✅ `[env.production.queues.consumers]` 선언 시 여기서 실행 |
+| `<name>-staging` (`--env staging`) | `[env.staging]` | 독립 | staging 도메인 | env별 |
+
+**Rotation Anti-Pattern (S260 TD-57 fix 사례)**:
+- ❌ `wrangler secret put X --env production` 만 실행 → default env에 미반영 → HTTP traffic은 stale secret 사용
+- ❌ default env에만 put → Queue consumer는 stale secret으로 silent fail (HTML 응답 등)
+- ❌ `/health` HTTP 200으로 verify 종료 → secret 미전파 검증 못 함
+
+**Rotation 표준 절차** (3종 secret 예시: `INTERNAL_API_SECRET` / `OPENROUTER_API_KEY` / `CLOUDFLARE_AI_GATEWAY_URL`):
+1. **Default env put** (HTTP traffic 우선): `wrangler secret put X` (--env 없음, 또는 `--name <name>`)
+2. **Production env put** (Queue consumer): `wrangler secret put X --env production`
+3. **Staging env put** (선택): `wrangler secret put X --env staging`
+4. **Verify**: 실 API path 호출 (예: `/skills/{id}/ai-ready/evaluate`) HTTP 200 + LLM 응답 검증 — `/health`로는 부족
+5. **Queue path verify** (Queue consumer 있는 worker): batch endpoint 호출 → D1 raw rationale 확인 (HTML 응답 ≠ secret 정상 매칭)
+
+**자동화**: 3종 secret 정본은 `~/.secrets/` 정본 파일로 관리(`chmod 600`). 일괄 rotation은 `scripts/secret-sync-svc-skill.sh` (F422 도입).
+
+**Validation URL 형식**: `CLOUDFLARE_AI_GATEWAY_URL`은 base path가 아닌 full chat-completions path 필수: `https://gateway.ai.cloudflare.com/v1/<acct>/<gateway>/openrouter/v1/chat/completions`. base path만 있으면 HTML index 반환 → silent fail (S246 + S260).
 
 ### Shared Packages
 - `@ai-foundry/types`, `@ai-foundry/utils`는 raw `.ts` 파일을 export (빌드 스텝 없음)

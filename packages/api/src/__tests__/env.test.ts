@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { SERVICE_MAP, RESOURCE_MAP, PREFIX_STRIP_MAP } from "../env.js";
 
 describe("SERVICE_MAP", () => {
-  it("11개 서비스 매핑이 존재한다", () => {
-    expect(Object.keys(SERVICE_MAP)).toHaveLength(11);
+  it("6개 서비스 매핑이 존재한다 (5개 worker는 AI Foundry 포털로 이관)", () => {
+    expect(Object.keys(SERVICE_MAP)).toHaveLength(6);
   });
 
   it("모든 값이 SVC_ 접두사를 가진다", () => {
@@ -14,8 +14,7 @@ describe("SERVICE_MAP", () => {
 
   it("필수 서비스가 모두 포함된다", () => {
     const required = [
-      "ingestion", "extraction", "policy", "ontology", "skill",
-      "llm", "security", "governance", "notification", "analytics", "mcp",
+      "ingestion", "extraction", "policy", "ontology", "skill", "mcp",
     ];
     for (const name of required) {
       expect(SERVICE_MAP).toHaveProperty(name);
@@ -25,6 +24,12 @@ describe("SERVICE_MAP", () => {
   it("queue-router는 포함하지 않는다 (내부 전용)", () => {
     expect(SERVICE_MAP).not.toHaveProperty("queue-router");
   });
+
+  it("이관된 worker(llm/security/governance/notification/analytics)는 포함하지 않는다", () => {
+    for (const decommissioned of ["llm", "security", "governance", "notification", "analytics"]) {
+      expect(SERVICE_MAP).not.toHaveProperty(decommissioned);
+    }
+  });
 });
 
 describe("RESOURCE_MAP", () => {
@@ -32,9 +37,7 @@ describe("RESOURCE_MAP", () => {
     const expectedResources = [
       "documents", "extractions", "extract", "analysis", "analyze",
       "factcheck", "specs", "export", "policies", "sessions", "skills",
-      "terms", "graph", "normalize", "audit", "cost", "trust",
-      "prompts", "golden-tests", "quality-evaluations", "chat",
-      "notifications", "kpi", "dashboards", "quality", "reports", "deliverables",
+      "terms", "graph", "normalize",
     ];
     for (const res of expectedResources) {
       expect(RESOURCE_MAP).toHaveProperty(res);
@@ -49,14 +52,11 @@ describe("RESOURCE_MAP", () => {
     }
   });
 
-  it("RESOURCE_MAP + PREFIX_STRIP_MAP이 외부 노출 서비스를 커버한다", () => {
+  it("RESOURCE_MAP + PREFIX_STRIP_MAP이 외부 노출 서비스를 모두 커버한다", () => {
     const allRoutes = { ...RESOURCE_MAP, ...PREFIX_STRIP_MAP };
     const routeBindings = new Set(Object.values(allRoutes));
-    // LLM Router는 내부 전용 (다른 Worker가 Service Binding으로 호출)
-    const internalOnly = new Set(["SVC_LLM_ROUTER"]);
     const allBindings = new Set(Object.values(SERVICE_MAP));
     for (const binding of allBindings) {
-      if (internalOnly.has(binding)) continue;
       expect(routeBindings).toContain(binding);
     }
   });

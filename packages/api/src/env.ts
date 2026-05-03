@@ -1,15 +1,10 @@
 export interface Env {
-  // Service Bindings
+  // Service Bindings — 6개 (svc-queue-router 내부 전용 제외, llm-router/security/governance/notification/analytics는 AI Foundry 포털로 이관)
   SVC_INGESTION: Fetcher;
   SVC_EXTRACTION: Fetcher;
   SVC_POLICY: Fetcher;
   SVC_ONTOLOGY: Fetcher;
   SVC_SKILL: Fetcher;
-  SVC_LLM_ROUTER: Fetcher;
-  SVC_SECURITY: Fetcher;
-  SVC_GOVERNANCE: Fetcher;
-  SVC_NOTIFICATION: Fetcher;
-  SVC_ANALYTICS: Fetcher;
   SVC_MCP_SERVER: Fetcher;
 
   // Secrets
@@ -31,11 +26,6 @@ export const SERVICE_MAP = {
   policy: "SVC_POLICY",
   ontology: "SVC_ONTOLOGY",
   skill: "SVC_SKILL",
-  llm: "SVC_LLM_ROUTER",
-  security: "SVC_SECURITY",
-  governance: "SVC_GOVERNANCE",
-  notification: "SVC_NOTIFICATION",
-  analytics: "SVC_ANALYTICS",
   mcp: "SVC_MCP_SERVER",
 } as const satisfies Record<string, keyof Env>;
 
@@ -69,23 +59,6 @@ export const RESOURCE_MAP: Record<string, keyof Env> = {
   terms: "SVC_ONTOLOGY",
   graph: "SVC_ONTOLOGY",
   normalize: "SVC_ONTOLOGY",
-  // svc-security
-  audit: "SVC_SECURITY",
-  // svc-governance
-  cost: "SVC_GOVERNANCE",
-  trust: "SVC_GOVERNANCE",
-  prompts: "SVC_GOVERNANCE",
-  "golden-tests": "SVC_GOVERNANCE",
-  "quality-evaluations": "SVC_GOVERNANCE",
-  chat: "SVC_GOVERNANCE",
-  // svc-notification
-  notifications: "SVC_NOTIFICATION",
-  // svc-analytics
-  kpi: "SVC_ANALYTICS",
-  dashboards: "SVC_ANALYTICS",
-  quality: "SVC_ANALYTICS",
-  reports: "SVC_ANALYTICS",
-  deliverables: "SVC_ANALYTICS",
 };
 
 /**

@@ -27,11 +27,6 @@ function mockEnv(overrides: Record<string, unknown> = {}) {
     SVC_POLICY: fetcher,
     SVC_ONTOLOGY: fetcher,
     SVC_SKILL: fetcher,
-    SVC_LLM_ROUTER: fetcher,
-    SVC_SECURITY: fetcher,
-    SVC_GOVERNANCE: fetcher,
-    SVC_NOTIFICATION: fetcher,
-    SVC_ANALYTICS: fetcher,
     SVC_MCP_SERVER: fetcher,
     INTERNAL_API_SECRET: "test-secret",
     GATEWAY_JWT_SECRET: JWT_SECRET,
@@ -145,28 +140,22 @@ describe("리소스 기반 라우팅 (레거시 호환)", () => {
     expect(req.method).toBe("POST");
   });
 
-  it("/api/cost → SVC_GOVERNANCE로 프록시한다", async () => {
+  it("/api/cost는 404를 반환한다 (svc-governance 이관 후 라우트 미정의)", async () => {
     const token = await createToken();
-    const fetcher = mockFetcher();
-    const env = mockEnv({ SVC_GOVERNANCE: fetcher });
-    await app.request("/api/cost", {
+    const env = mockEnv();
+    const res = await app.request("/api/cost", {
       headers: { Authorization: `Bearer ${token}` },
     }, env);
-    expect((fetcher.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalled();
+    expect(res.status).toBe(404);
   });
 
-  it("/api/reports → SVC_ANALYTICS로 프록시한다", async () => {
+  it("/api/reports는 404를 반환한다 (svc-analytics 이관 후 라우트 미정의)", async () => {
     const token = await createToken();
-    const fetcher = mockFetcher();
-    const env = mockEnv({ SVC_ANALYTICS: fetcher });
-    await app.request("/api/reports/sections?orgId=lpon", {
+    const env = mockEnv();
+    const res = await app.request("/api/reports/sections?orgId=lpon", {
       headers: { Authorization: `Bearer ${token}` },
     }, env);
-    const call = (fetcher.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
-    const req = call[0] as Request;
-    const url = new URL(req.url);
-    expect(url.pathname).toBe("/reports/sections");
-    expect(url.search).toBe("?orgId=lpon");
+    expect(res.status).toBe(404);
   });
 
   it("/api/skills/stats → SVC_SKILL로 프록시하며 /skills/stats를 보존한다", async () => {

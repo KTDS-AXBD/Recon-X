@@ -133,6 +133,73 @@ function modelToTier(model: "haiku" | "opus" | "sonnet"): LlmTier {
   return model as LlmTier;
 }
 
+// TD-59: Large skills (>100 policies) overflow LLM context → JSON parse fail → score=0.
+// Conservative cap: per-entry truncation + total budget limit. Augmented bundles (F417 ---TEST_SCENARIOS--- payload)
+// produce per-test entries of ~3KB each → 245 policies × 3KB ≈ 750KB → ~190K tokens (Haiku 200K context overflow).
+const MAX_PER_ENTRY_CHARS = 2000;
+const MAX_TOTAL_CONTENT_CHARS = 200_000; // ~50K tokens, safe for Haiku 200K context with system+rubric overhead
+
+function truncateEntry(text: string, max: number): string {
+  if (text.length <= max) return text;
+  return `${text.slice(0, max)}\n\n... [truncated ${text.length - max} chars to fit context]`;
+}
+
+function capSpecContentForLargeSkills(
+  specContent: SpecContent,
+  skillName: string,
+): { capped: SpecContent; meta: { originalChars: number; cappedChars: number; truncated: boolean; entriesCount: number } } {
+  const measure = (sc: SpecContent): number =>
+    sc.rules.join("").length +
+    (sc.originalRules ?? []).join("").length +
+    (sc.emptySlotRules ?? []).join("").length +
+    sc.runbooks.join("").length +
+    sc.tests.join("").length +
+    sc.contractYaml.length +
+    sc.provenanceYaml.length;
+
+  const originalChars = measure(specContent);
+  const entriesCount =
+    specContent.rules.length +
+    specContent.runbooks.length +
+    specContent.tests.length;
+
+  // Stage 1: per-entry cap (only entries that exceed MAX_PER_ENTRY_CHARS)
+  const capArr = (arr: string[]): string[] => arr.map((e) => truncateEntry(e, MAX_PER_ENTRY_CHARS));
+  let capped: SpecContent = {
+    rules: capArr(specContent.rules),
+    runbooks: capArr(specContent.runbooks),
+    tests: capArr(specContent.tests),
+    contractYaml: truncateEntry(specContent.contractYaml, MAX_PER_ENTRY_CHARS * 4),
+    provenanceYaml: truncateEntry(specContent.provenanceYaml, MAX_PER_ENTRY_CHARS * 4),
+    ...(specContent.originalRules !== undefined && { originalRules: capArr(specContent.originalRules) }),
+    ...(specContent.emptySlotRules !== undefined && { emptySlotRules: capArr(specContent.emptySlotRules) }),
+  };
+
+  let cappedChars = measure(capped);
+  let truncated = cappedChars < originalChars;
+
+  // Stage 2: if still over total budget, sample entries (keep first N to maintain prompt structure)
+  if (cappedChars > MAX_TOTAL_CONTENT_CHARS) {
+    const sampleSize = Math.max(20, Math.floor(MAX_TOTAL_CONTENT_CHARS / (MAX_PER_ENTRY_CHARS * 3)));
+    capped = {
+      ...capped,
+      rules: capped.rules.slice(0, sampleSize),
+      runbooks: capped.runbooks.slice(0, sampleSize),
+      tests: capped.tests.slice(0, sampleSize),
+    };
+    cappedChars = measure(capped);
+    truncated = true;
+    logger.warn("ai-ready: stage-2 sampling applied for oversized spec", {
+      skillName,
+      sampleSize,
+      originalEntries: entriesCount,
+      cappedChars,
+    });
+  }
+
+  return { capped, meta: { originalChars, cappedChars, truncated, entriesCount } };
+}
+
 export async function runSixCriteriaEvaluation(
   env: Env,
   specContent: SpecContent,
@@ -144,6 +211,17 @@ export async function runSixCriteriaEvaluation(
   let totalCostUsd = 0;
   let returnedModelStr = model as string;
 
+  // TD-59: cap large augmented spec content before LLM calls
+  const { capped: cappedSpec, meta } = capSpecContentForLargeSkills(specContent, skillName);
+  if (meta.truncated) {
+    logger.info("ai-ready: spec content truncated", {
+      skillName,
+      originalChars: meta.originalChars,
+      cappedChars: meta.cappedChars,
+      entriesCount: meta.entriesCount,
+    });
+  }
+
   const criteriaResults: Array<{
     criterion: AIReadyCriterion;
     score: number;
@@ -151,7 +229,8 @@ export async function runSixCriteriaEvaluation(
     passed: boolean;
   }> = [];
   for (const criterion of ALL_AI_READY_CRITERIA) {
-    const prompt = buildPrompt(criterion, { specContent, skillName });
+    const prompt = buildPrompt(criterion, { specContent: cappedSpec, skillName });
+    let rawContent = "";
     try {
       const result = await callLlmRouterWithMeta(env, "svc-skill:ai-ready", tier, prompt, {
         system,
@@ -159,11 +238,21 @@ export async function runSixCriteriaEvaluation(
         temperature: 0.1,
       });
       returnedModelStr = result.model ?? model;
-      const { score, rationale } = parseLlmCriterionOutput(result.content);
+      rawContent = result.content;
+      const { score, rationale } = parseLlmCriterionOutput(rawContent);
       totalCostUsd += COST_PER_CRITERION_USD[model] ?? 0;
       criteriaResults.push({ criterion, score, rationale, passed: score >= 0.6 });
     } catch (e) {
-      logger.error("LLM criterion eval failed", { criterion, model, error: String(e) });
+      // TD-59: log raw response excerpt for parse-fail diagnosis
+      logger.error("LLM criterion eval failed", {
+        criterion,
+        model,
+        skillName,
+        error: String(e),
+        rawExcerpt: rawContent ? rawContent.slice(0, 200) : "(no response)",
+        promptChars: prompt.length,
+        contentTruncated: meta.truncated,
+      });
       totalCostUsd += COST_PER_CRITERION_USD[model] ?? 0;
       criteriaResults.push({ criterion, score: 0, rationale: `Evaluation failed: ${String(e)}`, passed: false });
     }

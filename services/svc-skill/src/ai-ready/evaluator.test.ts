@@ -128,6 +128,45 @@ describe("runSixCriteriaEvaluation", () => {
     expect(result.criteria[0]?.score).toBe(0.9);
   });
 
+  it("TD-59: caps oversized spec content before LLM call (large augmented bundle)", async () => {
+    // Capture the prompt sent to the LLM to verify truncation happened
+    let capturedPromptChars = 0;
+    vi.stubGlobal("fetch", vi.fn().mockImplementation((_url, init: RequestInit | undefined) => {
+      const body = JSON.parse(init?.body as string) as { messages: Array<{ content: string }> };
+      const userMsg = body.messages.find((m: { content: string; role?: string }) => (m as { role?: string }).role === "user")
+        ?? body.messages[body.messages.length - 1];
+      capturedPromptChars = Math.max(capturedPromptChars, userMsg?.content.length ?? 0);
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({
+          choices: [{ message: { content: mockLlmResponse } }],
+          model: "anthropic/claude-haiku-4-5",
+        }),
+      });
+    }));
+
+    const env = mockEnv() as Env;
+    // Simulate F417 augmented bundle: 245 policies × ~3KB per test entry = ~750KB total
+    const hugeTest = "a".repeat(3000); // ~3KB per entry
+    const specContent = {
+      rules: ["BL rule"],
+      originalRules: ["BL rule"],
+      emptySlotRules: [],
+      runbooks: Array(245).fill("runbook entry"),
+      tests: Array(245).fill(hugeTest),
+      contractYaml: "contract: yaml",
+      provenanceYaml: "businessRules:\n  - BL-001",
+    };
+
+    const result = await runSixCriteriaEvaluation(env, specContent, "lpon-huge", "haiku");
+
+    // Should still produce 6 criteria (no parse failures from oversized prompt)
+    expect(result.criteria).toHaveLength(6);
+    // Prompt should be capped well under raw size (245 × 3000 ≈ 735KB without cap)
+    // Truncation budget MAX_TOTAL_CONTENT_CHARS=200K + system + rubric ≈ ~250K max
+    expect(capturedPromptChars).toBeLessThan(300_000);
+  });
+
   it("clamps score to [0, 1]", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
       ok: true,

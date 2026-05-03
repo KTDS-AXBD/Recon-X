@@ -18,11 +18,6 @@ function mockEnv(overrides: Partial<Record<string, Fetcher>> = {}) {
     SVC_POLICY: defaultFetcher,
     SVC_ONTOLOGY: defaultFetcher,
     SVC_SKILL: defaultFetcher,
-    SVC_LLM_ROUTER: defaultFetcher,
-    SVC_SECURITY: defaultFetcher,
-    SVC_GOVERNANCE: defaultFetcher,
-    SVC_NOTIFICATION: defaultFetcher,
-    SVC_ANALYTICS: defaultFetcher,
     SVC_MCP_SERVER: defaultFetcher,
     ...overrides,
   } as unknown as Record<string, unknown>;
@@ -36,7 +31,7 @@ describe("Health 라우트", () => {
     expect(res.status).toBe(200);
     const body = await res.json() as Record<string, any>;
     expect(body.status).toBe("healthy");
-    expect(Object.keys(body.services)).toHaveLength(11);
+    expect(Object.keys(body.services)).toHaveLength(6);
   });
 
   it("일부 unhealthy이면 503 + degraded를 반환한다", async () => {

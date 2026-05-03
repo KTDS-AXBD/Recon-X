@@ -1,0 +1,517 @@
+{
+  "executedAt": "2026-05-03T15:57:20.321Z",
+  "organization": "lpon",
+  "model": "haiku",
+  "method": "augment-eval-loop (F417 — r2KeyOverride augmented bundles)",
+  "totalSkills": 8,
+  "completedSkills": 8,
+  "failedSkills": 0,
+  "totalCostUsd": 0.028799999999999996,
+  "durationSeconds": 125.341,
+  "avgScore": 0.776625,
+  "overallPassedCount": 0,
+  "criteriaPassRates": {
+    "source_consistency": {
+      "passed": 8,
+      "total": 8,
+      "passRate": 1,
+      "avgScore": 0.93875
+    },
+    "comment_doc_alignment": {
+      "passed": 8,
+      "total": 8,
+      "passRate": 1,
+      "avgScore": 0.91375
+    },
+    "io_structure": {
+      "passed": 0,
+      "total": 8,
+      "passRate": 0,
+      "avgScore": 0.6824999999999999
+    },
+    "exception_handling": {
+      "passed": 2,
+      "total": 8,
+      "passRate": 0.25,
+      "avgScore": 0.7349999999999999
+    },
+    "srp_reusability": {
+      "passed": 3,
+      "total": 8,
+      "passRate": 0.375,
+      "avgScore": 0.6950000000000001
+    },
+    "testability": {
+      "passed": 0,
+      "total": 8,
+      "passRate": 0,
+      "avgScore": 0.695
+    }
+  },
+  "results": [
+    {
+      "skillId": "17bc6d1d-f8b6-49e9-8407-2b424b97cd6a",
+      "result": {
+        "skillId": "17bc6d1d-f8b6-49e9-8407-2b424b97cd6a",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.95,
+            "rationale": "provenance.businessRules의 6개 정책(POL-LPON-GIFT-001~006)이 originalRules 표의 ID 컬럼과 문자 그대로 1:1 매핑되며, condition-criteria-outcome-exception 4개 열이 모두 완결되어 있습니다. 각 행의 exception 컬럼이 명시적 내용 또는 '예외: ...' 형태로 채워져 있고, 빈칸이나 null이 없습니다. runbooks의 6개 섹션이 각 정책의 condition/criteria/outcome을 정확히 반복 선언하고 있으며, test scenarios가 happy_path/edge_case/error_case로 체계적으로 구성되어 있습니다. Empty Slot Rules 섹션이 명시적으로 '(Empty Slot 규칙 없음)'으로 표기되어 있어 의도적 부재가 명확합니다. 유일한 감점 사유는 runbooks의 POL-LPON-GIFT-001에서 outcome 표현이 '잔액 부족 또는 수신자 미존재 시 에러 반환'으로 표기되어 있으나, 원본 표의 outcome이 동일 내용이므로 실질적 불일치는 없습니다. 전체적으로 spec-container 정합성이 매우 높습니다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.95,
+            "rationale": "lpon-gift 스킬의 6개 비즈니스 규칙(POL-LPON-GIFT-001~006)에 대응하는 runbook이 모두 존재하며, 각 runbook이 원본 rule의 condition-criteria-outcome을 정확히 반영하고 있습니다. POL-LPON-GIFT-001의 '발송 금액 ≤ 발송자 잔액 AND 수신자 계정이 유효' 조건과 '잔액 부족 또는 수신자 미존재 시 에러 반환' 결과가 runbook에 명확히 기술되었고, POL-LPON-GIFT-002~005의 상태 전이(pending→accepted/rejected/expired/canceled)와 이벤트 발행(GiftAccepted/Rejected/Expired/Canceled)이 일치합니다. POL-LPON-GIFT-006의 원자성 보장(gift_ledger_entries 2행 원자 삽입)도 정확히 문서화되었습니다. 각 정책별 테스트 시나리오(happy_path, edge_case, error_case)가 포함되어 있으며, trust score 0.8으로 reviewed 상태입니다. 다만 runbook 내용이 매우 간결하여 구현 세부사항(예: 동시성 제어, 재시도 로직)이 부분적으로 생략된 점이 만점을 제외한 이유입니다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.72,
+            "rationale": "lpon-gift 스킬의 tests/contract 시나리오들은 given/when/then 구조를 갖추고 있으나 입출력 명확성에서 부분적 결함을 보입니다. 긍정적 측면: POL-LPON-GIFT-001의 happy_path는 sender_id, sender_balance, gift_amount 등 구체적 값으로 given을 정의하고, sender_balance_after, transaction_status 등으로 then을 명확히 합니다. POL-LPON-GIFT-002도 gift_id, expires_at, current_time 같은 타입 명시 필드를 포함합니다. 부정적 측면: POL-LPON-GIFT-003, 004, 005의 시나리오들이 불완전하게 끝나 then 필드가 절단되어 있습니다(예: 'gift_' 미완성). POL-LPON-GIFT-006의 edge_case도 'receiver_final_balance:' 이후 값이 누락되었습니다. 또한 일부 필드(예: 'outcome')가 문자열 설명으로만 제시되어 구조화된 타입 정보가 부족합니다. 전체적으로 설계 의도는 명확하나 구현 완성도와 필드 타입 일관성이 미흡합니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.72,
+            "rationale": "lpon-gift 스킬의 예외·에러 핸들링 평가 결과입니다. 긍정 요소: 6개 모든 rule에서 exception/else 절이 명시되어 있으며(POL-LPON-GIFT-001~006), 각 rule마다 구체적인 에러 코드(ERR-LPON-GIFT-INSUFFICIENT-BALANCE, HTTP 422 등)가 정의되어 있습니다. 테스트 시나리오에서 happy_path, edge_case, error_case가 포함되어 있고, POL-LPON-GIFT-001의 'error_case_insufficient_balance'는 명확한 error_code를 포함합니다. 부정 요소: 테스트 시나리오가 일부 불완전하게 제시되었습니다(POL-LPON-GIFT-002, 003, 004, 005, 006의 error_case 부분이 잘려있음). POL-LPON-GIFT-002의 'error_case_already_accepted'가 완전하지 않으며, POL-LPON-GIFT-005의 'error_case_accepted_status' 등 주요 예외 시나리오가 누락되었습니다. 또한 POL-LPON-GIFT-006의 트랜잭션 실패 케이스(GiftTransferFailed)에 대한 테스트가 명시적으로 보이지 않습니다. 규칙 정의는 충분하나 테스트 커버리지가 부분적입니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.82,
+            "rationale": "lpon-gift의 6개 규칙(POL-LPON-GIFT-001~006)은 대체로 단일 책임 원칙을 준수합니다. 각 규칙이 명확한 상태 전이(pending→accepted/rejected/expired/canceled)와 고유한 트리거 조건을 가집니다. 그러나 두 가지 중복 우려가 있습니다: (1) POL-LPON-GIFT-002와 POL-LPON-GIFT-004 모두 'pending' 상태 검증을 포함하며, 만료 시간 검사 로직이 겹칩니다. (2) POL-LPON-GIFT-003과 POL-LPON-GIFT-005 모두 '발송자 잔액 복원' 액션을 수행합니다. POL-LPON-GIFT-006은 원자성 처리로 독립적이나, 다른 규칙들과의 호출 순서 의존성이 명시되지 않았습니다. 테스트 시나리오는 각 규칙별로 happy_path와 edge_case를 포함하여 충분하나, 규칙 간 상호작용(예: 동시 수락/거절)에 대한 테스트가 부재합니다. 전체적으로 규칙 경계는 명확하고 독립 참조 가능하지만, 상태 검증 로직의 부분적 중복으로 인해 완전한 SRP 준수 수준에 미치지 못합니다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "testability",
+            "score": 0.72,
+            "rationale": "lpon-gift 스킬의 테스트 시나리오는 6개 정책 각각에 대해 happy path와 edge case를 포함하고 있으나, 전반적으로 error case 커버가 불충분하고 then 절의 구체성이 불균형하다. POL-LPON-GIFT-001~005는 happy path와 edge case 2개씩 제시되었으나, error case(잔액 부족, 이미 처리된 상태, 만료된 선물 등)는 제목만 있고 내용이 절단되어 있다. POL-LPON-GIFT-006은 happy path와 edge case만 있고 원자성 실패 시나리오가 누락되었다. then 절에서 'gift_status_updated: \"accepted\"', 'sender_balance_restored: 60000' 등 구체적 값이 있으나, 일부 시나리오는 'outcome: \"선물 거절 완료\"' 같은 추상 표현이 섞여 있다. 전체적으로 happy path + edge case 위주이며, error case와 예외 처리 시나리오의 자동화 가능성이 제한적이다.",
+            "passThreshold": 0.75,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.813,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-03T15:55:45.268Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 30502
+    },
+    {
+      "skillId": "4591b69e-4e6a-4ac8-8261-ce177c35f994",
+      "result": {
+        "skillId": "4591b69e-4e6a-4ac8-8261-ce177c35f994",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.95,
+            "rationale": "provenance.businessRules의 8개 정책(POL-LPON-CHARGE-001~008)이 모두 originalRules 표의 ID 컬럼에 문자 그대로 일치한다. condition-criteria-outcome 매핑이 완전히 일치하며, 모든 행의 exception 컬럼이 실내용 또는 명시적 설명으로 채워져 있다. 예: POL-LPON-CHARGE-001의 condition '출금계좌 잔액 ≥ 충전 요청 금액', criteria '출금 처리를 진행한다', outcome '잔액 부족 시 출금 실패 에러를 반환한다', exception '예외: 출금계좌 잔액이 충전 요청 금액보다 부족하거나 출금계좌가 유효하지 않은 경우 출금 처리를 거부한다'가 모두 정확히 대응된다. runbooks와 test scenarios도 각 정책의 condition-criteria-outcome을 충실히 반영하고 있다. Empty Slot Rules가 없으므로 참고 맥락 검증 불필요. 전체 정합성이 우수하며, 미세한 감점은 없다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.95,
+            "rationale": "lpon-charge 스킬의 8개 비즈니스 규칙(POL-LPON-CHARGE-001~008)에 대응하는 runbook이 모두 존재하며, 각 runbook의 condition-criteria-outcome이 원본 rule과 정확히 일치한다. 예를 들어 POL-LPON-CHARGE-001의 'condition: 출금계좌 잔액 ≥ 충전 요청 금액', 'criteria: 출금 처리를 진행한다', 'outcome: 잔액 부족 시 출금 실패 에러를 반환한다'가 runbook에서 동일하게 명시되어 있다. POL-LPON-CHARGE-008의 복잡한 자동충전 조건(blceCondAmt, ymdCondAmt, condSmAmt)도 runbook에서 정확히 반영되었다. 모든 runbook이 'reviewed' 신뢰도(0.8)로 표시되어 있으며, 각 정책마다 happy_path, edge_case, error_case를 포함한 테스트 시나리오가 구성되어 있다. 다만 일부 테스트 시나리오가 절단된 상태이므로 완전성 측면에서 0.05점 감점.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.62,
+            "rationale": "lpon-charge 스킬의 테스트 시나리오들은 given/when/then 구조를 갖추고 있으나 입출력 명확성에서 중대한 결함이 있습니다. given 필드는 대체로 구체적 값으로 명시되어 있으나(예: account_balance: 500000, charge_request_amount: 150000), then 필드의 정의가 불완전합니다. POL-LPON-CHARGE-004의 edge_case에서 'outcome: 정책 미적용'으로 끝나고, POL-LPON-CHARGE-008의 edge_case_date_condition_boundary에서 'outcome: auto'로 절단되어 있습니다. 또한 여러 시나리오에서 error_code나 error_message가 부분적으로만 정의되어 있으며(예: 'ERR-L', 'POL-LPON-CHARGE-007-ERR-'), 필드 타입이 명시되지 않아 응답 형태를 완전히 파악하기 어렵습니다. 상태 변화(new_balance, remaining_balance)는 명확하나 API 응답 구조나 예외 처리의 구체적 형태가 모호합니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.78,
+            "rationale": "lpon-charge 스킬의 예외·에러 핸들링 평가 결과입니다. 긍정적 측면: 8개 정책 모두에서 exception 절이 명시되어 있으며(POL-LPON-CHARGE-001~008), 테스트 시나리오에서 error_code를 포함한 예외 케이스가 대부분 커버되어 있습니다. 예를 들어 POL-LPON-CHARGE-001은 'ERR_INSUFFICIENT_BALANCE', POL-LPON-CHARGE-003은 'ERR_LPON_CHARGE_003_001', POL-LPON-CHARGE-005는 'ERR_CHARGE_LIMIT_EXCEEDED' 등 구체적인 에러 코드가 정의되어 있습니다. 개선 필요 사항: POL-LPON-CHARGE-004의 테스트 시나리오가 불완전하게 제시되었으며, 일부 정책(POL-LPON-CHARGE-002, 004)의 테스트에서 네트워크 장애, 시스템 장애 등 복합 예외 시나리오가 부분적으로만 커버되어 있습니다. 또한 타임아웃 재시도 로직이나 부분 실패 복구 시나리오 등 엣지 케이스가 제한적입니다. 전반적으로 주요 예외 처리는 충분하나 일부 심화된 예외 시나리오 커버리지 개선이 필요합니다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.62,
+            "rationale": "lpon-charge 스킬의 8개 규칙(POL-LPON-CHARGE-001~008)을 분석한 결과, 업무루틴 분리·재사용성 측면에서 중대한 문제가 발견되었습니다. 첫째, POL-LPON-CHARGE-001, 002, 003은 모두 '출금 프로세스'라는 동일한 조건을 다루고 있어 책임 경계가 불명확합니다. 둘째, POL-LPON-CHARGE-005, 006, 007은 모두 '충전 한도 검증'이라는 중복된 조건을 포함하고 있으며, 각각 '이용자 충전', '회사 충전', '포인트 충전'으로 구분되어 있지만 핵심 로직이 동일합니다. 셋째, POL-LPON-CHARGE-008의 '자동충전 조건'(blceCondAmt, ymdCondAmt, condSmAmt)은 단일 책임 원칙을 위반하며 복수의 조건 그룹을 혼합하고 있습니다. 넷째, 테스트 시나리오에서 일부 규칙의 경계값 처리가 모호하고, 규칙 간 상호작용 시 모순 가능성이 존재합니다. 독립 참조 가능성은 부분적으로만 확보되어 있습니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.72,
+            "rationale": "lpon-charge 스킬의 테스트 시나리오는 8개 정책 모두에서 happy path, edge case, error case를 포함하고 있으나, 자동화 테스트 구현 가능성 측면에서 부분적 한계가 있습니다. 긍정적 측면: POL-LPON-CHARGE-001~007은 구체적인 given 값(account_balance: 500000, charge_request_amount: 150000 등)과 명확한 then 결과(result_code, error_code)를 제시합니다. POL-LPON-CHARGE-004는 타임아웃 시나리오를 초 단위로 정의(timeout_threshold_seconds: 300)하여 자동화 가능합니다. 제한 사항: POL-LPON-CHARGE-004의 edge_case와 POL-LPON-CHARGE-008의 일부 시나리오가 불완전하게 끝나 있습니다('정책 미적용', 'auto_charge_executed' 미완성). POL-LPON-CHARGE-002의 then이 '—'로 표기되어 검증 기준이 모호합니다. 복합 조건(condSmAmt) 테스트가 POL-LPON-CHARGE-008에서 누락되었습니다. 전체적으로 3개 케이스 커버율은 우수하나, 일부 시나리오의 추상성과 불완전성으로 인해 0.75 미만으로 평가됩니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.773,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-03T15:55:47.515Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 33001
+    },
+    {
+      "skillId": "5c872ee3-f506-417d-8429-e23935cfd50b",
+      "result": {
+        "skillId": "5c872ee3-f506-417d-8429-e23935cfd50b",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.92,
+            "rationale": "provenance.businessRules의 6개 규칙(POL-LPON-SETTLEMENT-001~006)이 모두 originalRules 표에 ID 문자 그대로 존재하며, condition-criteria-outcome이 완전히 매핑되었다. 모든 행의 exception 컬럼이 실내용으로 명시되어 있다(예: '예외: 충전 또는 환불 거래가 0건이거나...'). runbooks와 test scenarios도 각 규칙별로 정합하게 구성되었다. 다만 POL-LPON-SETTLEMENT-001의 원본 표에서 outcome 컬럼이 '거래 0건 시 집계 생략'으로 표기되어 있으나, exception 컬럼에서 동일 내용이 반복되는 구조적 중복이 있고, 일부 test scenario(POL-LPON-SETTLEMENT-004, 005, 006)가 불완전하게 끝나있다(마지막 필드 미완성). 이는 spec-container 자체의 완결성 문제이지 originalRules와 provenance의 매핑 정합성을 훼손하지는 않는다. ES 규칙 참조(POL-LPON-SETTLEMENT-003, 006의 ES-SETTLE-001, 002, 003)는 제공되지 않았으나, 평가 기준상 ES는 참고 맥락이므로 불일치 판정 대상이 아니다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.92,
+            "rationale": "lpon-settlement 스킬의 6개 비즈니스 규칙(POL-LPON-SETTLEMENT-001~006)에 대해 모두 대응하는 runbook이 존재합니다. 각 runbook은 rule의 condition-criteria-outcome 구조를 정확히 반영하고 있습니다. 예를 들어 POL-LPON-SETTLEMENT-001은 '충전/환불 내역 집계하여 settlement_summaries 갱신'이라는 criteria를 runbook에서 동일하게 명시하고 있으며, POL-LPON-SETTLEMENT-006의 'fee_reflected IN (Y, N)' 조건과 'INVALID_FEE_FLAG 에러' outcome도 runbook에 정확히 기술되어 있습니다. 모든 runbook이 'reviewed' 신뢰도(0.8)로 표시되어 있고, 각 정책별 테스트 시나리오(happy_path, edge_case, error_case)도 완비되어 있습니다. 다만 POL-LPON-SETTLEMENT-003의 runbook에서 'ES-SETTLE-001, 003' 알림 발송 메커니즘에 대한 구체적인 운영 절차가 다소 간략하며, 일부 테스트 시나리오가 불완전하게 끝나 있어 미미한 감점이 있습니다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.72,
+            "rationale": "lpon-settlement의 tests/contract 시나리오는 given/then 필드가 부분적으로 명확하나 여러 제약이 있습니다. 긍정적 측면: POL-LPON-SETTLEMENT-001의 happy_path는 charge_count, charge_amount, refund_count 등 구체적 값으로 given을 정의하고, then에서 settlement_summaries 갱신 상태를 명시합니다. POL-LPON-SETTLEMENT-006도 fee_reflected('Y'/'N')의 타입을 명확히 하고 settlement_amount_final 계산 결과를 제시합니다. 부정적 측면: 다수 시나리오가 불완전합니다. POL-LPON-SETTLEMENT-001의 edge_case_single_charge에서 refund_fee 필드가 값 없이 끝나고, POL-LPON-SETTLEMENT-002의 error_case에서 charge_count가 null로 표시되나 완성되지 않았습니다. POL-LPON-SETTLEMENT-003, 004, 005도 error_case 시나리오가 절단되어 있습니다. then 필드의 outcome 표현도 일부 추상적(예: '최소 거래건으로 집계')이어서 정확한 상태 변화를 파악하기 어렵습니다. 전체적으로 I/O 구조 의도는 명확하나 구현 완성도와 필드 타입 일관성이 부족합니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.72,
+            "rationale": "lpon-settlement의 예외·에러 핸들링은 부분적으로 정의되어 있습니다. 강점: 6개 규칙 모두 exception 절이 명시되어 있으며(POL-LPON-SETTLEMENT-001~006), tests에서 error_code를 포함한 예외 시나리오가 존재합니다. 예를 들어 POL-LPON-SETTLEMENT-005는 'ERR-LPON-SETTLEMENT-005-INVALID-PERIOD' 에러 케이스, POL-LPON-SETTLEMENT-006은 'INVALID_FEE_FLAG' 에러 케이스가 정의되어 있습니다. 약점: (1) POL-LPON-SETTLEMENT-001~004의 tests에서 error_case 시나리오가 불완전하게 제시되어 있습니다(given/when/then이 절단됨). (2) POL-LPON-SETTLEMENT-003의 error_case_invalid_execution_type에서 예상 에러 코드가 명시되지 않았습니다. (3) 데이터베이스 연결 실패, 타임아웃, 동시성 문제 등 운영 환경의 예외 시나리오가 누락되어 있습니다. 전체적으로 주요 비즈니스 예외는 커버되나 일부 엣지 케이스와 인프라 관련 예외 처리가 미흡합니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.62,
+            "rationale": "lpon-settlement의 6개 규칙(POL-LPON-SETTLEMENT-001~006)을 분석한 결과, 업무루틴 분리·재사용성 측면에서 중대한 문제가 발견되었습니다. POL-001과 POL-002는 모두 '거래 집계 후 settlement_summaries 갱신'이라는 동일한 책임을 수행하며, 단지 대상이 '충전/환불'과 '포인트'로 구분될 뿐 조건 처리 로직이 중복됩니다. POL-003과 POL-004도 'calculations 및 calculation_transactions 테이블 조회·갱신'이라는 공통 책임을 가지고 있어 경계가 불명확합니다. POL-005는 기간 파라미터 검증, POL-006은 수수료 플래그 검증으로 단일 책임을 가지나, 전체적으로 4개 규칙에서 중복 정의가 관찰됩니다. 테스트 시나리오도 POL-001과 POL-002의 happy_path가 거의 동일한 구조를 보입니다. 규칙 간 독립 참조 가능성은 낮으며, 재사용성 측면에서 개선이 필요합니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.72,
+            "rationale": "lpon-settlement의 테스트 시나리오는 6개 정책에 걸쳐 happy path, edge case, error case를 부분적으로 커버하나 완성도가 불균형하다. POL-LPON-SETTLEMENT-001~004는 시나리오가 불완전하게 끝나있고(예: edge_case_single_charge, error_case_invalid_execution_type, edge_case 등이 then 절 미완성), POL-LPON-SETTLEMENT-005~006은 상대적으로 구체적이다. 긍정적 측면: 각 정책당 3~4개 시나리오 존재, given에 구체적 값 제시(예: charge_count=5, settlement_amount=1000000), then에 기대 결과 명시(result_code, settlement_amount_final). 부정적 측면: 전체 시나리오의 약 40%가 불완전하게 절단됨, POL-001~004의 then이 추상적 표현('집계 완료', '갱신 성공') 위주, 자동화 검증을 위한 구체적 assertion 부족(예: 정확한 DB 상태 검증 조건 미명시). 0.5~0.75 구간의 상한선에 위치하나, 미완성 시나리오 비율이 높아 0.72로 평가.",
+            "passThreshold": 0.75,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.77,
+        "passCount": 2,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-03T15:56:15.520Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 30255
+    },
+    {
+      "skillId": "5d59e8d7-790d-4a0b-91a3-30e316e88a26",
+      "result": {
+        "skillId": "5d59e8d7-790d-4a0b-91a3-30e316e88a26",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.95,
+            "rationale": "provenance.businessRules의 5개 정책(POL-LPON-BUDGET-001~005)이 originalRules 표의 ID 컬럼과 문자 그대로 1:1 매핑되었다. 각 정책의 condition, criteria, outcome이 표와 runbooks에서 완전히 일치한다. exception 열도 모든 행에서 실내용으로 명시되어 있다(예: '예외: 배정 금액이 0원 이하이거나...'). Empty Slot Rules는 없으며, 이는 BL 원본이 모든 엣지 케이스를 포함하고 있음을 의미한다. Test Scenarios와 Contract Tests도 선언된 5개 정책을 모두 커버하고 있다. 유일한 미흡점은 POL-LPON-BUDGET-005의 runbooks에서 'ES-BUDGET-002' 참조가 있으나 Empty Slot Rules 섹션에 해당 규칙이 정의되지 않았다는 점이다. 이는 참조 무결성 관점에서 0.05점 감점 사유이다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.92,
+            "rationale": "lpon-budget 스킬의 5개 비즈니스 규칙(POL-LPON-BUDGET-001~005)에 대응하는 runbook이 모두 존재하며, 각 runbook은 rule의 condition-criteria-outcome을 정확히 반영하고 있습니다. POL-LPON-BUDGET-001은 '배정 금액 > 0 AND ≤ 최대 한도' 조건과 'E422 반환' outcome을 일치시키고, POL-LPON-BUDGET-002는 '예산 잔액 ≥ 충전 요청 금액' 조건과 'BUDGET_INSUFFICIENT' 거부를 정확히 기술합니다. POL-LPON-BUDGET-003의 '10% 임계치' 조건과 'LMS 알림 발송' criteria, POL-LPON-BUDGET-004의 'rollover_yn=Y' 조건과 '이월 처리' outcome, POL-LPON-BUDGET-005의 'API 오류 감지' 조건과 '즉시 원복' criteria도 모두 정확히 대응됩니다. 다만 test scenarios 일부가 미완성(truncated)이고, runbook에서 exception 조항이 rule 원본만큼 상세하지 않은 점이 만점을 제한합니다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.62,
+            "rationale": "lpon-budget의 tests/contract 시나리오는 given/then 필드가 부분적으로 명확하나 여러 제약이 있습니다. 긍정적 측면: POL-LPON-BUDGET-001~005 모든 정책에서 given 필드가 구체적 값(company_id, allocation_amount, current_budget_balance 등)으로 명시되어 있고, then 필드도 outcome, result_code, 예상 상태값(updated_balance, expected_budget_balance 등)을 정의합니다. 부정적 측면: (1) 일부 시나리오가 불완전하게 끝남(POL-LPON-BUDGET-001의 error_case_negative_amount, POL-LPON-BUDGET-002의 error_case_invalid_amount, POL-LPON-BUDGET-003의 error_case_notification_disabled, POL-LPON-BUDGET-004의 error_case, POL-LPON-BUDGET-005의 result 필드 미완성). (2) then 필드의 타입 정의 부재(예: outcome은 문자열이나 구조화되지 않음). (3) 일부 필드의 의미가 추상적(예: 'charge_processed_successfully'는 boolean 대체 가능). 입출력 경계는 파악 가능하나 완성도와 타입 명확성이 0.75~0.9 수준에 미달합니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.72,
+            "rationale": "lpon-budget 스킬의 예외·에러 핸들링 평가 결과입니다. 긍정적 측면: (1) 5개 모든 BL 규칙에서 exception 절이 명시되어 있음(POL-LPON-BUDGET-001~005). (2) 테스트 시나리오에서 error_code 포함 예외 케이스가 부분적으로 커버됨(POL-002의 'E422 BUDGET_INSUFFICIENT', POL-003의 'notification_disabled', POL-004의 'rollover_yn=N', POL-005의 'external_api_status=timeout'). 제한 사항: (1) POL-LPON-BUDGET-001 테스트에서 'error_case_negative_amount' 시나리오가 불완전(when/then 절 누락). (2) POL-003, POL-004, POL-005 테스트 시나리오가 문서 끝에서 잘려있어 전체 커버리지 확인 불가. (3) 일부 exception 절이 추상적(예: POL-005 '복구 실패 시 수기처리')이며 구체적 에러 코드 정의 부족. (4) 비활성화 계정, 연락처 없음 등 세부 예외 시나리오가 테스트에서 누락됨.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.82,
+            "rationale": "lpon-budget 스킬의 5개 규칙(POL-LPON-BUDGET-001~005)은 대체로 단일 책임 원칙을 준수합니다. 각 규칙이 명확한 업무 영역을 담당합니다: 001은 예산 배정, 002는 충전 요청 처리, 003은 임계치 알림, 004는 이월 처리, 005는 실패 복구입니다. 규칙 간 중복이 최소화되어 있으며 독립적 참조가 가능합니다. 다만 POL-LPON-BUDGET-002와 POL-LPON-BUDGET-005 사이에 암묵적 의존성이 존재합니다(002에서 차감된 예산이 005의 롤백 대상). 또한 POL-LPON-BUDGET-003의 '알림 설정 비활성 시 미발송'이 Outcome 섹션에 위치하여 조건 정의가 다소 모호합니다. Empty Slot 규칙이 없어 엣지 케이스 보완이 부족하며, 테스트 시나리오가 일부 미완성 상태입니다. 전반적으로 SRP 준수 수준은 양호하나 규칙 간 상호작용 명시와 엣지 케이스 정의 강화가 필요합니다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "testability",
+            "score": 0.72,
+            "rationale": "lpon-budget 스킬의 테스트 시나리오는 5개 정책 모두에서 happy path, edge case, error case를 포함하고 있으나, 자동화 테스트 구현 가능성 측면에서 불완전합니다. POL-LPON-BUDGET-001의 error_case_negative_amount와 POL-LPON-BUDGET-002의 error_case_invalid_amount, POL-LPON-BUDGET-003의 error_case_notification_disabled, POL-LPON-BUDGET-004의 error_case, POL-LPON-BUDGET-005의 edge_case가 모두 'then' 섹션이 잘려있거나 미완성 상태입니다. 완성된 시나리오들(POL-LPON-BUDGET-001 happy/edge, POL-LPON-BUDGET-002 happy/edge/error_insufficient, POL-LPON-BUDGET-003 happy/edge, POL-LPON-BUDGET-004 happy/edge, POL-LPON-BUDGET-005 happy)은 구체적인 값(예: updated_balance: 3000000, error_code: E422, transferred_amount: 150000)으로 자동화 가능하나, 약 40% 시나리오가 불완전하여 전체 커버리지와 실행 가능성이 저하됩니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.792,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-03T15:56:17.299Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 29763
+    },
+    {
+      "skillId": "66f5e9cc-77f9-406a-b694-338949db0901",
+      "result": {
+        "skillId": "66f5e9cc-77f9-406a-b694-338949db0901",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.95,
+            "rationale": "provenance.businessRules의 8개 정책(POL-LPON-CHARGE-001~008)이 Original Rules 표의 ID 컬럼과 문자 그대로 1:1 매핑되었다. 각 정책의 condition, criteria, outcome이 표와 runbooks에서 완전히 일치한다. exception 열도 모든 행에서 명시적으로 기재되어 있다(예: '예외: 출금계좌 잔액이 충전 요청 금액보다 부족하거나...'). Test Scenarios와 Contract Tests도 선언된 8개 정책을 모두 커버하며, 각 시나리오가 condition-criteria-outcome 구조를 충실히 반영한다. Empty Slot Rules가 없으므로 참고 맥락 검증 불필요. 유일한 미흡점은 일부 test scenario 텍스트가 절단되어 완전성 검증이 100% 불가능한 점이나, 제시된 범위 내에서는 구조적 정합성이 완벽하다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.95,
+            "rationale": "lpon-charge 스킬의 8개 비즈니스 규칙(POL-LPON-CHARGE-001~008)에 대응하는 runbook이 모두 존재하며, 각 runbook의 Condition/Criteria/Outcome이 원본 규칙과 정확히 일치한다. 예를 들어 POL-LPON-CHARGE-001의 'condition: 출금계좌 잔액 ≥ 충전 요청 금액'과 'outcome: 잔액 부족 시 출금 실패 에러를 반환한다'가 runbook에 동일하게 반영되었고, POL-LPON-CHARGE-008의 복잡한 자동충전 조건(blceCondAmt, ymdCondAmt, condSmAmt)도 정확히 문서화되었다. 각 정책별 테스트 시나리오(happy_path, edge_case, error_case)가 구체적으로 제시되어 있으며, 모든 runbook이 'Trust: reviewed (score: 0.8)'로 검증 상태를 명시하고 있다. 다만 일부 테스트 시나리오가 문서 끝에서 잘려있어 완전성에서 미미한 감점이 있다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.72,
+            "rationale": "lpon-charge 스킬의 테스트 시나리오들은 given/when/then 구조를 갖추고 있으나 입출력 명확성에서 중간 수준의 문제를 보입니다. 긍정적 측면: POL-LPON-CHARGE-001~007의 happy_path와 error_case는 구체적 값(withdrawal_account_id, account_balance, charge_request_amount 등)과 명확한 outcome(withdrawal_processed_successfully, withdrawal_rejected 등)을 정의합니다. 부정적 측면: (1) POL-LPON-CHARGE-004의 edge_case가 '정책 미적용'으로 불완전하게 종료됨, (2) POL-LPON-CHARGE-006, 007, 008의 error_case들이 절단되어 then 필드가 누락됨, (3) 일부 필드의 타입이 모호함(예: withdrawal_status_api_response가 문자열인지 객체인지 불명확), (4) POL-LPON-CHARGE-008의 condSmAmt 필드 의미가 '복합 조건' 문자열로만 표현되어 실제 데이터 구조 불명확. 전체적으로 구조는 존재하나 완전성과 타입 명확성이 부족합니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.78,
+            "rationale": "lpon-charge 스킬의 예외·에러 핸들링은 부분적으로 정의되어 있습니다. 8개 정책 모두에서 exception 절이 명시되어 있으며, 테스트 시나리오에서 error_code를 포함한 예외 케이스가 대부분 커버되어 있습니다. POL-LPON-CHARGE-001~007은 error_case 시나리오(ERR_INSUFFICIENT_BALANCE, ERR-LPON-CHARGE-002-PROCESS-FAILED, ERR_LPON_CHARGE_003_001, ERR_CHARGE_LIMIT_EXCEEDED 등)를 포함하고 있습니다. 그러나 POL-LPON-CHARGE-004의 테스트가 불완전하게 제시되었고, POL-LPON-CHARGE-008의 error_case_no_conditions_met 시나리오가 잘려있어 전체 커버리지를 확인할 수 없습니다. 또한 네트워크 장애, 타임아웃, 시스템 오류 등 일부 예외 시나리오는 규칙에 언급되었으나 테스트에서 완전히 구현되지 않았습니다. 주요 예외 처리는 충분하나 엣지 케이스와 시스템 레벨 예외의 커버리지가 미흡합니다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.62,
+            "rationale": "lpon-charge 스킬의 8개 규칙(POL-LPON-CHARGE-001~008)을 분석한 결과, 업무루틴 분리·재사용성 측면에서 중대한 문제가 발견되었습니다. 첫째, POL-LPON-CHARGE-005(이용자 충전)와 POL-LPON-CHARGE-006(회사 충전)은 동일한 조건 구조(금액 ≤ 한도)를 가지면서 '충전 확정 처리' vs '충전 원장 처리'로만 구분되어 실질적 중복입니다. 둘째, POL-LPON-CHARGE-001(출금 시도)과 POL-LPON-CHARGE-003(출금 오류)은 동일 프로세스의 성공/실패 경로로, 단일 책임 원칙 위반입니다. 셋째, POL-LPON-CHARGE-007(포인트 충전)은 POL-LPON-CHARGE-005와 거의 동일한 한도 검증 로직을 반복합니다. 넷째, POL-LPON-CHARGE-008(자동충전)의 '3개 조건 중 하나 이상'은 모호하며, 조건 우선순위가 명확하지 않습니다. 테스트 시나리오는 충실하나, 규칙 간 경계가 불명확하고 중복 정의가 다수 존재하여 독립 참조 및 재사용성이 저하됩니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.72,
+            "rationale": "lpon-charge 스킬의 테스트 시나리오는 8개 정책 모두에서 happy path, edge case, error case를 포함하고 있으나, 자동화 테스트 구현 가능성 측면에서 제약이 있습니다. 긍정적 측면: 각 정책마다 3~4개 시나리오가 구성되어 있고, given 조건에 구체적 값(account_balance: 500000, charge_limit: 100000 등)이 명시되어 있으며, then의 outcome과 result_code가 정의되어 있습니다. 부정적 측면: POL-LPON-CHARGE-004의 edge_case가 '정책 미적용'으로 불완전하게 끝나고, POL-LPON-CHARGE-008의 error_case가 잘려있어 검증 불가능합니다. 또한 일부 then 조건이 '충전 완료 처리됨', '충전 원장 처리 완료'처럼 추상적이어서 자동화 검증 기준이 모호합니다. 타임아웃, 네트워크 장애 등 비동기 시나리오의 then이 구체적 상태값(COMPLETED, PENDING, FAILED)으로 표현되어야 더 명확합니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.79,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-03T15:56:45.101Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 29588
+    },
+    {
+      "skillId": "7dd016bb-7f66-4a68-b905-a68972d6203c",
+      "result": {
+        "skillId": "7dd016bb-7f66-4a68-b905-a68972d6203c",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.95,
+            "rationale": "provenance.businessRules의 7개 정책(POL-LPON-PAYMENT-001~007)이 Original Rules 표의 ID 컬럼과 문자 그대로 1:1 매핑되어 있습니다. 각 정책의 condition-criteria-outcome이 완전히 일치합니다. 예: POL-LPON-PAYMENT-001은 '환불 요청이 유효함' condition, '충전 환불 처리를 진행한다' criteria, '유효하지 않은 요청 시 거부' outcome으로 정확히 대응됩니다. 모든 7개 행의 exception 컬럼이 명시적 내용으로 채워져 있으며 빈칸이 없습니다(예: 'POL-LPON-PAYMENT-002의 exception은 결제 상태 조건 명시). Runbooks와 Test Scenarios가 각 정책을 상세히 구현하고 있으며, Empty Slot Rules가 없으므로 원본 BL 정합성 판정에 영향 없습니다. ID 표기 변동, 누락, 드리프트가 0건입니다. 미세한 감점 사유는 없으나, 극도의 엄격성 기준에서 exception 컬럼의 일부 표현이 조건 재진술 형태인 점을 고려하여 0.05점 감점합니다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.95,
+            "rationale": "lpon-payment 스킬의 7개 비즈니스 규칙(POL-LPON-PAYMENT-001~007)에 대응하는 runbook이 모두 존재하며, 각 runbook의 condition-criteria-outcome이 원본 규칙과 정확히 일치한다. 예를 들어 POL-LPON-PAYMENT-001은 '환불 요청이 유효함' 조건에서 '충전 환불 처리를 진행한다'는 criteria를 runbook에서 동일하게 명시하고 있다. POL-LPON-PAYMENT-003의 '결제 요청 금액 ≥ 50,000원'과 'SMS를 발송한다'는 내용도 runbook에 정확히 반영되어 있다. 추가로 각 정책별 test scenarios가 happy_path, edge_case, error_case를 포함하여 충실하게 작성되었으며, contract tests에서 모든 7개 정책을 명시하고 있다. 다만 일부 test scenario가 불완전하게 끝나있는 부분(error_case_expired_period, error_case_pending_status 등)이 있어 완벽성에서 미미한 감점이 있다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.72,
+            "rationale": "lpon-payment의 test scenarios에서 given/then 필드는 대체로 명확하게 정의되어 있으나, 몇 가지 구조적 문제가 있습니다. 긍정적 측면: POL-LPON-PAYMENT-002의 happy_path에서 'payment_status: PAID', 'cancellation_type: PARTIAL', 'cancelled_amount: 20000' 등 구체적 값과 타입이 명시되어 있고, then 필드에서 'result_code: 200', 'remaining_amount: 30000' 등 상태 변화가 명확합니다. POL-LPON-PAYMENT-003도 'payment_amount: 75000', 'sms_status: delivered' 등으로 I/O 경계가 분명합니다. 부정적 측면: POL-LPON-PAYMENT-001의 error_case가 'given' 섹션이 불완전하게 끝나 있고, POL-LPON-PAYMENT-005의 edge_case와 POL-LPON-PAYMENT-006의 edge_case도 'outcome' 필드가 '최'로 끝나 미완성 상태입니다. POL-LPON-PAYMENT-007의 error_case도 'given' 섹션이 누락되어 있습니다. 이러한 불완전한 시나리오들이 전체 명확성을 저하시킵니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.72,
+            "rationale": "lpon-payment의 예외·에러 핸들링 평가 결과: 7개 정책 모두 exception 절이 명시되어 있으나, tests 커버리지가 불완전합니다. POL-LPON-PAYMENT-001~007의 Original Rules 테이블에서 각 정책마다 exception 항목이 정의되어 있습니다(예: POL-001 '환불 요청이 유효하지 않거나...', POL-002 'E409 에러 반환', POL-004 '에러를 반환하고 처리 거부'). 그러나 Test Scenarios에서 error_case가 부분적으로만 작성되었습니다. POL-003, POL-005, POL-006, POL-007의 error_case 시나리오가 미완성 상태(given 절 이후 끝남)이며, POL-001, POL-002의 error_case도 불완전합니다. POL-003만 error_code 'POL-LPON-PAYMENT-003-EXCEPTION'을 포함한 완전한 예외 시나리오를 제시합니다. 따라서 주요 예외 처리는 정의되었으나, 테스트 커버리지가 약 40~50% 수준으로 제한적입니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.62,
+            "rationale": "lpon-payment 스킬의 7개 규칙(POL-LPON-PAYMENT-001~007) 분석 결과, 업무루틴 분리·재사용성 측면에서 중대한 문제가 발견되었습니다. 첫째, 결제취소 관련 규칙들(002, 004, 005, 006)이 동일한 '취소 처리' 책임을 중복으로 정의하고 있습니다. POL-002는 '결제취소 가능성 판단', POL-004는 '카드사 전달', POL-005는 'BC카드 MPM 전송', POL-006은 '가맹점주 승인'으로 세분화되어 있으나, 각 규칙의 경계가 불명확하고 실행 순서 관계가 명시되지 않았습니다. 둘째, POL-001(환불)과 POL-007(탈퇴 회원 취소)은 유사한 '환불 처리' 로직을 다루면서도 조건 정의가 겹칩니다. 셋째, POL-003(SMS 발송)만 단일 책임을 명확히 수행합니다. 규칙 간 의존성이 명시되지 않아 독립적 참조 시 모순 위험이 높습니다. 테스트 시나리오는 개별 규칙 검증에만 집중하여 규칙 간 상호작용 검증이 부재합니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.62,
+            "rationale": "lpon-payment의 테스트 시나리오는 7개 정책 모두에서 happy path와 edge case를 포함하고 있으나, 여러 제약이 있습니다. 긍정적 측면: POL-LPON-PAYMENT-003은 49,999원(미만), 50,000원(경계), 75,000원(초과)으로 명확한 경계값 테스트를 제시했고, POL-LPON-PAYMENT-002는 PAID/PENDING 상태 구분, 부분취소/전액취소 시나리오를 구체적으로 정의했습니다. 부정적 측면: 대부분의 error_case가 불완전하게 끝나있습니다(POL-LPON-PAYMENT-001, 002, 004, 005, 006, 007 모두 'error_case_' 이후 내용 누락). given 조건이 구체적 값으로 제시되었으나, then의 검증 기준이 'outcome' 텍스트 설명에 의존하며 자동화 가능한 assertion이 부족합니다. 예를 들어 'result_code: SUCCESS'는 boolean 수준의 검증입니다. 전체적으로 happy path와 일부 edge case는 커버하나, error case의 완성도 부족과 then 검증의 추상성으로 인해 자동화 테스트 구현 난이도가 높습니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.763,
+        "passCount": 2,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-03T15:56:48.315Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 31045
+    },
+    {
+      "skillId": "b923a11b-3b6e-4489-9600-2345fa395bce",
+      "result": {
+        "skillId": "b923a11b-3b6e-4489-9600-2345fa395bce",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.92,
+            "rationale": "provenance.businessRules의 5개 정책(POL-LPON-PURCHASE-001~005)이 originalRules 표의 ID 컬럼과 문자 그대로 1:1 매핑되며, condition-criteria-outcome이 완전히 일치한다. 모든 행의 exception 컬럼이 실내용으로 명시되어 있다(예: '예외: 구매 금액이 0원 이하이거나...'). Runbooks의 5개 정책 섹션도 각각의 When/If/Then 구조가 원본 표와 정확히 대응된다. Test Scenarios는 5개 정책별로 happy_path, edge_case, error_case를 포함하여 검증 가능성을 높인다. Empty Slot Rules가 없으므로 참고 맥락 검토 불필요. 다만 POL-LPON-PURCHASE-005에서 'BL-024 연동'이라는 외부 참조가 있으나, 이는 현재 spec-container 범위 내에서 검증 불가능한 크로스-스킬 의존성이므로 미세한 감점 요인이다. 전반적으로 ID 일치, 내용 정합성, exception 완결성 모두 충족된다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.85,
+            "rationale": "lpon-purchase 스킬의 5개 비즈니스 규칙(POL-LPON-PURCHASE-001~005)에 대응하는 runbook이 모두 존재하며, 각 runbook은 condition-criteria-outcome 구조를 정확히 반영하고 있습니다. 예를 들어 POL-LPON-PURCHASE-001은 '구매 금액 > 0 AND 구매 금액 ≤ 1회 구매 한도' 조건에서 '신규 상품권 발행'을 수행하고 '한도 초과 시 E422 반환'하는 outcome을 명확히 기술하고 있습니다. POL-LPON-PURCHASE-005도 '7일 이내 미사용' 조건에서 '전액 환불 처리'를 수행하는 내용이 일치합니다. 다만 runbook 문서에서 exception 섹션이 명시적으로 분리되지 않고 outcome 필드에 혼재되어 있으며, POL-LPON-PURCHASE-002의 runbook에서 'exception' 케이스(결제 실패, 중복 결제, 시스템 장애)에 대한 구체적인 처리 절차가 상세히 기술되지 않은 점이 미흡합니다. 테스트 시나리오는 happy path, edge case, error case를 포함하여 충분히 작성되었습니다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.72,
+            "rationale": "lpon-purchase의 tests/contract 시나리오는 given/then 필드가 부분적으로 명확하나 일관성 문제가 있습니다. POL-LPON-PURCHASE-001~003은 given 필드에서 구체적 값(purchase_amount: 50000, monthly_limit: 1000000)과 타입을 명시하고, then 필드에서 outcome, result_code 등을 정의했습니다. 그러나 POL-LPON-PURCHASE-002의 then 필드에서 'voucher_expires_at' 계산식이 불완전하게 기술되었고, POL-LPON-PURCHASE-004~005는 시나리오가 중단되어 then 필드 정의가 누락되었습니다. 또한 error_case_zero_amount 시나리오는 given만 제시되고 when/then이 완전히 부재합니다. 필드 타입은 대부분 명확하나(string, integer, date), 일부 필드의 의미(예: 'outcome' 값의 정규화)가 정책 간 불일치합니다. 입출력 경계는 파악 가능하지만 완전성과 일관성에서 개선이 필요합니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.72,
+            "rationale": "POL-LPON-PURCHASE-001~005의 5개 규칙 모두 exception/else 절이 명시되어 있으나, 테스트 커버리지에 불균형이 있습니다. POL-LPON-PURCHASE-001의 error_case_zero_amount는 given 섹션만 있고 then 절이 미완성입니다. POL-LPON-PURCHASE-002의 테스트도 중단되어 있습니다. POL-LPON-PURCHASE-003은 E422 MONTHLY_LIMIT_EXCEEDED 에러 케이스가 정의되어 있고, POL-LPON-PURCHASE-004는 HTTP 409 PURCHASE_IN_PROGRESS 시나리오가 부분적으로 제시되었으나 완성되지 않았습니다. POL-LPON-PURCHASE-005는 7일 초과 및 일부 사용 시나리오가 정의되었으나 역시 미완성입니다. 규칙 정의는 충실하나(exception 절 명시), 테스트 시나리오의 완성도가 낮고 일부 error_code 검증이 누락되어 있어 0.75~0.9 범위 하단에 해당합니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.82,
+            "rationale": "lpon-purchase의 5개 정책(POL-LPON-PURCHASE-001~005)은 대체로 단일 책임 원칙을 준수합니다. POL-001은 1회 구매 한도 검증, POL-002는 결제 완료 후 상품권 발행, POL-003은 월별 한도 검증, POL-004는 중복 요청 처리, POL-005는 환불 처리로 각각 명확히 분리되어 있습니다. 그러나 POL-001과 POL-003 간에 '구매 한도 검증'이라는 개념적 중복이 존재하며(1회 vs 월별), POL-002의 'Outcome' 필드가 실패 케이스('결제 실패 시 상품권 미발행')를 기술하여 조건-결과 구조가 다소 모호합니다. 또한 POL-001의 'Outcome'과 'exception' 표현이 중복되어 있습니다. 테스트 시나리오는 각 정책별로 독립적으로 작성되었으나, 통합 시나리오(예: 월 한도 초과 후 결제 시도)가 부재합니다. 전반적으로 규칙 경계는 명확하고 독립 참조 가능하지만, 미세한 표현 중복과 조건 구조 개선 여지가 있습니다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "testability",
+            "score": 0.62,
+            "rationale": "lpon-purchase 스킬의 테스트 시나리오는 5개 정책에 걸쳐 happy path, edge case, error case를 부분적으로 커버하고 있으나 여러 제약이 있습니다. POL-LPON-PURCHASE-001은 3개 happy/edge case와 1개 미완성 error case(zero_amount)를 포함하고, POL-LPON-PURCHASE-002는 2개 시나리오가 미완성 상태입니다. POL-LPON-PURCHASE-003은 happy path, edge case(경계값 700000), error case를 구체적 값으로 정의했으나, POL-LPON-PURCHASE-004와 005는 시나리오가 절단되어 완전하지 않습니다. given 조건들은 대부분 구체적 값(purchase_amount: 50000, days_elapsed: 4 등)으로 자동화 가능하지만, then의 outcome이 'voucher_issued', 'purchase_approved' 같은 추상 표현에 의존합니다. 특히 POL-LPON-PURCHASE-002의 expires_at 계산 검증, POL-LPON-PURCHASE-004의 409 응답 검증, POL-LPON-PURCHASE-005의 환불 금액 검증이 명확하지 않습니다. 전체적으로 시나리오 수는 충분하나 완성도와 자동화 구현 가능성이 0.5~0.75 범위에 해당합니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.775,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-03T15:57:14.059Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 28959
+    },
+    {
+      "skillId": "fc4204c8-af26-4c47-889d-11012e56c241",
+      "result": {
+        "skillId": "fc4204c8-af26-4c47-889d-11012e56c241",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.92,
+            "rationale": "provenance.businessRules의 11개 정책(POL-LPON-REFUND-001~011)이 모두 originalRules 표의 ID 컬럼에 문자 그대로 일치한다. condition-criteria-outcome 매핑도 완전히 대응된다. exception 열은 모든 행에서 실내용 또는 명시적 예외 설명으로 채워져 있으며, 빈칸이나 null이 없다. runbooks의 11개 정책 섹션도 각각 condition/criteria/outcome을 originalRules와 일치하게 기술했다. test scenarios는 모든 정책에 happy_path, edge_case, error_case를 포함하여 완결성을 보인다. 다만 POL-LPON-REFUND-003, 004, 007, 008, 010, 011의 outcome 컬럼에 '[미정의]' 표기가 있어 완전한 정의 상태는 아니지만, 이는 원본 표 자체의 설계이므로 정합성 판정에는 영향을 주지 않는다. Empty Slot Rules가 없으므로 참조 검증 불필요. 전체적으로 ID 일치, 구조 완결성, exception 명시성 측면에서 우수하다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.82,
+            "rationale": "lpon-refund 스킬의 11개 비즈니스 규칙(POL-LPON-REFUND-001~011)에 대응하는 runbook이 모두 존재하며, 각 runbook은 condition-criteria-outcome 구조를 정확히 반영하고 있습니다. 예를 들어 POL-LPON-REFUND-001의 'rfndPsbltyYn=Y'라는 조건과 '환불 처리 진행'이라는 기준이 runbook에 명확히 기술되어 있습니다. 다만 POL-LPON-REFUND-003, 004, 007, 008, 010, 011에서 outcome이 '[미정의]'로 표기되어 있어 최종 결과 상태가 불명확한 부분이 있습니다. 또한 test scenarios가 일부 잘려있어 완전성을 검증하기 어렵습니다. runbook의 trust score가 모두 0.8으로 일관되게 설정되어 있으나, 미정의 outcome 항목들로 인해 실제 운영 가이드로서의 완전성이 다소 제한됩니다. 전반적으로 구조적 대응은 우수하나 내용 정의의 완성도에서 개선이 필요합니다.",
+            "passThreshold": 0.75,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.62,
+            "rationale": "lpon-refund 스킬의 given/when/then 시나리오는 부분적 명확성을 보이나 여러 제약이 있습니다. 긍정적 측면: POL-LPON-REFUND-001~009는 given 필드에서 구체적 값(transaction_id, refund_amount, days_elapsed 등)과 타입을 명시하고, then 필드에서 outcome, result_code, 상태 변화(refund_status)를 정의합니다. 예: POL-LPON-REFUND-005의 happy_path는 'purchase_date', 'days_elapsed: 5', 'refund_status: approved'로 명확합니다. 부정적 측면: (1) 다수 시나리오가 불완전하게 절단됨(POL-LPON-REFUND-002, 004, 007, 008, 010, 011의 error_case가 미완성). (2) POL-LPON-REFUND-003, 004, 007, 008, 010, 011의 then 필드가 '[미정의]'로 표기되어 출력 구조가 불명확. (3) POL-LPON-REFUND-007 edge_case는 'error_code'만 반환하고 refund_status 같은 상태 필드 부재. (4) 일부 필드명 불일치(outcome vs result_code 혼용). 입출력 경계 파악은 가능하나 완전성과 일관성이 부족합니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.72,
+            "rationale": "lpon-refund 스킬의 예외·에러 핸들링 평가 결과입니다. 긍정적 측면: (1) 11개 정책 모두에서 exception/else 절이 명시되어 있음(예: POL-LPON-REFUND-001 'rfndPsbltyYn=N이면 환불 거부', POL-LPON-REFUND-003 '입금 프로세스 중 오류 발생 시 처리 거부'). (2) 테스트 시나리오에서 error_case가 대부분 포함됨(POL-LPON-REFUND-001~009에서 error_case 존재). (3) 구체적 에러 코드 정의(ERR-DEPOSIT-*, ERR_REFUND_DEADLINE_EXCEEDED). 제한 사항: (1) POL-LPON-REFUND-003, 004, 007, 008, 010, 011의 outcome이 '[미정의]'로 표기되어 있어 예외 발생 시 구체적 처리 방식이 불명확함. (2) 일부 테스트 시나리오가 불완전하게 끝남(POL-LPON-REFUND-002, 003, 004, 007, 008, 010, 011의 error_case가 중단됨). (3) 비정상 상태 커버리지가 부분적으로 제한적임. 종합적으로 주요 예외는 처리되나 일부 정책의 outcome 미정의와 테스트 완성도 부족으로 0.75~0.9 범위 하단에 평가됩니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.62,
+            "rationale": "lpon-refund 스킬의 11개 규칙(POL-LPON-REFUND-001~011)을 분석한 결과, 단일 책임 원칙(SRP) 준수 측면에서 중대한 문제가 발견되었습니다. POL-LPON-REFUND-001과 POL-LPON-REFUND-002는 모두 '환불 가능 여부 판단'이라는 동일한 조건을 다루고 있으며, POL-LPON-REFUND-003과 POL-LPON-REFUND-004는 입금 프로세스의 성공/실패 경로로 강하게 결합되어 있습니다. POL-LPON-REFUND-005와 POL-LPON-REFUND-006은 각각 미사용/기사용 상품권 환불이라는 명확한 분리가 있으나, POL-LPON-REFUND-007은 '캐시백/할인보전' 처리로 다른 규칙들과 중복되는 환불 계산 로직을 포함합니다. POL-LPON-REFUND-010과 POL-LPON-REFUND-011은 예외 처리(강제환불, 유효기간 연장)로 분류되지만 핵심 환불 거부 정책과의 경계가 불명확합니다. 규칙 간 독립성이 부족하고 중복 정의가 존재하여 재사용성이 제한됩니다.",
+            "passThreshold": 0.75,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.72,
+            "rationale": "lpon-refund 스킬의 테스트 시나리오는 11개 정책에 걸쳐 happy path, edge case, error case를 포함하고 있으나, 완성도에 편차가 있다. POL-LPON-REFUND-001~009는 given/when/then이 구체적 값(transaction_id, refund_amount, days_elapsed 등)으로 자동화 가능하게 정의되어 있다. 예: POL-LPON-REFUND-005는 purchase_date, days_elapsed 5/7/8일로 경계값 테스트를 명확히 제시했고, POL-LPON-REFUND-009는 exclusion_amount 계산식을 수식으로 표현했다. 그러나 POL-LPON-REFUND-007, 010, 011의 error_case는 given 필드가 불완전하게 잘려있어 자동화 구현이 불가능하다. 또한 POL-LPON-REFUND-002, 003, 004의 error_case도 마찬가지로 미완성 상태다. 전체적으로 happy path와 edge case는 충분하나, error case 커버리지가 약 40% 수준에서 불완전하며, 일부 then 조건이 boolean 수준('rejected', 'denied')으로만 표현된 부분이 있다.",
+            "passThreshold": 0.75,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.737,
+        "passCount": 2,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-03T15:57:19.840Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 31531
+    }
+  ]
+}

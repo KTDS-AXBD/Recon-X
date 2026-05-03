@@ -40,12 +40,11 @@ const CONCURRENCY = parseInt(arg("--concurrency", "3"), 10);
 const DRY_RUN = process.argv.includes("--dry-run");
 const BUCKET = "ai-foundry-skill-packages";
 const SVC_SKILL_DIR = process.env["SVC_SKILL_DIR"] ?? resolve(process.cwd(), "services/svc-skill");
-const LLM_API = process.env["LLM_API"] ?? "https://svc-llm-router-production.ktds-axbd.workers.dev";
+const OPENROUTER_KEY = process.env["OPENROUTER_API_KEY"] ?? "";
 const CF_TOKEN = process.env["CLOUDFLARE_API_TOKEN"] ?? "";
-const SECRET = process.env["INTERNAL_API_SECRET"] ?? "";
 
 if (!CF_TOKEN) { console.error("❌ CLOUDFLARE_API_TOKEN required"); process.exit(1); }
-if (!SECRET) { console.error("❌ INTERNAL_API_SECRET required"); process.exit(1); }
+if (!OPENROUTER_KEY) { console.error("❌ OPENROUTER_API_KEY required (svc-llm-router decommissioned per TD-44)"); process.exit(1); }
 
 // ── Types ─────────────────────────────────────────────────────────────
 
@@ -114,22 +113,38 @@ async function queryD1(sql: string): Promise<D1Row[]> {
 
 // ── LLM helpers ───────────────────────────────────────────────────────
 
+// OpenRouter direct call (svc-llm-router decommissioned per TD-44, 2026-04-23)
+// HTML guard mirror of packages/utils/src/llm-client.ts
 async function callLlm(userContent: string, maxTokens = 512): Promise<string> {
-  const resp = await fetch(`${LLM_API}/complete`, {
+  const body = {
+    model: "anthropic/claude-haiku-4.5",
+    messages: [{ role: "user", content: userContent }],
+    max_tokens: maxTokens,
+    temperature: 0.1,
+  };
+  const fetchOpts: RequestInit = {
     method: "POST",
-    headers: { "Content-Type": "application/json", "X-Internal-Secret": SECRET },
-    body: JSON.stringify({
-      tier: "haiku",
-      messages: [{ role: "user", content: userContent }],
-      callerService: "augment-skill-data",
-      maxTokens,
-      temperature: 0.1,
-    }),
-  });
-  if (!resp.ok) throw new Error(`LLM error ${resp.status}: ${await resp.text()}`);
-  const json = await resp.json() as { success: boolean; data?: { content?: string }; error?: { message?: string } };
-  if (!json.success) throw new Error(json.error?.message ?? "LLM failed");
-  return (json.data?.content ?? "").trim();
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${OPENROUTER_KEY}`,
+      "HTTP-Referer": "https://decode-x.ktds-axbd.workers.dev",
+      "X-Title": "Decode-X/augment-skill-data",
+    },
+    body: JSON.stringify(body),
+  };
+  for (let attempt = 0; attempt <= 2; attempt++) {
+    const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", fetchOpts);
+    const ct = resp.headers.get("content-type") ?? "";
+    if (ct.includes("text/html")) {
+      if (attempt < 2) { await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, attempt))); continue; }
+      throw new Error(`HTML response after retries: ${(await resp.text()).slice(0, 120)}`);
+    }
+    if (!resp.ok) throw new Error(`OpenRouter error ${resp.status}: ${(await resp.text()).slice(0, 200)}`);
+    const json = await resp.json() as { choices?: Array<{ message?: { content?: string } }>; error?: { message?: string } };
+    if (json.error) throw new Error(`OpenRouter returned error: ${json.error.message}`);
+    return (json.choices?.[0]?.message?.content ?? "").trim();
+  }
+  throw new Error("Unreachable");
 }
 
 function buildExceptionPrompt(p: Policy): string {
@@ -229,37 +244,37 @@ async function augmentSkill(skillId: string, r2Key: string): Promise<AugmentResu
     let exceptionAdded = 0;
     let scenariosAdded = 0;
 
-    const augmentedPolicies = await Promise.all(
-      pkg.policies.map(async (p) => {
-        try {
-          // Prompt A: exception clause
-          const exceptionClause = await callLlm(buildExceptionPrompt(p), 100);
-          // Prompt B: test scenarios
-          const scenariosYaml = await callLlm(buildTestPrompt(p, exceptionClause), 400);
+    // Sequential policy iteration with retry + 200ms inter-call delay (OpenRouter BYOK burst window 회피)
+    const augmentedPolicies: Policy[] = [];
+    for (const p of pkg.policies) {
+      try {
+        const exceptionClause = await callLlm(buildExceptionPrompt(p), 100);
+        await new Promise((r) => setTimeout(r, 200));
+        const scenariosYaml = await callLlm(buildTestPrompt(p, exceptionClause), 400);
+        await new Promise((r) => setTimeout(r, 200));
 
-          // Cost estimate: ~$0.0008 per Haiku call × 2
-          totalCost += 0.0016;
+        totalCost += 0.0016;
 
-          const hasScenarios = scenariosYaml.includes("---TEST_SCENARIOS---");
+        const hasScenarios = scenariosYaml.includes("---TEST_SCENARIOS---");
 
-          if (hasScenarios) scenariosAdded++;
-          if (exceptionClause.startsWith("예외")) exceptionAdded++;
+        if (hasScenarios) scenariosAdded++;
+        if (exceptionClause.startsWith("예외")) exceptionAdded++;
 
-          return {
-            ...p,
-            source: {
-              ...p.source,
-              excerpt: exceptionClause || p.source.excerpt,
-            },
-            description: hasScenarios
-              ? scenariosYaml
-              : (p.description ?? ""),
-          } as Policy;
-        } catch {
-          return p;
+        augmentedPolicies.push({
+          ...p,
+          source: { ...p.source, excerpt: exceptionClause || p.source.excerpt },
+          description: hasScenarios ? scenariosYaml : (p.description ?? ""),
+        } as Policy);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error(`  [policy ${p.code}] LLM error: ${msg.slice(0, 150)}`);
+        augmentedPolicies.push(p);
+        // Backoff 5s on credit/rate errors before next policy
+        if (msg.includes("402") || msg.includes("rate") || msg.includes("Insufficient")) {
+          await new Promise((r) => setTimeout(r, 5000));
         }
-      }),
-    );
+      }
+    }
 
     // Step 3: Write augmented bundle
     const augmentedPkg: SkillPackage = { ...pkg, policies: augmentedPolicies };

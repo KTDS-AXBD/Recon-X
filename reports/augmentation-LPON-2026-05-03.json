@@ -1,0 +1,332 @@
+{
+  "executedAt": "2026-05-03T15:38:54.448Z",
+  "organization": "LPON",
+  "dryRun": false,
+  "totalSkills": 32,
+  "succeeded": 32,
+  "failed": 0,
+  "totalCostUsd": 3.135999999999995,
+  "durationSeconds": 9538.482,
+  "results": [
+    {
+      "skillId": "d42c15f9-437c-4f6f-a5d7-b2892992f69f",
+      "r2Key": "skill-packages/bundle-d42c15f9-437c-4f6f-a5d7-b2892992f69f.skill.json",
+      "augmentedKey": "skill-packages/augmented/d42c15f9-437c-4f6f-a5d7-b2892992f69f.skill.json",
+      "policyCount": 92,
+      "exceptionAdded": 92,
+      "scenariosAdded": 92,
+      "costUsd": 0.1472,
+      "durationMs": 447113
+    },
+    {
+      "skillId": "91d347e7-5b01-4a01-863d-129403f152a6",
+      "r2Key": "skill-packages/bundle-91d347e7-5b01-4a01-863d-129403f152a6.skill.json",
+      "augmentedKey": "skill-packages/augmented/91d347e7-5b01-4a01-863d-129403f152a6.skill.json",
+      "policyCount": 26,
+      "exceptionAdded": 26,
+      "scenariosAdded": 26,
+      "costUsd": 0.04159999999999999,
+      "durationMs": 130481
+    },
+    {
+      "skillId": "3d3dc1e7-47ce-4a91-96ed-719e8317d1f0",
+      "r2Key": "skill-packages/bundle-3d3dc1e7-47ce-4a91-96ed-719e8317d1f0.skill.json",
+      "augmentedKey": "skill-packages/augmented/3d3dc1e7-47ce-4a91-96ed-719e8317d1f0.skill.json",
+      "policyCount": 38,
+      "exceptionAdded": 38,
+      "scenariosAdded": 38,
+      "costUsd": 0.06079999999999996,
+      "durationMs": 199015
+    },
+    {
+      "skillId": "37c7bf42-4a25-47c6-b5ae-31061cb62849",
+      "r2Key": "skill-packages/bundle-37c7bf42-4a25-47c6-b5ae-31061cb62849.skill.json",
+      "augmentedKey": "skill-packages/augmented/37c7bf42-4a25-47c6-b5ae-31061cb62849.skill.json",
+      "policyCount": 49,
+      "exceptionAdded": 49,
+      "scenariosAdded": 49,
+      "costUsd": 0.0784,
+      "durationMs": 236850
+    },
+    {
+      "skillId": "9491acbb-e653-47d1-9b95-d0f53216b3e4",
+      "r2Key": "skill-packages/bundle-9491acbb-e653-47d1-9b95-d0f53216b3e4.skill.json",
+      "augmentedKey": "skill-packages/augmented/9491acbb-e653-47d1-9b95-d0f53216b3e4.skill.json",
+      "policyCount": 23,
+      "exceptionAdded": 23,
+      "scenariosAdded": 23,
+      "costUsd": 0.0368,
+      "durationMs": 116361
+    },
+    {
+      "skillId": "87bc5b32-06aa-44c7-9e7f-e813f2ceb87d",
+      "r2Key": "skill-packages/bundle-87bc5b32-06aa-44c7-9e7f-e813f2ceb87d.skill.json",
+      "augmentedKey": "skill-packages/augmented/87bc5b32-06aa-44c7-9e7f-e813f2ceb87d.skill.json",
+      "policyCount": 17,
+      "exceptionAdded": 17,
+      "scenariosAdded": 17,
+      "costUsd": 0.02720000000000001,
+      "durationMs": 85706
+    },
+    {
+      "skillId": "2a5dbbca-24ca-4502-9ea9-862404f679dd",
+      "r2Key": "skill-packages/bundle-2a5dbbca-24ca-4502-9ea9-862404f679dd.skill.json",
+      "augmentedKey": "skill-packages/augmented/2a5dbbca-24ca-4502-9ea9-862404f679dd.skill.json",
+      "policyCount": 17,
+      "exceptionAdded": 17,
+      "scenariosAdded": 17,
+      "costUsd": 0.02720000000000001,
+      "durationMs": 86336
+    },
+    {
+      "skillId": "92b692af-7588-4ae7-97df-e81e01684657",
+      "r2Key": "skill-packages/bundle-92b692af-7588-4ae7-97df-e81e01684657.skill.json",
+      "augmentedKey": "skill-packages/augmented/92b692af-7588-4ae7-97df-e81e01684657.skill.json",
+      "policyCount": 2,
+      "exceptionAdded": 2,
+      "scenariosAdded": 2,
+      "costUsd": 0.0032,
+      "durationMs": 12038
+    },
+    {
+      "skillId": "70239cef-e554-44ee-864f-093aec9a31d8",
+      "r2Key": "skill-packages/bundle-70239cef-e554-44ee-864f-093aec9a31d8.skill.json",
+      "augmentedKey": "skill-packages/augmented/70239cef-e554-44ee-864f-093aec9a31d8.skill.json",
+      "policyCount": 149,
+      "exceptionAdded": 149,
+      "scenariosAdded": 149,
+      "costUsd": 0.23839999999999945,
+      "durationMs": 716997
+    },
+    {
+      "skillId": "c55819cb-8f88-4852-9a37-d5f014f12f4e",
+      "r2Key": "skill-packages/bundle-c55819cb-8f88-4852-9a37-d5f014f12f4e.skill.json",
+      "augmentedKey": "skill-packages/augmented/c55819cb-8f88-4852-9a37-d5f014f12f4e.skill.json",
+      "policyCount": 171,
+      "exceptionAdded": 171,
+      "scenariosAdded": 171,
+      "costUsd": 0.27359999999999923,
+      "durationMs": 811514
+    },
+    {
+      "skillId": "ed4f5519-0ba3-4036-b8c7-884678e6718b",
+      "r2Key": "skill-packages/bundle-ed4f5519-0ba3-4036-b8c7-884678e6718b.skill.json",
+      "augmentedKey": "skill-packages/augmented/ed4f5519-0ba3-4036-b8c7-884678e6718b.skill.json",
+      "policyCount": 245,
+      "exceptionAdded": 245,
+      "scenariosAdded": 245,
+      "costUsd": 0.3919999999999985,
+      "durationMs": 1177106
+    },
+    {
+      "skillId": "0913d606-86d2-46a5-97be-a72b8e7bc7a5",
+      "r2Key": "skill-packages/bundle-0913d606-86d2-46a5-97be-a72b8e7bc7a5.skill.json",
+      "augmentedKey": "skill-packages/augmented/0913d606-86d2-46a5-97be-a72b8e7bc7a5.skill.json",
+      "policyCount": 92,
+      "exceptionAdded": 92,
+      "scenariosAdded": 92,
+      "costUsd": 0.1472,
+      "durationMs": 438376
+    },
+    {
+      "skillId": "6e05ea37-57f8-402c-9a45-59efa4f6b7aa",
+      "r2Key": "skill-packages/bundle-6e05ea37-57f8-402c-9a45-59efa4f6b7aa.skill.json",
+      "augmentedKey": "skill-packages/augmented/6e05ea37-57f8-402c-9a45-59efa4f6b7aa.skill.json",
+      "policyCount": 38,
+      "exceptionAdded": 38,
+      "scenariosAdded": 38,
+      "costUsd": 0.06079999999999996,
+      "durationMs": 184306
+    },
+    {
+      "skillId": "9f4f2704-fad9-49c5-ac81-e7f332db32fe",
+      "r2Key": "skill-packages/bundle-9f4f2704-fad9-49c5-ac81-e7f332db32fe.skill.json",
+      "augmentedKey": "skill-packages/augmented/9f4f2704-fad9-49c5-ac81-e7f332db32fe.skill.json",
+      "policyCount": 26,
+      "exceptionAdded": 26,
+      "scenariosAdded": 26,
+      "costUsd": 0.04159999999999999,
+      "durationMs": 129149
+    },
+    {
+      "skillId": "13bb0d15-4a27-47ed-a22e-62d80cf06538",
+      "r2Key": "skill-packages/bundle-13bb0d15-4a27-47ed-a22e-62d80cf06538.skill.json",
+      "augmentedKey": "skill-packages/augmented/13bb0d15-4a27-47ed-a22e-62d80cf06538.skill.json",
+      "policyCount": 49,
+      "exceptionAdded": 49,
+      "scenariosAdded": 49,
+      "costUsd": 0.0784,
+      "durationMs": 249734
+    },
+    {
+      "skillId": "dc1ce7ba-50de-4af2-b2af-c43b0694bbfb",
+      "r2Key": "skill-packages/bundle-dc1ce7ba-50de-4af2-b2af-c43b0694bbfb.skill.json",
+      "augmentedKey": "skill-packages/augmented/dc1ce7ba-50de-4af2-b2af-c43b0694bbfb.skill.json",
+      "policyCount": 19,
+      "exceptionAdded": 19,
+      "scenariosAdded": 19,
+      "costUsd": 0.03040000000000001,
+      "durationMs": 94328
+    },
+    {
+      "skillId": "b4873556-8487-4e6f-b227-c824cfa063f4",
+      "r2Key": "skill-packages/bundle-b4873556-8487-4e6f-b227-c824cfa063f4.skill.json",
+      "augmentedKey": "skill-packages/augmented/b4873556-8487-4e6f-b227-c824cfa063f4.skill.json",
+      "policyCount": 23,
+      "exceptionAdded": 23,
+      "scenariosAdded": 23,
+      "costUsd": 0.0368,
+      "durationMs": 120323
+    },
+    {
+      "skillId": "d7e35396-e0bf-4771-953c-8cbea58bf803",
+      "r2Key": "skill-packages/bundle-d7e35396-e0bf-4771-953c-8cbea58bf803.skill.json",
+      "augmentedKey": "skill-packages/augmented/d7e35396-e0bf-4771-953c-8cbea58bf803.skill.json",
+      "policyCount": 17,
+      "exceptionAdded": 17,
+      "scenariosAdded": 17,
+      "costUsd": 0.02720000000000001,
+      "durationMs": 85216
+    },
+    {
+      "skillId": "d0440832-4a41-42e7-bc4b-72df85e75fe3",
+      "r2Key": "skill-packages/bundle-d0440832-4a41-42e7-bc4b-72df85e75fe3.skill.json",
+      "augmentedKey": "skill-packages/augmented/d0440832-4a41-42e7-bc4b-72df85e75fe3.skill.json",
+      "policyCount": 17,
+      "exceptionAdded": 17,
+      "scenariosAdded": 17,
+      "costUsd": 0.02720000000000001,
+      "durationMs": 83397
+    },
+    {
+      "skillId": "800a9623-88c6-4e10-8377-12dbcd796d1b",
+      "r2Key": "skill-packages/bundle-800a9623-88c6-4e10-8377-12dbcd796d1b.skill.json",
+      "augmentedKey": "skill-packages/augmented/800a9623-88c6-4e10-8377-12dbcd796d1b.skill.json",
+      "policyCount": 2,
+      "exceptionAdded": 2,
+      "scenariosAdded": 2,
+      "costUsd": 0.0032,
+      "durationMs": 14127
+    },
+    {
+      "skillId": "f35f125b-b2fd-4171-880e-3ce1e3ccd6da",
+      "r2Key": "skill-packages/bundle-f35f125b-b2fd-4171-880e-3ce1e3ccd6da.skill.json",
+      "augmentedKey": "skill-packages/augmented/f35f125b-b2fd-4171-880e-3ce1e3ccd6da.skill.json",
+      "policyCount": 149,
+      "exceptionAdded": 149,
+      "scenariosAdded": 149,
+      "costUsd": 0.23839999999999945,
+      "durationMs": 724316
+    },
+    {
+      "skillId": "859e3d01-1f7d-4cc3-ba8f-814f82bb9da6",
+      "r2Key": "skill-packages/bundle-859e3d01-1f7d-4cc3-ba8f-814f82bb9da6.skill.json",
+      "augmentedKey": "skill-packages/augmented/859e3d01-1f7d-4cc3-ba8f-814f82bb9da6.skill.json",
+      "policyCount": 171,
+      "exceptionAdded": 171,
+      "scenariosAdded": 171,
+      "costUsd": 0.27359999999999923,
+      "durationMs": 814474
+    },
+    {
+      "skillId": "cea99a5e-a35b-47a0-abfa-2d307a24af93",
+      "r2Key": "skill-packages/bundle-cea99a5e-a35b-47a0-abfa-2d307a24af93.skill.json",
+      "augmentedKey": "skill-packages/augmented/cea99a5e-a35b-47a0-abfa-2d307a24af93.skill.json",
+      "policyCount": 245,
+      "exceptionAdded": 245,
+      "scenariosAdded": 245,
+      "costUsd": 0.3919999999999985,
+      "durationMs": 1195149
+    },
+    {
+      "skillId": "3b9e48ea-9fe2-4cd4-97cd-53ea510dc9c1",
+      "r2Key": "skill-packages/bundle-3b9e48ea-9fe2-4cd4-97cd-53ea510dc9c1.skill.json",
+      "augmentedKey": "skill-packages/augmented/3b9e48ea-9fe2-4cd4-97cd-53ea510dc9c1.skill.json",
+      "policyCount": 92,
+      "exceptionAdded": 92,
+      "scenariosAdded": 92,
+      "costUsd": 0.1472,
+      "durationMs": 438791
+    },
+    {
+      "skillId": "646a3518-0e84-4828-87d4-5ffebdfdc869",
+      "r2Key": "skill-packages/bundle-646a3518-0e84-4828-87d4-5ffebdfdc869.skill.json",
+      "augmentedKey": "skill-packages/augmented/646a3518-0e84-4828-87d4-5ffebdfdc869.skill.json",
+      "policyCount": 26,
+      "exceptionAdded": 26,
+      "scenariosAdded": 26,
+      "costUsd": 0.04159999999999999,
+      "durationMs": 123750
+    },
+    {
+      "skillId": "0957188e-662e-4ab9-b670-6f400e6f6b4c",
+      "r2Key": "skill-packages/bundle-0957188e-662e-4ab9-b670-6f400e6f6b4c.skill.json",
+      "augmentedKey": "skill-packages/augmented/0957188e-662e-4ab9-b670-6f400e6f6b4c.skill.json",
+      "policyCount": 38,
+      "exceptionAdded": 38,
+      "scenariosAdded": 38,
+      "costUsd": 0.06079999999999996,
+      "durationMs": 179568
+    },
+    {
+      "skillId": "0e1fdeca-6c82-422a-8883-47e33e53572d",
+      "r2Key": "skill-packages/bundle-0e1fdeca-6c82-422a-8883-47e33e53572d.skill.json",
+      "augmentedKey": "skill-packages/augmented/0e1fdeca-6c82-422a-8883-47e33e53572d.skill.json",
+      "policyCount": 49,
+      "exceptionAdded": 49,
+      "scenariosAdded": 49,
+      "costUsd": 0.0784,
+      "durationMs": 245178
+    },
+    {
+      "skillId": "f633b48d-4f51-44d7-b055-b8d469abd8bb",
+      "r2Key": "skill-packages/bundle-f633b48d-4f51-44d7-b055-b8d469abd8bb.skill.json",
+      "augmentedKey": "skill-packages/augmented/f633b48d-4f51-44d7-b055-b8d469abd8bb.skill.json",
+      "policyCount": 19,
+      "exceptionAdded": 19,
+      "scenariosAdded": 19,
+      "costUsd": 0.03040000000000001,
+      "durationMs": 96042
+    },
+    {
+      "skillId": "426b3553-d8a8-4a5d-a548-d4812f89e514",
+      "r2Key": "skill-packages/bundle-426b3553-d8a8-4a5d-a548-d4812f89e514.skill.json",
+      "augmentedKey": "skill-packages/augmented/426b3553-d8a8-4a5d-a548-d4812f89e514.skill.json",
+      "policyCount": 23,
+      "exceptionAdded": 23,
+      "scenariosAdded": 23,
+      "costUsd": 0.0368,
+      "durationMs": 112043
+    },
+    {
+      "skillId": "47b1581d-bdc0-4bf7-9343-89bdac35750f",
+      "r2Key": "skill-packages/bundle-47b1581d-bdc0-4bf7-9343-89bdac35750f.skill.json",
+      "augmentedKey": "skill-packages/augmented/47b1581d-bdc0-4bf7-9343-89bdac35750f.skill.json",
+      "policyCount": 17,
+      "exceptionAdded": 17,
+      "scenariosAdded": 17,
+      "costUsd": 0.02720000000000001,
+      "durationMs": 89868
+    },
+    {
+      "skillId": "2254ade2-43fa-403a-813a-f726e3797d61",
+      "r2Key": "skill-packages/bundle-2254ade2-43fa-403a-813a-f726e3797d61.skill.json",
+      "augmentedKey": "skill-packages/augmented/2254ade2-43fa-403a-813a-f726e3797d61.skill.json",
+      "policyCount": 17,
+      "exceptionAdded": 17,
+      "scenariosAdded": 17,
+      "costUsd": 0.02720000000000001,
+      "durationMs": 88475
+    },
+    {
+      "skillId": "de4f9d4d-a50a-4aba-96f7-c4ebf449f7ab",
+      "r2Key": "skill-packages/bundle-de4f9d4d-a50a-4aba-96f7-c4ebf449f7ab.skill.json",
+      "augmentedKey": "skill-packages/augmented/de4f9d4d-a50a-4aba-96f7-c4ebf449f7ab.skill.json",
+      "policyCount": 2,
+      "exceptionAdded": 2,
+      "scenariosAdded": 2,
+      "costUsd": 0.0032,
+      "durationMs": 12293
+    }
+  ]
+}

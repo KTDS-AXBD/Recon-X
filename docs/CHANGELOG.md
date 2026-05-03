@@ -2,6 +2,46 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 261 (2026-05-04) — Master inline 4건: TD-54 + TD-59 ✅ 해소 + governance docs/scripts 정착
+
+**핵심 결과**: MEMORY.md "활성 작업 4건" 일괄 처리 — recon-x-api Gateway 잠재 폭탄 해소 + evaluator large-skill cap 도입 + S246/S260 secret governance 정착 + secret rotation 자동화 스크립트.
+
+**1. F419 ✅ TD-54 해소 — recon-x-api Gateway service binding 정리**
+- **Root cause 진단**: `gh run view 25255633600 --log-failed` → `Service binding 'SVC_LLM_ROUTER' references Worker 'svc-llm-router' which was not found` (Cloudflare API code 10143)
+- **Phase 5 MSA 재조정 잔존 코드**: 5개 deprecated worker(svc-llm-router/security/governance/notification/analytics)는 AI Foundry 포털로 이관됐으나 `packages/api/wrangler.toml` + `packages/api/src/env.ts`에 service binding과 routing 코드 잔존
+- **6연속 SUCCESS는 fix 아님**: deploy-services.yml L131-138의 `packages/api/` path filter skip이 진짜 이유 → 누군가 packages/api 변경하는 순간 또 fail (잠재 폭탄)
+- **Fix**: wrangler.toml service binding 11→6, src/env.ts SERVICE_MAP 11→6 + RESOURCE_MAP 27→14, 3 테스트 파일 mock 정리 + `/api/cost`/`/api/reports` 라우팅 테스트는 404 검증으로 변환. `wrangler deploy --dry-run` PASS (6 binding만 남음)
+
+**2. F420 ✅ TD-59 해소 — evaluator large skill (245p) chunking 도입**
+- **Diagnosis**: F417 augmented bundle 245 policies × ~3KB test entry ≈ 750KB → Haiku 200K context overflow → JSON parse fail → catch에서 score=0 (4/43 outliers)
+- **Fix (보수적)**: `services/svc-skill/src/ai-ready/evaluator.ts`에 `capSpecContentForLargeSkills` 도입
+  - Stage 1: per-entry truncation (`MAX_PER_ENTRY_CHARS=2000`)
+  - Stage 2: total 200K chars 초과 시 entries sampling (`Math.max(20, MAX_TOTAL_CONTENT_CHARS / (MAX_PER_ENTRY_CHARS*3))`)
+  - JSON parse 실패 시 `rawExcerpt` + `promptChars` + `contentTruncated` 로깅 (parse-fail 진단 가속화)
+- 신규 테스트 11/11 PASS (245-policy mock으로 prompt 300K 미만 cap 검증)
+
+**3. F421 governance docs — CLAUDE.md "Inter-Service Communication" 갱신**
+- "Worker Secret Store — Env-Scoped Divergence" 표 + Anti-Pattern + 표준 rotation 절차 정착
+- S246 + S260 누적 교훈 ("default env vs `--env production` 별개 secret store, Queue consumer는 `[env.production.queues.consumers]` 선언 시 production env에서 실행")
+- `/health`는 `fetcher.fetch`만 수행 + X-Internal-Secret 미전파 → secret 매칭 검증 못함 (S245)
+- Validation URL 형식: `CLOUDFLARE_AI_GATEWAY_URL`은 full chat-completions path 필수
+
+**4. F422 infra script — scripts/secret-sync-svc-skill.sh 신설**
+- 3종 secret(`INTERNAL_API_SECRET`/`OPENROUTER_API_KEY`/`CLOUDFLARE_AI_GATEWAY_URL`) 정본 → svc-skill default + production env 일괄 wrangler secret put 자동화
+- dry-run / `--apply` / `--verify` / `--include-staging` 분리. CF Gateway URL full chat-completions path 검증 + size/permission(chmod 600) 점검
+- 정본 파일 정착: `~/.secrets/decode-x-internal` + `~/.secrets/openrouter-api-key` + `~/.secrets/cf-ai-gateway-url` (신규, chmod 600)
+
+**검증**: `pnpm typecheck` 14/14 PASS, `pnpm lint` 9/9 PASS, packages/api tests 43/43, svc-skill ai-ready tests 11/11. `wrangler deploy --dry-run` (packages/api) PASS.
+
+**산출물**: 9 files changed, 404 insertions(+), 90 deletions(-) (commit `27c9ffb`).
+
+**교훈** (cross-session):
+- "최근 N deploy SUCCESS"는 path filter skip일 수 있음 → workflow YAML L120-140 점검이 1차 진단
+- decommissioned worker 정리는 wrangler.toml + env.ts + tests 3 layer 모두 동기 필수
+- evaluator score=0 silent failure는 raw LLM response excerpt 로깅으로 진단 비용 ~10× 절감
+
+---
+
 ### 세션 260 (2026-05-04) — TD-60 + TD-57 + TD-56 3종 ✅ 해소 (Master inline 2.5h)
 
 **핵심 결과**: AI-Ready evaluator 운영 quality + batch endpoint 정상화. autopilot 회피 7회 연속.

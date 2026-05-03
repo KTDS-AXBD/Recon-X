@@ -103,6 +103,27 @@
 5. `8cf704a` (main, squash) — feat: Sprint 241 — F413 Skill lifecycle 표준화 + F403 Phase 9 E2E 보강 (#40)
 6. `603b415` (main, hotfix) — hotfix(db-skill): 0013 migration FK 위반 해소 — TRIGGER 기반 CHECK 재작성
 
+**세션 254 후속 — Weekly Cleanup Monitor routine + ax plugin 모델 동적화 점검**:
+
+- **Anthropic Code Routine 신규 등록**: `/schedule` 명령으로 `trig_016MQqwVGTtBb3E9YCwi9iNg` ("Decode-X Weekly Cleanup Monitor") 생성
+  - cron: `0 0 * * 1` UTC (= 월요일 9시 Asia/Seoul)
+  - model: `claude-sonnet-latest` alias (Anthropic 최신 Sonnet 동적 추적, routine API HTTP 200 수용)
+  - environment: Default sandbox (`env_011CUMHqmrjHiAcjW8k3mhdW`)
+  - MCP: Cloudflare-Developer-Platform (D1 trigger 회귀 검증용)
+  - 점검 4항목: (1) TD-54 recon-x-api deploy 추세, (2) svc-skill `/health` 정상성, (3) 0013 migration TRIGGER + d1_migrations row 회귀, (4) Decode-X SDK SSOT(`packages/types/src/model-defaults.ts`) vs routine resolved-model drift 감지
+  - 출력 형식: 단일 markdown 리포트 + `[meta] resolved-model = <실제 모델 ID>` self-report (alias runtime resolve 증거)
+  - 금지: code/PR 변경, INTERNAL_API_SECRET 필요 endpoint, D1 schema 변경, gh issue 자동 생성
+  - 즉시 1회 실행 트리거 완료, 결과는 routine 페이지 또는 차주 cron run에서 검증
+- **ax plugin 동적 모델 점검 결과 (수정 0건, 이미 best practice)**:
+  - `session-start/SKILL.md:66` `ccs --model sonnet` CLI alias ✅
+  - `sprint/SKILL.md:153,214,221,749` `ccs --model sonnet` + 특정 minor 버전 하드코딩 명시적 금지 ✅
+  - `daily-check/SKILL.md:413,535,549` `claude --model sonnet` + alias drift 자동 감지 ✅
+  - 글로벌 `~/.claude/CLAUDE.md`/`standards/`/`rules/` hardcoded 모델 0건 ✅
+- **SDK 경로 (alias 미지원 — 절차로 보강)**:
+  - `packages/types/src/model-defaults.ts`가 SSOT (`MODEL_OPUS=claude-opus-4-7` / `MODEL_SONNET=claude-sonnet-4-6` / `MODEL_HAIKU=claude-haiku-4-5`)
+  - Anthropic Direct API는 unversioned alias 미지원 (파일 주석 명시) → 1곳 수정 + `pnpm typecheck` + `/ax:daily-check` 자동 검증 + routine drift 감지로 3중 알림 확보
+- **3계층 동적 업데이트 체계 완성**: (a) ax plugin CLI 경로 자동 alias, (b) routine `claude-sonnet-latest` alias + drift 감지, (c) SDK 경로 pinning + 자동 알림 절차
+
 ---
 
 ### 세션 253 (2026-05-02) — TD-49 ✅ 새 baseline (skill-packages SSOT) + TD-53 신규 발견 + F413 등록 (옵션 C 채택)

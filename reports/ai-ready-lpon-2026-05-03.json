@@ -1,0 +1,30 @@
+{
+  "batchStatus": {
+    "batchId": "f4caf9e8-cfee-49af-861a-ae90d63cb9c5",
+    "status": "completed",
+    "totalSkills": 8,
+    "completedSkills": 8,
+    "failedSkills": 0,
+    "progressPct": 100,
+    "totalCostUsd": 0.028799999999999996,
+    "startedAt": "2026-05-03T06:06:16.270Z",
+    "completedAt": "2026-05-03T06:06:31.537Z",
+    "childBatchId": null,
+    "avgScore": 0
+  },
+  "crossCheckStatus": null,
+  "kpi": {
+    "executedAt": "2026-05-03T06:06:35.222Z",
+    "organization": "lpon",
+    "model": "haiku",
+    "batchId": "f4caf9e8-cfee-49af-861a-ae90d63cb9c5",
+    "totalSkills": 8,
+    "completedSkills": 8,
+    "failedSkills": 0,
+    "totalCostUsd": 0.028799999999999996,
+    "avgScore": 0,
+    "passRate": 0,
+    "criteriaPassRates": {},
+    "scoreDistribution": {}
+  }
+}

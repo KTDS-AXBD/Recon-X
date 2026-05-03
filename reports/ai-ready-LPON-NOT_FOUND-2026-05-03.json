@@ -1,0 +1,36 @@
+[
+{
+  "skillId": "5281357c-bf73-41eb-a5b9-57bb8899f1e0",
+  "httpStatus": 404,
+  "errorCode": "NOT_FOUND",
+  "errorMessage": "spec-container '5281357c-bf73-41eb-a5b9-57bb8899f1e0' not found"
+}
+,
+{
+  "skillId": "c5a73dc0-8c13-424f-9593-adfd2b758357",
+  "httpStatus": 404,
+  "errorCode": "NOT_FOUND",
+  "errorMessage": "spec-container 'c5a73dc0-8c13-424f-9593-adfd2b758357' not found"
+}
+,
+{
+  "skillId": "a7548a83-2a84-4bff-aaff-e9f6c05d26fe",
+  "httpStatus": 404,
+  "errorCode": "NOT_FOUND",
+  "errorMessage": "spec-container 'a7548a83-2a84-4bff-aaff-e9f6c05d26fe' not found"
+}
+,
+{
+  "skillId": "d42c15f9-437c-4f6f-a5d7-b2892992f69f",
+  "httpStatus": 404,
+  "errorCode": "NOT_FOUND",
+  "errorMessage": "spec-container 'd42c15f9-437c-4f6f-a5d7-b2892992f69f' not found"
+}
+,
+{
+  "skillId": "91d347e7-5b01-4a01-863d-129403f152a6",
+  "httpStatus": 404,
+  "errorCode": "NOT_FOUND",
+  "errorMessage": "spec-container '91d347e7-5b01-4a01-863d-129403f152a6' not found"
+}
+]

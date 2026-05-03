@@ -2,6 +2,31 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 257 (2026-05-03) — F416 Sprint 247 ✅ DONE 우회 경로 + AIF-REQ-041 PARTIAL_FAIL → DONE + TD-56 reopen + TD-57 신규
+
+**핵심 결과**: Master inline 즉시 (autopilot 회피 + OpenRouter rotation skip 결정). 사전 환경 검증 8/8 PASS → batch endpoint 재시도 35/35 fail (Sprint 244 패턴 그대로 재현, F414 production 효과 미발현 확인) → **우회 경로 single eval loop 신설** → 35/35 SUCCESS, 비용 $0.126, 소요 593s, 평균 점수 0.511. F412 원 DoD 100% 충족 + AIF-REQ-041 DONE 전환 + TD-56 ✅ → 🟡 reopen + TD-57 신규(P2 batch endpoint Queue handler 진단).
+
+**작업 요약**:
+- ✅ 사전 검증 8/8: Sprint 245/246 production deploy success / svc-skill /health / LPON 35 D1 row / R2 5/5 sample HTTP 200 (F415 fix로 backfill 불요) / lpon-charge + LPON sample single eval / batch dry-run
+- ❌ batch 재실행: `batch_id=4fd4d097` 35/35 fail, 19초 fast-fail, ai_ready_scores 0 row → Sprint 244 패턴 정확 재현
+- ✅ 우회 경로: `scripts/ai-ready/single-eval-loop.ts` 신설 (force=true × 35 sequential concurrency=2). 35/35 SUCCESS
+- ✅ DoD 충족: D1 LPON 216 row (35×6=210+추가 6) / reports/ai-ready-LPON-2026-05-03.json 251 KB (≥30KB 8.4×) / Haiku 6기준 PASS율(comment_doc_alignment 80% / source_consistency 48.6% / io_structure 0% / exception_handling 0% / srp_reusability 8.6% / testability 0%) / Master smoke 35/35 HTTP 200 / Match 90.0%
+- ✅ SPEC.md/Analysis/Report 갱신: F412.analysis.md §8 추기 91줄 + F412.report.md §8 추기 62줄 + SPEC §5 마지막 실측 + §6 Sprint 247 F416 [x] + §7 AIF-REQ-041 DONE + §8 TD-56 reopen + TD-57 신규
+- ✅ 신규 feedback memory 1건: single eval loop 표준 우회 패턴
+
+**검증 결과**:
+- ✅ typecheck 14/14 PASS
+- ✅ Production smoke (35 sample HTTP 200)
+- ✅ Match Rate 90.0%
+
+**차기 우선순위**:
+- (P2) TD-57 batch endpoint Queue handler 진단 (~1-2h) — wrangler tail 30초 + 1-message 단발 batch 비교
+- (P3) TD-54 recon-x-api Gateway deploy fail
+- 보안 잔여: OpenRouter key rotation (세션 257 누적 2회 skip)
+- 별도 Sprint: LPON 데이터 품질 개선 (3 criteria 0% PASS 구조적 결함)
+
+---
+
 ### 세션 255 (2026-05-03) — Sprint 244 F412 🟡 PARTIAL_FAIL + TD-55/TD-56 신규 등록
 
 **핵심 결과**: Sprint 241 F413 hotfix로 unblock된 batch endpoint LPON 35건 운영 실행 시도 → 차단 2건 발견 + Master inline 1.5h 진단 + 산출물 9건. autopilot 9회차 회피 (사용자 결정 "Master inline (Recommended)").

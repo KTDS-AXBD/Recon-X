@@ -2,6 +2,63 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 265 (2026-05-04) — F418 신규 inference 효과 발현 ✅ Smoke 1건 입증 (Master inline ~30min, $0.06)
+
+**핵심 결과**: F418/TD-58 PolicyCandidateSchema.exception 정공이 신규 inference에서 자연 동작함을 1차 입증. Sprint 249 F418 PARTIAL_FAIL 결론("schema 정공의 진짜 가치는 신규 inference 효과")을 Smoke 1건으로 검증 완료. 코드 변경 0건, 산출물 0건(메모리/SPEC 갱신만), 사용자 콘솔 결정 0건.
+
+**1. /todo plan 의사결정 (사용자 4지선다 → Recommended 채택)**
+- 활성 작업 0건 상태 (S264에서 F407+F356-B+TD-61+F360 4건 종결) 확인
+- 차기 작업 4안 제시 → 사용자 결정: F418 신규 도메인 검증 (Smoke 1건, Master inline)
+- AskUserQuestion 2회 (검증 범위 / 진행 방식)로 합의
+
+**2. 사전 데이터 점검 (D1 cross-check)**
+- `db-skill`: LPON 35 bundled + 859 superseded / Miraeasset 15 bundled + 3065 superseded / lpon 8 reviewed / org_ktds_axbd 1 published
+- `db-policy.policies.exception`: LPON 889건 + Miraeasset 2838건 + org-test-queue 13건 모두 **with_exception=0** (F418 backfill은 R2 augmented bundle 텍스트만 갱신, D1 컬럼은 NULL 상태) → backfill 한정 무효 정량 입증
+- 정공 코드 chain 4-Layer 재확인: `policy.ts:21` schema + `policy.ts:96/102/113` prompt Else 추론 + `policies.ts:106` INSERT + 0003 migration
+
+**3. Smoke 실행 (svc-policy `POST /policies/infer`)**
+- 입력: Miraeasset-style 정산 도메인 chunks 2건(명시적 Else 분기 다수 — 오류코드/보류사유/한도결재)
+- organizationId: `org-test-f418-smoke` (cleanup 용이)
+- 호출: HTTP 201, 32초 응답, Opus 1회, 비용 ≈ $0.06
+- 결과: 8 candidates 생성 (메인 3 + 별도 EX 분리 5)
+
+**4. D1 검증 — exception 자연 채움률 5/8 = 62.5%**
+
+| Policy | 분류 | exception |
+|---|---|---|
+| POL-PENSION-MG-001 | 메인 | ✅ 3개 Else 분기 통합 |
+| POL-PENSION-CL-005 | 메인 | ✅ 0원/non-COMPLETED 제외 |
+| POL-PENSION-RG-007 | 한도 처리 | ✅ 1억 이하 즉시 전송 |
+| POL-PENSION-EX-002 | 별도 EX | ✅ E001 반환 |
+| POL-PENSION-EX-003 | 별도 EX | ✅ E002 반환 |
+| POL-PENSION-EX-004/006/008 | 별도 EX | ❌ NULL (outcome에 흡수) |
+
+**5. 신규 발견 — LLM dual-output 패턴**
+- LLM이 chunks의 Else 분기를 두 방식으로 동시 출력: (a) 본 정책의 exception 필드 통합 + (b) 별도 EX 정책으로 분리
+- 두 표현 양립 → 정보 손실 0 (evaluator의 exception_handling 평가에서 양쪽 모두 score 대상)
+- 미채움 3건도 별도 EX 정책 outcome에 Else 본문이 들어가 있으므로 실제 정보 커버리지는 100%
+
+**6. Cleanup**
+- D1: `DELETE FROM hitl_sessions ...` + `DELETE FROM policies WHERE organization_id='org-test-f418-smoke'` (8 row 정리)
+- production 영향 0
+
+**7. 문서 갱신**
+- SPEC.md F418 항목 (§6 Sprint 249 + §7 AIF-REQ-043) — 세션 265 후속 결과 메모 추가
+- 신규 feedback memory `feedback_f418_new_inference_validation.md` (62.5% baseline + dual-output 패턴 + 적용 제외 케이스: 기존 backfill 재시도 금지)
+- MEMORY.md index 갱신
+
+**신규 교훈 (S265 발견)**:
+- (a) F418 schema 정공은 신규 inference 시 정상 동작 — backfill 한정 무효 결론(F417/F418 4.7% pass)과 분리해서 평가
+- (b) LLM dual-output 패턴: chunks의 Else 분기 → 본 exception + 별도 EX 정책 양립 표현 (evaluator 양쪽 score 대상)
+- (c) 정량 DoD 본격 검증은 신규 도메인 ingestion 자연 누적 시점에 (F356-B 세션 264 결론과 일치)
+
+**잔여 작업 (다음 세션 후순위)**:
+- 보안 후속 3건 (1Password CLI signin / MP 변경 콘솔 / CHANGELOG prefix 정리 — 사용자 콘솔/cosmetic)
+- TD-52 27zip stats backfill (P3 cosmetic, 0.5~1h)
+- F357/F358 Phase 3 Should 잔여 (필요 시)
+
+---
+
 ### 세션 264 (2026-05-04) — F407 + F356-B + TD-61 + F360 4건 동시 종결 (Master inline ~4h)
 
 **핵심 결과**: 세션 시작 시 활성 작업 4건(F407 P0 / F356-B P1 / TD-61 신규 / F360 P3) 모두 동일 세션에서 정공 처리 + 운영 검증. 누적 commit 5건 push, 코드 변경 1 file (svc-skill consumer fix), 비용 ~$0.27, **Production Smoke Test 회피 패턴 미발생** (모두 Master inline 검증).

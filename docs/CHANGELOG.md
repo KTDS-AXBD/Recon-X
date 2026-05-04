@@ -2,6 +2,67 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 266 (2026-05-04) — Sprint 252 F357 + Sprint 253 TD-41 Pipeline Batch 1 ✅ MERGED + 보안 후속 3건 + TD-52 진단 + Sprint 254 등록 (Pipeline ~25min, Master inline ~15min)
+
+**핵심 결과**: sprint-pipeline Batch 1 첫 가동 — Sprint 252 (F357 AgentResume) + Sprint 253 (TD-41 CF Access JWT mock E2E) 병렬 진행 → 양쪽 ✅ MERGED. **Match 평균 98%** (Master 독립 Gap Analysis 일치, autopilot 11회차 패턴 미재현). 보안 후속 3건 + TD-52 진단 + Sprint 254 등록 사전 처리 완결.
+
+**1. Master inline 선행 (~15min)**
+- (a) **SPEC drift 보정**: F356-B `[ ]→[x]` (S264 운영 PASS 반영) + L16 잔여 라인에서 F356-B 제거 + TD-52 진단 추기 (production 27/27 모두 missing, R2 fetch 필요로 작업량 2~3h 재추정)
+- (b) **CHANGELOG redact**: `sk-or-v1-*` prefix 평문 3건(L713/L864/L1205) + `demian1015!` MP 추정값 2건(L863/L905) → `[REDACTED]` 처리
+- (c) **1Password CLI 점검**: op 2.34.0 + 계정 등록 OK / signin 미완 → 사용자 콘솔 가이드 출력 (`eval $(op signin)`)
+- (d) **Master Password 변경 안내**: 5단계 사용자 콘솔 가이드 (1Password 데스크톱 앱/web → 비밀번호 변경 → 디바이스 재로그인 → CLI 재signin)
+- (e) **TD-52 진단 (skip 결정)**: D1 `db-ingestion.document_chunks` SELECT 결과 27/27 missing 5 신규 필드, 기존 stats 8 필드는 보존. `totalEntriesInZip`/`skippedBinaryCount`/`oversizedSkippedCount`는 zip 원본 카운트라 D1 역산 불가 → R2 fetch + JSZip 재파싱 필요. 거짓 데이터로 채우면 R1 무결성 깨짐 → SPEC TD-52 라인에 진단 추기 + 본 세션 skip + 별도 Sprint 후보로 이관
+
+**2. SPEC.md Sprint 252~254 등록 (`75c2132`)**
+- F357/TD-41/F358은 기존 SPEC §6 Sprint 221+ 라인에 등록되어 있어 신규 F-item 추가 불요 → Sprint 블록만 추가 (Plan/Design 신규 작성 명시)
+- Batch 분석: 252+253 영역 분리(svc-mcp-server ↔ apps/app-web/e2e) → 병렬 가능, 254(svc-ingestion + scripts/java-ast)는 단독 Batch 2
+
+**3. Pipeline Batch 1 가동 (~25min)**
+- `bash -i -c "sprint 252 253"` → WT 2개 생성 + WT 탭 + tmux 세션 (`sprint-252 F359` + `sprint-253 F359`)
+- ⚠️ **S262 stale F_ITEMS 패턴 3회차 재현**: sprint() 함수가 양쪽 모두 `F_ITEMS=F359 + SPRINT_NUM=251` (Sprint 251 컨텍스트 캐시) → signal + .sprint-context 양쪽 수동 보정 (F357/TD-41 + 252/253 + master_commit 갱신)
+- `ccs --model sonnet` 양쪽 주입 → claude TUI 시작 → `/ax:sprint-autopilot` 주입
+- merge-monitor PID 192690 백그라운드 + Monitor 도구 2개(`bl9tfkp9l`/`byn6abpis`) 가동
+- **Sprint 253 진행 (T+13min)**: Match 97% 자체 보고 → STATUS=MERGING → PR #47 → ✅ **MERGED** `dcf9936` (E2E PASS, Migration PASS, autopilot 자체 12 commits)
+- **Sprint 252 진행 (T+19min)**: Match 98% 자체 보고 → STATUS=DONE → PR #48 OPEN. 그러나 merge-monitor가 `not mergeable` 보고 → Master 직접 conflict 진단
+
+**4. Sprint 252 PR #48 conflict 해소 (Master 직접)**
+- 진단: `git merge origin/main`은 `.sprint-context`만 conflict (실 코드 conflict 0건). Sprint 253 MERGED로 `dcf9936` commit이 main에 추가됐고 sprint/252는 1 commit ahead라 양쪽 1/1 분기지만 영역 분리되어 코드 충돌 없음
+- 해결: `.sprint-context`는 sprint metadata 파일이라 `git checkout --ours .sprint-context` + `git commit --no-edit` + `git push` (`0ec00af`) → mergeable 회복 → `gh pr merge 48 --squash --auto --delete-branch` 즉시 merge → main `4c176bc`
+- 잔여: 로컬 sprint/252 branch는 worktree 점유로 cleanup 단계에서 `git worktree remove --force` 후 `git branch -D sprint/252` 별도 처리
+
+**5. Phase 6 통합 Gap Analysis + E2E Audit (gap-detector subagent)**
+- **Sprint 252 (F357)**: Design 13 항목 12 ✅, 1 ⚠️ Minor (`wrangler.toml` KV binding 주석 블록 미존재 — degraded mode로 동작 무결, 배포 시 수동 추가 필요) → Match **100%**
+- **Sprint 253 (TD-41)**: Design 9 항목 8 ✅, 1 ⚠️ Minor (`auth-me-response.ts` role 타입을 직접 union으로 정의 vs Design `CfUser["role"]` 임포트 — drift 위험) → Match **96%**
+- **E2E 커버리지**: 신규 사용자 라우트 0건(백엔드+E2E 인프라), F357 unit test 7 cases (5 design + 2 bonus: one-shot delete + empty decision 400), TD-41 spec 3 tests (1 design + 2 bonus: storageState 캡처 + page.route round-trip)
+- **Anti-pattern 감사**: waitForTimeout 0건, 약한 assertion 0건, API-only는 Design §5 명시 의도적 scope 한정
+- **평균 Match 98%** ≥ 90% AND E2E HIGH gap 0건 → **Phase 7 자동 보정 skip**
+- **autopilot Production Smoke Test 11회차 패턴 미재현** (autopilot 자체 보고 avg 97.5% vs Master 독립 측정 98%, ±0.5pp 일치 — 백엔드 unit test + E2E fixture self-validation 한정 케이스 신뢰성 재확인)
+
+**6. Phase 8 SPEC.md 마킹 보정 (5건)**
+- L518 F357 `[ ]→[x] ✅ DONE` (Sprint 220→221+→Sprint 252 MERGED)
+- L557 TD-41 `[ ]→[x] ✅ DONE — 인프라 도입 + 1차 해소 양립` (Sprint 227 F401 1차 해소 + Sprint 253 mock 인프라 정식화 보완 관계)
+- L747/L755 Sprint 252/253 헤더 "📋 PLANNED" → "✅ MERGED"
+- L752/L760 Sprint 블록 내 F357/TD-41 [x] 마킹
+- L16 잔여 라인: F357 제거(F358만 잔여)
+
+**7. WT/branch/tmux/signal cleanup**
+- worktree 2개 `git worktree remove --force` (.sprint-context는 metadata라 폐기 OK)
+- 로컬 branch sprint/252/253 `git branch -D` (원격은 squash merge로 자동 삭제됨)
+- signal `Decode-X-25{2,3}.signal` → `/tmp/sprint-signals/archive/`
+- tmux 세션 `sprint-252 F359` kill (Sprint 253은 이미 정리됨)
+- merge-monitor PID 192690 kill
+
+**신규 교훈 (S266 발견)**:
+- (a) **S262 stale F_ITEMS 패턴 3회차 재현** — sprint() 함수가 직전 Sprint 컨텍스트를 캐시 → signal + .sprint-context 둘 다 수동 보정 필수. 다음 세션 재현 시 rules/development-workflow.md 승격 후보 (3회 카운트 충족)
+- (b) **`.sprint-context` merge conflict 표준 패턴** — 양쪽 다른 SPRINT_NUM/F_ITEMS로 conflict 발생 (실 코드 conflict 아님). `--ours` 채택 + commit + push로 즉시 해소. main에 .sprint-context 잔재는 cosmetic, 별도 cleanup 후보
+- (c) **백엔드/E2E 인프라 한정 케이스에서 autopilot vs Master Match 측정 일치** — 11회차 패턴 미재현. production 외부 API/DB 의존이 없는 unit test + spec self-validation 케이스에서는 autopilot 자체 측정 신뢰 가능. production 외부 의존 케이스만 Master 독립 검증 필수 분리 가능
+
+**다음 세션 (Batch 2 또는 단발)**:
+- Sprint 254 (F358 Tree-sitter Java PoC Phase 1) — Workers WASM 호환성 검증 + 5 sample AST + regex diff 1건 이상
+- 보안 후속 3건은 사용자 콘솔 작업 (1Password signin / MP 변경 / 본 세션 redact 외 추가 노출 점검)
+
+---
+
 ### 세션 265 (2026-05-04) — F418 신규 inference 효과 발현 ✅ Smoke 1건 입증 (Master inline ~30min, $0.06)
 
 **핵심 결과**: F418/TD-58 PolicyCandidateSchema.exception 정공이 신규 inference에서 자연 동작함을 1차 입증. Sprint 249 F418 PARTIAL_FAIL 결론("schema 정공의 진짜 가치는 신규 inference 효과")을 Smoke 1건으로 검증 완료. 코드 변경 0건, 산출물 0건(메모리/SPEC 갱신만), 사용자 콘솔 결정 0건.

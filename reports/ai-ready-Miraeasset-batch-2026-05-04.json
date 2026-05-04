@@ -1,0 +1,30 @@
+{
+  "batchStatus": {
+    "batchId": "3408b9af-846f-410f-9386-ec11552c2eb3",
+    "status": "completed",
+    "totalSkills": 15,
+    "completedSkills": 15,
+    "failedSkills": 0,
+    "progressPct": 100,
+    "totalCostUsd": 0.05399999999999999,
+    "startedAt": "2026-05-04T09:31:13.101Z",
+    "completedAt": "2026-05-04T09:34:43.809Z",
+    "childBatchId": null,
+    "avgScore": 0.519
+  },
+  "crossCheckStatus": null,
+  "kpi": {
+    "executedAt": "2026-05-04T09:34:47.100Z",
+    "organization": "Miraeasset",
+    "model": "haiku",
+    "batchId": "3408b9af-846f-410f-9386-ec11552c2eb3",
+    "totalSkills": 15,
+    "completedSkills": 15,
+    "failedSkills": 0,
+    "totalCostUsd": 0.05399999999999999,
+    "avgScore": 0.519,
+    "passRate": 0,
+    "criteriaPassRates": {},
+    "scoreDistribution": {}
+  }
+}

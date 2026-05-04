@@ -102,9 +102,20 @@ export async function handleAIReadyMessage(
     const { batchId, skillId, organizationId, model, crossCheckSampleSize = 0 } = msg.body;
 
     try {
-      const loaded = await loadSpecContent(env, skillId, organizationId);
+      // TD-61 (S264): bundled skills R2 path = r2_key column. Without it, loadSpecContent
+      // falls back to default `skill-packages/{id}.skill.json` which doesn't exist for
+      // rebundle outputs (e.g. Miraeasset 15) → 100% silent fail. Fetch r2_key from D1
+      // (mirrors single-eval endpoint at routes/ai-ready.ts:94).
+      const skillRow = await env.DB_SKILL
+        .prepare("SELECT r2_key FROM skills WHERE skill_id = ? AND organization_id = ?")
+        .bind(skillId, organizationId)
+        .first<{ r2_key: string }>();
+
+      const loaded = await loadSpecContent(env, skillId, organizationId, skillRow?.r2_key);
       if (!loaded) {
-        logger.warn("spec-container not found — skipping", { skillId, organizationId });
+        logger.warn("spec-container not found — skipping", {
+          skillId, organizationId, r2Key: skillRow?.r2_key,
+        });
         await updateBatchProgress(env, batchId, { failed: 1 });
         msg.ack();
         continue;

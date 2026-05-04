@@ -2,6 +2,72 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 264 (2026-05-04) — F407 + F356-B + TD-61 + F360 4건 동시 종결 (Master inline ~4h)
+
+**핵심 결과**: 세션 시작 시 활성 작업 4건(F407 P0 / F356-B P1 / TD-61 신규 / F360 P3) 모두 동일 세션에서 정공 처리 + 운영 검증. 누적 commit 5건 push, 코드 변경 1 file (svc-skill consumer fix), 비용 ~$0.27, **Production Smoke Test 회피 패턴 미발생** (모두 Master inline 검증).
+
+**1. F407 ✅ DONE — 자연 종결 정합성 보정 (~5min)**
+- B-02/B-04/B-05 모두 자연 해소(세션 241/244)되어 F407 사실상 종결 상태였으나 SPEC §6 IN_PROGRESS 잔존
+- DoD 매트릭스 (a)(b)(d) 자연 충족 + (c)(e) skip 명시 → SPEC `[ ] 🔧 IN_PROGRESS` → `[x] ✅ DONE` 마킹
+- 코드/curl 변경 0건. commit `353c5d2`
+
+**2. F356-B 운영 실행 ✅ DONE — 58 전수 (~16min, $0.21)**
+- scope 재정의: 원안 5,154 row 가정은 superseded 859×6 포함 전제였으나 TD-53 lifecycle 정책 적용 후 production evaluable = `status IN (bundled,reviewed)` = **58 skills**
+- `lpon` 8: batch endpoint, avgScore **0.661**, $0.029 (TD-56/57 fix S260 운영 입증)
+- `Miraeasset` 15: single-eval-loop 우회, avgScore **0.507**, $0.054 (NEW domain baseline)
+- `LPON` 35: single-eval-loop, avgScore **0.506**, $0.126 (Sprint 247 0.511 안정 ±0.005)
+- TOTAL 58 / avg 0.516 / 비용 budget $48 대비 0.4% 사용
+- 6 criteria 공통 패턴 (도메인 무관): comment_doc_alignment 91~100% 강점, exception_handling/testability/io_structure <15% 약점
+- DoD 매트릭스 9/10 충족 (Match 95%, Opus cross-check만 sample <100 skip)
+- 산출물: `reports/ai-ready-{lpon,Miraeasset,LPON}-2026-05-04.json` 3쌍 + AIF-RPRT-049 (`docs/04-report/features/session-264-F356-B-58-coverage.report.md`)
+- commit `15ba92c`
+
+**3. TD-61 ✅ 해소 + 운영 PASS — Queue consumer r2_key fix (~25min)**
+- 발견 경로: F356-B 운영 중 Miraeasset 15 batch 첫 시도 15/15 silent fail (cost=$0) → 단건 force=true 진단으로 root cause 즉시 분리
+- 근본: `queue/ai-ready-consumer.ts:105`가 `loadSpecContent` 호출 시 `r2_key` 미전달 → bundled-only skill 기본 R2 경로 NOT_FOUND
+- Sprint 245 F414 잔여 fix (단건 endpoint만 r2_key 전달했던 부분 종결)
+- 변경: 1 file (+12/-2 lines) — D1 r2_key fetch 1 query 추가 + `loadSpecContent` 4번째 인자
+- 코드 검증: typecheck 14/14 PASS, lint 9/9 PASS, svc-skill test 419/419 PASS
+- 운영 검증 PASS: deploy run `25311475804` SUCCESS 후 Miraeasset batch 재실행 → batch `3408b9af` 15/15 SUCCESS, failed=0, cost $0.054, avgScore **0.519** (single-eval 0.507 대비 +0.012 noise)
+- batch endpoint이 single eval과 quality 동등 입증 — 향후 모든 도메인에 안전 사용 가능
+- commits `ceceb73` (fix) + `021dfa5` (운영 PASS 마킹)
+
+**4. F360 ✅ DONE — TD-20/21 잔연 정리 (~30min)**
+- TD-23은 Sprint 251 F359에서 선행 해소(세션 263) → F360 작업 부담 1/3 감소
+- **TD-21**: lpon-gift + lpon-settlement provenance.yaml + contract.yaml의 `FX-SPEC-002 v1.0` → `FX-SPEC-003 v1.0` 통일 (4 file, budget/purchase가 사용 중인 FX-SPEC-003으로 정렬, Phase 2 계약 기준 통일 완성)
+- **TD-20**: Sprint 215 retroactive Plan/Design 작성
+  - `docs/01-plan/features/sprint-215.plan.md` (AIF-PLAN-049, ~5KB)
+  - `docs/02-design/features/sprint-215.design.md` (AIF-DSGN-049, ~7KB)
+  - frontmatter `retroactive: true` + `retroactive_reason` 명시
+  - Phase 2 통합 분석 §3.1 (AIF-ANLS-029) + commit `18022c8` 근거
+- commit `74d2955`
+
+**핵심 교훈 4건**:
+- (a) **F-item 자연 종결 정합성 보정 표준 패턴** — B-* DONE이 F-* IN_PROGRESS를 종결시키는 케이스. SPEC 체크박스 lag 5분 작업으로 해소 가능.
+- (b) **Scope 재정의의 가치** — F356-B 원안 5,154 row 가정 vs 실 evaluable 58. lifecycle 변경(TD-53) 후 의미 무효화. "원안 미달성"보다 **"production evaluable 100% 커버"가 실질 완결**.
+- (c) **Queue consumer 우회 + 정공 양립 모범** — single-eval-loop으로 즉시 unblock + 동일 세션 내 코드 fix + deploy + 운영 검증으로 차단 영구 종결. Sprint 247 F416는 우회만 적용해 6세션 잠재 유지된 패턴 회피.
+- (d) **Retroactive PDCA 정착 표준** — autopilot이 스킵한 Plan/Design은 frontmatter `retroactive: true` + `retroactive_reason` + `retroactive_at` 명시로 retroactive 작성.
+
+**검증 결과**:
+- ✅ Master pane scope: dirty=0 (모든 변경 5 commits로 정리)
+- ✅ TypeScript 14/14 + Lint 9/9 + svc-skill test 419/419 PASS
+- ✅ Production batch endpoint 운영 PASS 입증 (Miraeasset 15/15)
+- ✅ AI-Ready 58 전수 evidence 확보 (LPON+Miraeasset+lpon)
+- ✅ SPEC §6 F407/F356-B 운영/F360 ✅ 마킹 + §8 TD-20/21/61 ✅ 해소 마킹
+
+**누적 commits**:
+- `353c5d2` docs(spec): F407 ✅ DONE 자연 종결
+- `15ba92c` feat(f356-b): 58 전수 운영 ✅
+- `ceceb73` fix(svc-skill): TD-61 Queue consumer r2_key fix
+- `021dfa5` test(td-61): Miraeasset batch 운영 PASS
+- `74d2955` docs(f360): TD-20/21 잔연 정리
+
+**잔여 활성 작업** (다음 세션 우선):
+- 보안 후속 (1Password CLI signin 정상화, MP 변경 콘솔, CHANGELOG prefix 정리)
+- 신규 도메인 inference 시점 F418 schema 정공 효과 발현 검증
+
+---
+
 ### 세션 263 (2026-05-04) — daily-check 보정 + Sprint 251 F359 autopilot MERGED (round-trip 91.7→100%) + ax-marketplace Phase 5d 도입
 
 **핵심 결과**: daily-check D1 28→29 drift 보정 → `/todo plan` → F359 scope 4종 통합 결정 → Sprint 251 worktree autopilot 자율 → PR #46 MERGED → Master 독립 검증 round-trip **91.7% → 100%** (12/12 PASS) 확인. 별도 세션 발견 패턴 1건(autopilot Monitor 누락 4회+ 재현) → ax-marketplace `session-start` Phase 5d 신규 도입으로 재발 방지.

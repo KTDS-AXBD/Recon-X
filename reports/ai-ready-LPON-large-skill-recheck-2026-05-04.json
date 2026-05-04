@@ -1,0 +1,163 @@
+{
+  "meta": {
+    "generatedAt": "2026-05-04T00:28:01.639Z",
+    "purpose": "F417 회귀 검증 — TD-59 large skill cap 적용 후 score=0 outlier 정상 회귀 확인",
+    "baselineSource": "reports/ai-ready-LPON-schema-2026-05-04.json (F418 schema 결과)",
+    "cappingCommit": "27c9ffb (TD-59 evaluator capSpecContentForLargeSkills, MAX_PER_ENTRY=2000, MAX_TOTAL=200K)",
+    "method": "POST /skills/{id}/ai-ready/evaluate?force=true single eval × 3, model=haiku",
+    "cost": "~$0.01 (3 calls × $0.0036/call)",
+    "avgDurationMs": 0
+  },
+  "summary": {
+    "outlierCount": 3,
+    "baselineTotalScore": 0,
+    "recheckTotalScores": [
+      0.323,
+      0.323,
+      0.335
+    ],
+    "avgRecheckScore": 0.327,
+    "minRecheckScore": 0.323,
+    "maxRecheckScore": 0.335,
+    "allCriteriaScored": true,
+    "regressionStatus": "PASS — 모든 outlier score > 0 회귀",
+    "cappedAtBudget": true
+  },
+  "results": [
+    {
+      "skillId": "a7548a83-2a84-4bff-aaff-e9f6c05d26fe",
+      "baselineTotalScore": 0,
+      "recheckTotalScore": 0.323,
+      "delta": 0.323,
+      "overallPassed": false,
+      "criteria": [
+        {
+          "criterion": "source_consistency",
+          "score": 0.15,
+          "passed": false,
+          "passThreshold": 0.6
+        },
+        {
+          "criterion": "comment_doc_alignment",
+          "score": 0.25,
+          "passed": false,
+          "passThreshold": 0.6
+        },
+        {
+          "criterion": "io_structure",
+          "score": 0.42,
+          "passed": false,
+          "passThreshold": 0.6
+        },
+        {
+          "criterion": "exception_handling",
+          "score": 0.42,
+          "passed": false,
+          "passThreshold": 0.6
+        },
+        {
+          "criterion": "srp_reusability",
+          "score": 0.35,
+          "passed": false,
+          "passThreshold": 0.6
+        },
+        {
+          "criterion": "testability",
+          "score": 0.35,
+          "passed": false,
+          "passThreshold": 0.6
+        }
+      ]
+    },
+    {
+      "skillId": "cea99a5e-a35b-47a0-abfa-2d307a24af93",
+      "baselineTotalScore": 0,
+      "recheckTotalScore": 0.323,
+      "delta": 0.323,
+      "overallPassed": false,
+      "criteria": [
+        {
+          "criterion": "source_consistency",
+          "score": 0.15,
+          "passed": false,
+          "passThreshold": 0.6
+        },
+        {
+          "criterion": "comment_doc_alignment",
+          "score": 0.25,
+          "passed": false,
+          "passThreshold": 0.6
+        },
+        {
+          "criterion": "io_structure",
+          "score": 0.42,
+          "passed": false,
+          "passThreshold": 0.6
+        },
+        {
+          "criterion": "exception_handling",
+          "score": 0.35,
+          "passed": false,
+          "passThreshold": 0.6
+        },
+        {
+          "criterion": "srp_reusability",
+          "score": 0.35,
+          "passed": false,
+          "passThreshold": 0.6
+        },
+        {
+          "criterion": "testability",
+          "score": 0.42,
+          "passed": false,
+          "passThreshold": 0.6
+        }
+      ]
+    },
+    {
+      "skillId": "ed4f5519-0ba3-4036-b8c7-884678e6718b",
+      "baselineTotalScore": 0,
+      "recheckTotalScore": 0.335,
+      "delta": 0.335,
+      "overallPassed": false,
+      "criteria": [
+        {
+          "criterion": "source_consistency",
+          "score": 0.15,
+          "passed": false,
+          "passThreshold": 0.6
+        },
+        {
+          "criterion": "comment_doc_alignment",
+          "score": 0.25,
+          "passed": false,
+          "passThreshold": 0.6
+        },
+        {
+          "criterion": "io_structure",
+          "score": 0.42,
+          "passed": false,
+          "passThreshold": 0.6
+        },
+        {
+          "criterion": "exception_handling",
+          "score": 0.42,
+          "passed": false,
+          "passThreshold": 0.6
+        },
+        {
+          "criterion": "srp_reusability",
+          "score": 0.35,
+          "passed": false,
+          "passThreshold": 0.6
+        },
+        {
+          "criterion": "testability",
+          "score": 0.42,
+          "passed": false,
+          "passThreshold": 0.6
+        }
+      ]
+    }
+  ]
+}

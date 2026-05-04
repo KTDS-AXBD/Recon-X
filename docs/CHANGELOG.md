@@ -57,9 +57,21 @@
 - (b) **`.sprint-context` merge conflict 표준 패턴** — 양쪽 다른 SPRINT_NUM/F_ITEMS로 conflict 발생 (실 코드 conflict 아님). `--ours` 채택 + commit + push로 즉시 해소. main에 .sprint-context 잔재는 cosmetic, 별도 cleanup 후보
 - (c) **백엔드/E2E 인프라 한정 케이스에서 autopilot vs Master Match 측정 일치** — 11회차 패턴 미재현. production 외부 API/DB 의존이 없는 unit test + spec self-validation 케이스에서는 autopilot 자체 측정 신뢰 가능. production 외부 의존 케이스만 Master 독립 검증 필수 분리 가능
 
-**다음 세션 (Batch 2 또는 단발)**:
-- Sprint 254 (F358 Tree-sitter Java PoC Phase 1) — Workers WASM 호환성 검증 + 5 sample AST + regex diff 1건 이상
-- 보안 후속 3건은 사용자 콘솔 작업 (1Password signin / MP 변경 / 본 세션 redact 외 추가 노출 점검)
+**Pipeline Batch 2 — Sprint 254 (F358 Tree-sitter Java PoC Phase 1) ✅ MERGED (autopilot 20분 자율 완결, Match 100% / Master 독립 검증 97%)**:
+- PR #49 squash merged `6866f87` 22:08:15 KST. autopilot 자체 cleanup (WT/tmux/SPEC 마킹) 모두 정상 — Master 추가 보정 0건
+- ⚠️ S262 stale F_ITEMS 패턴 4회차 재현 (Sprint 254 시동 시 `F_ITEMS=F357` 추출) → signal + .sprint-context 보정. **rules/development-workflow.md 승격 조건(2회+) 충족, lifecycle 승격 후보 (4회 카운트 누적)**
+- **WASM 호환성 PASS**: grammar 414KB + runtime 197KB = **597KB / 128MB Workers 제한의 0.46%** (huge headroom). `WebAssembly.compile()` 1.71ms / `Language.load()` 1.87ms / 평균 parse 1.22ms (Workers CPU 10ms/req의 12.2%, 58× margin)
+- **Silent drift 17건 검출**: base_path_missing×2 + path_incomplete×7 + return_type_generic_loss×7 + mapper_skipped×1 (regex CLI vs Tree-sitter AST diff)
+- **TD-28 root cause 확정**: `services/svc-ingestion/src/parsing/runner.ts:parseController()` `basePath: ""` 하드코딩으로 LPON 전체 endpoint full path 잘못 보고
+- **Phase 2 GO 판정** (Workers 호환 PASS + 17건 silent drift = 후속 Sprint 입력 매트릭스 충분). PoC는 Node.js `fs.readFileSync` + `WebAssembly.compile()` 시뮬레이션이라 실 Workers `wasm_modules` binding E2E 테스트는 Phase 2 DoD에 포함 권장 (Report §"잔여 위험" 자가 명시)
+- 산출물: `scripts/java-ast/src/poc-tree-sitter.ts` + 5건 LPON 도메인 Java 샘플 + `reports/f358-poc-tree-sitter-2026-05-04.json` 414KB+ + PDCA 4종 (AIF-PLAN/DSGN/ANLS/RPRT-053)
+- autopilot이 SPEC.md L519 (F358 [~] phase 마킹) + L763 (Sprint 254 ✅ DONE 헤더) + L769 (F358 Phase 1 [x] + 결과 요약) 자체 갱신, Master 독립 Gap Analysis 모두 적절 판정
+
+**다음 세션 후순위**:
+- F358 Phase 2 (CLI 이관 + Workers 번들, real wasm_modules binding E2E) + Phase 3 (production 적용) — 잔여 1~2 Sprint 추정
+- F361 (TD-26 Java parser shared module) — F358 Phase 2와 자연 통합 가능
+- 보안 후속 3건 사용자 콘솔 작업 (1Password signin / MP 변경)
+- F-item P3 fix-forward 2건 (wrangler.toml KV binding 주석 + auth-me-response role import)
 
 ---
 

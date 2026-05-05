@@ -2,7 +2,11 @@ import { describe, it, expect } from "vitest";
 import {
   detectHardCodedExclusion,
   detectUnderImplementation,
+  detectTemporalCheck,
+  detectExpiryCheck,
+  detectCashbackBranch,
   parseTypeScriptSource,
+  BL_DETECTOR_REGISTRY,
 } from "../src/divergence/bl-detector.js";
 import { crossCheck, parseProvenanceMarkers } from "../src/divergence/provenance-cross-check.js";
 
@@ -134,6 +138,163 @@ function alsoShort() {
 
     const all = detectUnderImplementation(src, "test.ts");
     expect(all.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// F427 (Sprint 260) — BL-024 / BL-029 / BL-026 detector tests
+// ---------------------------------------------------------------------------
+
+describe("BL-024 — detectTemporalCheck", () => {
+  it("does NOT flag when daysSincePurchase > 7 present (RESOLVED)", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function f(voucher: { purchased_at: string }) {
+  const daysSincePurchase = (Date.now() - new Date(voucher.purchased_at).getTime()) / (1000*60*60*24);
+  if (daysSincePurchase > 7) {
+    throw new Error("PERIOD_EXPIRED");
+  }
+}`,
+    );
+    const markers = detectTemporalCheck(src, "test.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("flags BL-024 when no 7-day window check present (DIVERGENCE)", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function processRefund(refundType: string) {
+  if (refundType === 'UNUSED_FULL') {
+    return { status: 'OK' };
+  }
+}`,
+    );
+    const markers = detectTemporalCheck(src, "test.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BL-024");
+    expect(markers[0]?.pattern).toBe("missing_temporal_check");
+    expect(markers[0]?.confidence).toBe(0.75);
+  });
+
+  it("does NOT match unrelated `> 7` literal (counter > 7)", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function f(counter: number) {
+  if (counter > 7) return true;
+  return false;
+}`,
+    );
+    const markers = detectTemporalCheck(src, "test.ts");
+    // counter는 temporal field가 아니므로 PRESENCE 매칭 안 됨 → ABSENCE marker 발행
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BL-024");
+  });
+});
+
+describe("BL-029 — detectExpiryCheck", () => {
+  it("does NOT flag when expires_at < new Date() present (RESOLVED)", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function f(voucher: { expires_at: string }) {
+  if (new Date(voucher.expires_at) < new Date()) {
+    throw new Error("EXPIRED");
+  }
+}`,
+    );
+    const markers = detectExpiryCheck(src, "test.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("does NOT flag when expir field compared to Date.now() (RESOLVED)", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function f(voucher: { validUntil: number }) {
+  if (voucher.validUntil < Date.now()) return false;
+  return true;
+}`,
+    );
+    const markers = detectExpiryCheck(src, "test.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("flags BL-029 when no expiry comparison present (DIVERGENCE)", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function f(voucher: { balance: number }) {
+  return voucher.balance > 0;
+}`,
+    );
+    const markers = detectExpiryCheck(src, "test.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BL-029");
+    expect(markers[0]?.pattern).toBe("missing_validation_check");
+    expect(markers[0]?.confidence).toBe(0.8);
+  });
+});
+
+describe("BL-026 — detectCashbackBranch", () => {
+  it("does NOT flag when cashback branch with reject outcome present (RESOLVED hypothetical)", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function f(voucher: { cashback_amount: number }) {
+  if (voucher.cashback_amount > 0) {
+    throw new Error("CASHBACK_REFUND_DENIED");
+  }
+  return { ok: true };
+}`,
+    );
+    const markers = detectCashbackBranch(src, "test.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("flags BL-026 when cashback_amount used but no reject branch (current refund.ts)", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function f(voucher: { cashback_amount: number }, amount: number) {
+  const exclusion = Math.round(voucher.cashback_amount * 1.1);
+  return amount - exclusion;
+}`,
+    );
+    const markers = detectCashbackBranch(src, "test.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BL-026");
+    expect(markers[0]?.pattern).toBe("missing_alt_branch");
+  });
+
+  it("flags BL-026 when cashback branch exists but no reject outcome", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function f(voucher: { cashback_amount: number }) {
+  if (voucher.cashback_amount > 0) {
+    return { adjusted: true };
+  }
+  return { adjusted: false };
+}`,
+    );
+    const markers = detectCashbackBranch(src, "test.ts");
+    expect(markers).toHaveLength(1);
+  });
+});
+
+describe("BL_DETECTOR_REGISTRY", () => {
+  it("exposes 5 detectors (BL-024/026/027/028/029)", () => {
+    expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
+      "BL-024",
+      "BL-026",
+      "BL-027",
+      "BL-028",
+      "BL-029",
+    ]);
+  });
+
+  it("each detector returns BLDivergenceMarker[]", () => {
+    const src = parseTypeScriptSource("empty.ts", "");
+    for (const ruleId of Object.keys(BL_DETECTOR_REGISTRY)) {
+      const fn = BL_DETECTOR_REGISTRY[ruleId];
+      expect(fn).toBeDefined();
+      const markers = fn!(src, "empty.ts");
+      expect(Array.isArray(markers)).toBe(true);
+    }
   });
 });
 

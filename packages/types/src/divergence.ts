@@ -12,15 +12,31 @@ export const BLDivergenceMarkerSchema = z.object({
   pattern: z.enum([
     "hardcoded_exclusion", // BL-028 — exclusion variable hardcoded to 0
     "under_implementation", // BL-027 — function with too-short body + low branch depth
+    "missing_temporal_check", // BL-024 (F427) — 7일 윈도 체크 부재
+    "missing_validation_check", // BL-029 (F427) — 만료 거부 체크 부재
+    "missing_alt_branch", // BL-026 (F427) — 캐시백 ALT 분기 부재
   ]),
   sourceFile: z.string(),
-  sourceLine: z.number().int().positive(),
+  sourceLine: z.number().int().nonnegative(),
   detail: z.string(),
   matchedText: z.string().optional(),
   confidence: z.number().min(0).max(1),
   autoDetected: z.literal(true),
 });
 export type BLDivergenceMarker = z.infer<typeof BLDivergenceMarkerSchema>;
+
+/**
+ * F427 (Sprint 260) — rules.md 마크다운 테이블 파싱 결과.
+ * BL-NNN | condition (When) | criteria (If) | outcome (Then) | exception (Else)
+ */
+export const BLRuleSchema = z.object({
+  id: z.string().regex(/^BL-\d{3}$/),
+  condition: z.string(),
+  criteria: z.string(),
+  outcome: z.string(),
+  exception: z.string(),
+});
+export type BLRule = z.infer<typeof BLRuleSchema>;
 
 export const AutoDetectionResultSchema = z.object({
   source: z.string(),

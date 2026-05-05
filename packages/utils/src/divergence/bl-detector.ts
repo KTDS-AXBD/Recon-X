@@ -207,3 +207,225 @@ export function parseTypeScriptSource(
     ts.ScriptKind.TS,
   );
 }
+
+// ---------------------------------------------------------------------------
+// F427 (Sprint 260) — BL-024 / BL-026 / BL-029 detector.
+// Hybrid 접근: rules.md 파서가 BLRule[] 제공 → BL_DETECTOR_REGISTRY가 BL-ID로
+// 하드코딩 detector 함수 매핑. NL→AST 자동 추출은 사용자 결정으로 회피.
+// ---------------------------------------------------------------------------
+
+const TEMPORAL_FIELD_PATTERN = /purchas|created|paid|daysSince/i;
+const EXPIRY_FIELD_PATTERN = /expir|valid_until|valid_to|validUntil|validTo/i;
+const NOW_VALUE_PATTERN = /\bnew\s+Date\s*\(\s*\)|Date\.now\s*\(\s*\)|\bnow\b|\btoday\b/;
+const CASHBACK_FIELD_PATTERN = /cashback|cash_back|discount|할인보전/i;
+const REJECT_OUTCOME_PATTERN =
+  /REJECT|DENY|DENIED|UNAVAILABLE|cash.*refund.*denied|환불.*불가|불가|throw\s+new\s+\w*Error/i;
+
+/**
+ * BL-024 — 7일 윈도 체크 PRESENCE/ABSENCE 검출.
+ *
+ * PRESENCE 패턴: BinaryExpression with `>` operator + numeric literal `7` + temporal
+ * field identifier (purchase/created/paid 등 alias).
+ *
+ * Positive (RESOLVED): daysSincePurchase > 7
+ * Positive (RESOLVED): (Date.now() - new Date(payment.purchased_at).getTime()) / DAY_MS > 7
+ *
+ * ABSENCE 시 1 marker 발행 (DIVERGENCE).
+ * 신뢰도 75% — temporal arithmetic 변형이 다양해 false negative 가능.
+ */
+export function detectTemporalCheck(
+  sourceFile: ts.SourceFile,
+  fileName: string,
+): BLDivergenceMarker[] {
+  let foundCheck = false;
+  let foundLine = 0;
+
+  function visit(node: ts.Node): void {
+    if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.GreaterThanToken &&
+      ts.isNumericLiteral(node.right) &&
+      node.right.text === "7"
+    ) {
+      const leftText = node.left.getText(sourceFile);
+      if (TEMPORAL_FIELD_PATTERN.test(leftText)) {
+        foundCheck = true;
+        foundLine = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+      }
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(sourceFile);
+
+  if (!foundCheck) {
+    return [
+      {
+        ruleId: "BL-024",
+        severity: "HIGH",
+        pattern: "missing_temporal_check",
+        sourceFile: fileName,
+        sourceLine: 0,
+        detail:
+          "BL-024: No 7-day window check found for UNUSED_FULL refund. Expected pattern: daysSincePurchase > 7 or temporal arithmetic on purchase/created/paid field.",
+        confidence: 0.75,
+        autoDetected: true,
+      },
+    ];
+  }
+  // PRESENCE → 0 markers (RESOLVED 자동 입증)
+  void foundLine;
+  return [];
+}
+
+/**
+ * BL-029 — 만료 거부 PRESENCE/ABSENCE 검출.
+ *
+ * PRESENCE 패턴: BinaryExpression with `<` operator + expiry field identifier
+ * + now-side 비교 (new Date() / Date.now() / now / today).
+ *
+ * Positive (RESOLVED): new Date(voucher.expires_at) < new Date()
+ * Positive (RESOLVED): voucher.expires_at < Date.now()
+ *
+ * 신뢰도 80% — 비교 연산자 + 명확한 필드명으로 false positive risk 낮음.
+ */
+export function detectExpiryCheck(
+  sourceFile: ts.SourceFile,
+  fileName: string,
+): BLDivergenceMarker[] {
+  let foundCheck = false;
+
+  function visit(node: ts.Node): void {
+    if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.LessThanToken
+    ) {
+      const leftText = node.left.getText(sourceFile);
+      const rightText = node.right.getText(sourceFile);
+      if (EXPIRY_FIELD_PATTERN.test(leftText) && NOW_VALUE_PATTERN.test(rightText)) {
+        foundCheck = true;
+      }
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(sourceFile);
+
+  if (!foundCheck) {
+    return [
+      {
+        ruleId: "BL-029",
+        severity: "MEDIUM",
+        pattern: "missing_validation_check",
+        sourceFile: fileName,
+        sourceLine: 0,
+        detail:
+          "BL-029: No expiry check found. Expected pattern: voucher.expires_at < new Date() or equivalent (expir/valid_until field + now comparison).",
+        confidence: 0.8,
+        autoDetected: true,
+      },
+    ];
+  }
+  return [];
+}
+
+/**
+ * BL-026 — 캐시백 ALT 분기 PRESENCE/ABSENCE 검출.
+ *
+ * PRESENCE 패턴 (heuristic, AND):
+ *   1. IfStatement / CaseClause / TernaryExpression
+ *   2. condition contains cashback/discount/할인보전 식별자
+ *   3. consequent body contains reject/deny outcome (REJECT/DENY/throw Error 등)
+ *
+ * Positive (RESOLVED): if (voucher.cashback_amount > 0) { throw new RefundError('CASHBACK_REFUND_DENIED', ...) }
+ *
+ * 신뢰도 65% — heuristic. cashback_amount 식별자는 BL-028 exclusionAmount 계산에도
+ * 등장하므로(현 refund.ts line 116: `Math.round(voucher.cashback_amount * 1.1)`)
+ * outcome reject 키워드 동시 매칭으로 false positive 완화.
+ */
+export function detectCashbackBranch(
+  sourceFile: ts.SourceFile,
+  fileName: string,
+): BLDivergenceMarker[] {
+  let foundBranch = false;
+
+  function nodeContainsRejectOutcome(node: ts.Node): boolean {
+    const text = node.getText(sourceFile);
+    return REJECT_OUTCOME_PATTERN.test(text);
+  }
+
+  function visit(node: ts.Node): void {
+    // case A: IfStatement
+    if (ts.isIfStatement(node)) {
+      const condText = node.expression.getText(sourceFile);
+      if (
+        CASHBACK_FIELD_PATTERN.test(condText) &&
+        nodeContainsRejectOutcome(node.thenStatement)
+      ) {
+        foundBranch = true;
+      }
+    }
+    // case B: CaseClause within SwitchStatement
+    if (ts.isCaseClause(node)) {
+      const caseText = node.expression.getText(sourceFile);
+      if (CASHBACK_FIELD_PATTERN.test(caseText)) {
+        const bodyText = node.statements
+          .map((s) => s.getText(sourceFile))
+          .join("\n");
+        if (REJECT_OUTCOME_PATTERN.test(bodyText)) foundBranch = true;
+      }
+    }
+    // case C: ConditionalExpression (ternary)
+    if (ts.isConditionalExpression(node)) {
+      const condText = node.condition.getText(sourceFile);
+      if (
+        CASHBACK_FIELD_PATTERN.test(condText) &&
+        nodeContainsRejectOutcome(node.whenTrue)
+      ) {
+        foundBranch = true;
+      }
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(sourceFile);
+
+  if (!foundBranch) {
+    return [
+      {
+        ruleId: "BL-026",
+        severity: "MEDIUM",
+        pattern: "missing_alt_branch",
+        sourceFile: fileName,
+        sourceLine: 0,
+        detail:
+          "BL-026: No cashback/discount branch with reject/alt outcome found. Expected: if (voucher.cashback_amount > 0) { throw new RefundError('CASHBACK_REFUND_DENIED', ...) } or equivalent ALT outcome.",
+        confidence: 0.65,
+        autoDetected: true,
+      },
+    ];
+  }
+  return [];
+}
+
+/**
+ * Detector function 시그니처 (BL_DETECTOR_REGISTRY 등록용).
+ */
+export type DetectorFn = (
+  sourceFile: ts.SourceFile,
+  fileName: string,
+) => BLDivergenceMarker[];
+
+/**
+ * BL-ID → detector 매핑 table. Hybrid 접근의 핵심.
+ *
+ * BL-027/028: Sprint 259 (F426) detector. 단, 시그니처가 옵션 객체를 받으므로 here는 wrapping.
+ * BL-024/026/029: F427 신규.
+ *
+ * 미등록 BL-ID(BL-020/021/022/023/025/030 등)는 본 detector scope 외 — 하드코딩 detector
+ * 가 부재하므로 skip 처리. provenance.yaml cross-check에서 UNKNOWN 분류.
+ */
+export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
+  "BL-024": detectTemporalCheck,
+  "BL-026": detectCashbackBranch,
+  "BL-027": (sf, fn) => detectUnderImplementation(sf, fn),
+  "BL-028": detectHardCodedExclusion,
+  "BL-029": detectExpiryCheck,
+};

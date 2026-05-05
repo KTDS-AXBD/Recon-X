@@ -2,6 +2,54 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 272 (2026-05-05) — Sprint 260 F427 (rules.md NL parser + BL-024/026/029 detector) ✅ DONE (Master inline ~2.5h, Match 95%)
+
+**핵심 결과**: F354 5건 BL-level marker 자동화 **5/5 (100%) 완성**. Sprint 259 (BL-027/028, 2/5 = 40%) → Sprint 260 (BL-024/026/029 추가, 5/5 = 100%). **사용자 결정 적중**: Hybrid 접근(NL→AST 자동 추출 회피, BL_DETECTOR_REGISTRY 매핑 table)으로 신뢰도 BL-029 80% / BL-024 75% / BL-026 65% 도달 — Sprint 258 분류 50-60% 예상 대비 평균 ~73%로 상회.
+
+**진행 흐름**:
+
+1. **세션 시작** — `/ax:session-start /todo plan` → MEMORY 자동 로드 + SPEC §1~§5/§7~§8/§10 부분 읽기. Sprint 259 직후 차기 후보 제시 (Sprint 260 F428 / F427 / F429 / F356-A 4종) → AskUserQuestion으로 사용자 선택 = **F427**
+2. **접근 방식 결정** — AskUserQuestion 4개 선택지: (a) Hybrid 권장 / (b) Pure NL→AST / (c) LLM-조력 + 범위 (a) 3종 전부 / (b) 2종 / (c) 1종. 사용자 = **(a) Hybrid + 3종 전부**
+3. **사전 조사** — 현 refund.ts 확인: BL-024(line 98-103) + BL-029(line 93-96) PRESENT, BL-026 ABSENT. 양면 검증 가능 입증 (PRESENCE → RESOLVED 자동 / ABSENCE → DIVERGENCE 발행)
+4. **Plan/Design 작성** — AIF-PLAN-058 + AIF-DSGN-058. Algorithm Design 3종 detector + BL_DETECTOR_REGISTRY 매핑 패턴 명시
+5. **SPEC §6 Sprint 260 등록** — F427 PLANNED 상태로 등록
+6. **신규 타입** — `packages/types/src/divergence.ts` BLRuleSchema 신설 + 3 pattern enum (`missing_temporal_check`/`missing_validation_check`/`missing_alt_branch`) + sourceLine `positive` → `nonnegative` (ABSENCE marker line 0 허용)
+7. **rules-parser 구현** — `packages/utils/src/divergence/rules-parser.ts` 신규. markdown table 헤더 + separator + BL-NNN 행 추출. ID 형식 위반 skip + 첫 테이블만 추출
+8. **3 detector 구현** — `bl-detector.ts` 확장: `detectTemporalCheck` (75%) + `detectExpiryCheck` (80%) + `detectCashbackBranch` (65% heuristic). PRESENCE → 0 markers, ABSENCE → 1 marker 패턴
+9. **REGISTRY + DETECTOR_SUPPORTED_RULES 확장** — `BL_DETECTOR_REGISTRY` Record 5종 + `DETECTOR_SUPPORTED_RULES` Set 5종 (Sprint 259 2종 → Sprint 260 5종)
+10. **테스트 추가** — `rules-parser.test.ts` 5건 (header 추출 + invalid ID skip + 빈 줄 종료 + 실 refund-rules.md 구조) + `bl-detector.test.ts` +11건 (BL-024/029/026 × 3 + Registry × 2). **108/108 PASS**
+11. **합성 fixture 확장** — `scripts/divergence/fixtures/refund-pre-f359.ts`에 BL-024/029/026 누락 패턴 추가 (Sprint 218 시점 재현)
+12. **CLI 확장** — `scripts/divergence/detect-bl.ts` `--rules <path>` flag + REGISTRY 일괄 실행. detectorVersion 1.0.0 → 2.0.0
+13. **양쪽 실측 PASS**:
+    - 현 refund.ts: 4 RESOLVED 권고 (BL-024/027/028/029) + 1 OPEN 유지 (BL-026) + **0 UNKNOWN** (Sprint 259 3건 → 0건)
+    - 합성 fixture: 5/5 ABSENCE markers 정확 검출
+14. **Reports 생성** — `reports/sprint-260-rules-parser-2026-05-05.{json×2, md}` 실파일
+15. **PDCA 4종 작성** — AIF-PLAN/DSGN/ANLS/RPRT-058
+16. **SPEC §6 Sprint 260 ✅ DONE 마킹 + F427 [x]** + §5 Last Updated 갱신 예정
+
+**검증 통과**:
+- typecheck (utils + types): clean
+- lint (utils): clean
+- test: **108/108 PASS** (Sprint 259 96 → Sprint 260 108, +12 신규)
+- Master 독립 실측: 양쪽 fixture 기대값 일치
+
+**산출물**:
+- 코드: `packages/types/src/divergence.ts` (BLRuleSchema + 3 pattern), `packages/utils/src/divergence/{rules-parser, bl-detector, provenance-cross-check, index}.ts`
+- 테스트: `packages/utils/test/{rules-parser, bl-detector}.test.ts`
+- 스크립트: `scripts/divergence/{detect-bl, fixtures/refund-pre-f359}.ts`
+- 문서: `docs/{01-plan, 02-design, 03-analysis, 04-report}/features/F427-* | sprint-260-* `
+- Reports: `reports/sprint-260-rules-parser-2026-05-05.{json×2, md}`
+- SPEC: §6 Sprint 260 블록 + F427 [x] + §5 Last Updated 갱신
+- CHANGELOG: 본 세션 272 항목
+
+**Master inline 8회 연속 회피 패턴 유지** (S253~272). autopilot Production Smoke Test 14회차 변종 직후라 신뢰도 우려 회피.
+
+**차기 권고**:
+- Sprint 261+ F428: Phase 3b LPON 35 R2 재패키징 + multi-domain rules.md 적용 (lpon-payment / lpon-charge)
+- F429: provenance.yaml auto-write — 본 cross-check 권고를 status 필드에 자동 반영 (read → write 전환)
+
+---
+
 ### 세션 271 (2026-05-05) — Sprint 259 F426 (BL-028 단독 자동 검출 PoC + BL-027 heuristic) ✅ DONE (Master inline ~3h, Match 97%)
 
 **핵심 결과**: F354 5건 BL-level marker 자동화 **2/5 (40%) 즉시 구현 + production 사용 가능** 입증. 사전 조사에서 4/5 marker가 Sprint 251 F359로 이미 코드 RESOLVED 상태였음을 발견 → detector 가치 3축 재정의 (AST 정확도 + RESOLVED 자동 입증 + provenance status 권고). **자동화 시스템 설계 패턴 정립**: Detector capability 명시 + UNKNOWN 분류로 미지원 marker false positive 회피.

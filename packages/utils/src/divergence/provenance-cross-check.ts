@@ -41,10 +41,20 @@ export function parseProvenanceMarkers(yamlText: string): ParsedProvenanceMarker
 }
 
 /**
- * F426 Sprint 259 detector가 지원하는 ruleId 목록.
- * 미지원 ruleId(BL-024/026/029)는 본 sprint scope 외 — cross-check에서 UNKNOWN 처리.
+ * Detector가 지원하는 ruleId 목록.
+ * F426 Sprint 259: BL-027, BL-028.
+ * F427 Sprint 260: BL-024, BL-026, BL-029 추가 → 5/5 (F354 자동화 완성).
+ *
+ * 미지원 ruleId(BL-020/021/022/023/025/030 등)는 본 detector scope 외 —
+ * cross-check에서 UNKNOWN 처리. 추가 detector 작성 시 본 Set 확장.
  */
-export const DETECTOR_SUPPORTED_RULES = new Set<string>(["BL-027", "BL-028"]);
+export const DETECTOR_SUPPORTED_RULES = new Set<string>([
+  "BL-024",
+  "BL-026",
+  "BL-027",
+  "BL-028",
+  "BL-029",
+]);
 
 /**
  * Manual markers vs Auto markers cross-check 권고.
@@ -74,7 +84,7 @@ export function crossCheck(
         autoDetectionCount: 0,
         recommendedStatus: "UNKNOWN",
         detectorSupported: false,
-        reason: `Detector does not support ${m.ruleId} (Sprint 259 scope: BL-027/BL-028 only). Manual review required. Future F427 rules.md NL parser may unblock automatic detection.`,
+        reason: `Detector does not support ${m.ruleId} (Sprint 260 scope: BL-024/026/027/028/029). Manual review required. Add detector to BL_DETECTOR_REGISTRY for automatic check.`,
       };
     }
 

@@ -1,0 +1,143 @@
+{
+  "source": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/refund.ts",
+  "rulesFile": ".decode-x/spec-containers/lpon-refund/rules/refund-rules.md",
+  "measuredAt": "2026-05-05T07:16:09.658Z",
+  "detectorVersion": "2.0.0",
+  "rulesParsed": 11,
+  "detectorsRun": 5,
+  "perRule": [
+    {
+      "ruleId": "BL-024",
+      "detected": 0,
+      "markers": [],
+      "rule": {
+        "id": "BL-024",
+        "condition": "미사용 상품권 환불 요청 시",
+        "criteria": "구매 후 7일 이내 환불 요청",
+        "outcome": "전액 환불 처리한다",
+        "exception": "7일 초과 시 환불 불가"
+      }
+    },
+    {
+      "ruleId": "BL-026",
+      "detected": 1,
+      "markers": [
+        {
+          "ruleId": "BL-026",
+          "severity": "MEDIUM",
+          "pattern": "missing_alt_branch",
+          "sourceFile": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/refund.ts",
+          "sourceLine": 0,
+          "detail": "BL-026: No cashback/discount branch with reject/alt outcome found. Expected: if (voucher.cashback_amount > 0) { throw new RefundError('CASHBACK_REFUND_DENIED', ...) } or equivalent ALT outcome.",
+          "confidence": 0.65,
+          "autoDetected": true
+        }
+      ],
+      "rule": {
+        "id": "BL-026",
+        "condition": "캐시백 또는 할인보전 금액 환불 요청 시",
+        "criteria": "캐시백 및 할인보전 금액에 해당",
+        "outcome": "현금 환불 불가",
+        "exception": "[미정의 — 포인트 전환 등 대안 검토 필요]"
+      }
+    },
+    {
+      "ruleId": "BL-027",
+      "detected": 0,
+      "markers": [],
+      "rule": {
+        "id": "BL-027",
+        "condition": "계좌 오류로 환불 실패 시",
+        "criteria": "환불계좌 오류 발생",
+        "outcome": "소비자가 환불계좌 재등록 또는 고객센터 수기 접수로 환불 처리한다",
+        "exception": "[미정의]"
+      }
+    },
+    {
+      "ruleId": "BL-028",
+      "detected": 0,
+      "markers": [],
+      "rule": {
+        "id": "BL-028",
+        "condition": "환불 요청 시 제외금액 산정이 필요할 때",
+        "criteria": "환불요청액에서 제외금액을 차감",
+        "outcome": "입금액 = 환불요청액 − 제외금액으로 계산한다",
+        "exception": "제외금액이 0이면 전액 환불"
+      }
+    },
+    {
+      "ruleId": "BL-029",
+      "detected": 0,
+      "markers": [],
+      "rule": {
+        "id": "BL-029",
+        "condition": "유효기간 만료 상품권 환불 요청 시",
+        "criteria": "원칙적으로 환불 불가",
+        "outcome": "환불을 거부한다. 단, 강성 민원 시 강제환불 기능을 활용한다",
+        "exception": "[미정의]"
+      }
+    }
+  ],
+  "summary": {
+    "totalMarkers": 1,
+    "byRule": {
+      "BL-024": 0,
+      "BL-026": 1,
+      "BL-027": 0,
+      "BL-028": 0,
+      "BL-029": 0
+    }
+  },
+  "provenanceCrossCheck": {
+    "provenanceFile": ".decode-x/spec-containers/lpon-refund/provenance.yaml",
+    "recommendations": [
+      {
+        "ruleId": "BL-024",
+        "manualStatus": "OPEN",
+        "autoDetectionCount": 0,
+        "recommendedStatus": "RESOLVED",
+        "detectorSupported": true,
+        "reason": "Manual=OPEN but auto-detector found 0 occurrences. Code may have RESOLVED this issue. Review and update provenance.yaml status."
+      },
+      {
+        "ruleId": "BL-028",
+        "manualStatus": "OPEN",
+        "autoDetectionCount": 0,
+        "recommendedStatus": "RESOLVED",
+        "detectorSupported": true,
+        "reason": "Manual=OPEN but auto-detector found 0 occurrences. Code may have RESOLVED this issue. Review and update provenance.yaml status."
+      },
+      {
+        "ruleId": "BL-026",
+        "manualStatus": "OPEN",
+        "autoDetectionCount": 1,
+        "recommendedStatus": "OPEN",
+        "detectorSupported": true,
+        "reason": "Manual=OPEN and auto-detector confirms 1 occurrences. Status consistent."
+      },
+      {
+        "ruleId": "BL-029",
+        "manualStatus": "OPEN",
+        "autoDetectionCount": 0,
+        "recommendedStatus": "RESOLVED",
+        "detectorSupported": true,
+        "reason": "Manual=OPEN but auto-detector found 0 occurrences. Code may have RESOLVED this issue. Review and update provenance.yaml status."
+      },
+      {
+        "ruleId": "BL-027",
+        "manualStatus": "OPEN",
+        "autoDetectionCount": 0,
+        "recommendedStatus": "RESOLVED",
+        "detectorSupported": true,
+        "reason": "Manual=OPEN but auto-detector found 0 occurrences. Code may have RESOLVED this issue. Review and update provenance.yaml status."
+      }
+    ],
+    "summary": {
+      "total": 5,
+      "recommendResolved": 4,
+      "keepOpen": 1,
+      "unknown": 0,
+      "regressionRisk": 0
+    }
+  }
+}

@@ -49,11 +49,20 @@ export function parseProvenanceMarkers(yamlText: string): ParsedProvenanceMarker
  * cross-check에서 UNKNOWN 처리. 추가 detector 작성 시 본 Set 확장.
  */
 export const DETECTOR_SUPPORTED_RULES = new Set<string>([
+  // Sprint 260 (F427) — refund specific
   "BL-024",
   "BL-026",
   "BL-027",
   "BL-028",
   "BL-029",
+  // Sprint 262 (F429) — universal patterns
+  "BL-005",
+  "BL-006",
+  "BL-007",
+  "BL-008",
+  "BL-014",
+  "BL-015",
+  "BL-022",
 ]);
 
 /**

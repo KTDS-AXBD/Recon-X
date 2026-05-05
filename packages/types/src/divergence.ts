@@ -15,6 +15,9 @@ export const BLDivergenceMarkerSchema = z.object({
     "missing_temporal_check", // BL-024 (F427) — 7일 윈도 체크 부재
     "missing_validation_check", // BL-029 (F427) — 만료 거부 체크 부재
     "missing_alt_branch", // BL-026 (F427) — 캐시백 ALT 분기 부재
+    "missing_threshold_check", // BL-005~008/BL-015 (F429) — 임계값 비교 부재
+    "missing_status_transition", // BL-014 (F429) — status comparison + assignment 부재
+    "missing_atomic_transaction", // BL-022 (F429) — db.transaction(...) 부재
   ]),
   sourceFile: z.string(),
   sourceLine: z.number().int().nonnegative(),

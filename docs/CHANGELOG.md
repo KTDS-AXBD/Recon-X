@@ -2,6 +2,58 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 274 (2026-05-05) — Sprint 262 F429 (보편 detector 3종 Threshold/Status transition/Atomic transaction) ✅ DONE (Master inline ~3.5h, Match 95%)
+
+**핵심 결과**: 보편 detector 3종 도입 + BL_DETECTOR_REGISTRY 5 → **12종** 확장 + withRuleId helper 패턴(1 detector → N BL 매핑). **Detector coverage 13.2% → 31.6%** (+18.4%p). 현 source **7 BL 모두 PRESENCE 자동 입증** (RESOLVED).
+
+**진행 흐름**:
+1. **Sprint 262 시작 + AskUserQuestion 2회** — (1) 범위 = 보편 detector 3종 모두 (Recommended), (2) 구현 = Master inline (Recommended)
+2. **사전 조사 + 47.4% 추정치 정정** — Sprint 261 47.4%는 13 BL 추정치, 그러나 6 BL은 source 부재(gift G002~G006/settlement BL-036) → 실효 7 BL 추가 = 12/38 = **31.6%** 정정
+3. **Plan/Design 작성** — AIF-PLAN/DSGN-060. 3 detector 패턴 명세 (Threshold/Status transition/Atomic transaction) + withRuleId helper 도입
+4. **SPEC §6 Sprint 262 등록** — F429 PLANNED
+5. **types/divergence.ts pattern enum 3종 추가** — missing_threshold_check / missing_status_transition / missing_atomic_transaction
+6. **3 detector 구현** — bl-detector.ts:
+   - `detectThresholdCheck` (70% 신뢰도): 변수명 + literal/UPPERCASE_CONSTANT 비교
+   - `detectStatusTransition` (75%): comparison + assignment 동시 매칭 의무
+   - `detectAtomicTransaction` (85%): `db.transaction()` 호출 검출 (better-sqlite3 표준)
+7. **withRuleId helper + REGISTRY 12종** — 동일 detector를 5 BL에 매핑 (코드 중복 회피)
+8. **DETECTOR_SUPPORTED_RULES 12종 확장** — provenance-cross-check.ts
+9. **단위 테스트 +9건** — 3 detector × 3 cases (positive/negative/edge) + REGISTRY 12종 enumeration
+10. **multi-domain 실측** — `--all-domains`로 12 detector × 7 containers 일괄 실행
+11. **결과 검증** — charge BL-005~008 RESOLVED 자동 입증 + payment BL-014/015 RESOLVED 자동 입증 + refund BL-022 RESOLVED 자동 입증 + BL-026 1건만 ABSENT 유지 (Sprint 260 일관)
+12. **Reports + PDCA 4종** — AIF-PLAN/DSGN/ANLS/RPRT-060 + reports/sprint-262-universal-detectors-2026-05-05.{json, md}
+13. **SPEC §6 Sprint 262 ✅ DONE 마킹 + F429 [x]** + §5 Last Updated 갱신
+
+**검증 통과**:
+- typecheck (utils + types): clean
+- lint (utils): clean
+- test: **120/120 PASS** (Sprint 261 111 → Sprint 262 120, +9 신규)
+- Master 독립 실측: 12 detector × 7 containers PASS
+
+**산출물**:
+- 코드: `packages/types/src/divergence.ts` (+3 pattern enum), `packages/utils/src/divergence/bl-detector.ts` (+3 detector + withRuleId), `provenance-cross-check.ts` (12종), `index.ts` (re-exports)
+- 테스트: `packages/utils/test/bl-detector.test.ts` (+9 cases + REGISTRY 12종 enumeration)
+- 문서: `docs/{01-plan, 02-design, 03-analysis, 04-report}/features/F429-* | sprint-262-*`
+- Reports: `reports/sprint-262-universal-detectors-2026-05-05.{json, md}`
+- SPEC: §6 Sprint 262 + F429 [x] + §5 Last Updated 갱신
+
+**Master inline 10회 연속 회피 패턴 유지** (S253~274).
+
+**Sprint 263 후보 (가치/risk 비교)**:
+- **옵션 D (권고)**: F429 provenance.yaml auto-write — 4h, code-only, 운영 가치 (cross-check 자동 반영)
+- 옵션 A: gift source 작성 PoC — 8-12h, +5 BL coverage 44.7%, scope creep 우려
+- 옵션 B: settlement source PoC — 4-6h, +1 BL coverage 33.2%, gift 우선
+- 옵션 C: Domain-specific detector 3종 — 6-8h, +3 BL coverage 39.5%, 재사용성 낮음
+- 옵션 E: LPON 35 R2 재패키징 — 6-8h, production risk, smoke 직접 검증 가능 시점
+
+**Sprint 260 → 261 → 262 누적 효과**:
+- Sprint 260 (F427): 인프라 ~400 lines, refund detector 5종, coverage 5/11 = 45.5% (refund 내)
+- Sprint 261 (F428): 확장 ~150 lines, multi-domain parser, coverage 5/38 = 13.2%
+- Sprint 262 (F429): 확장 ~250 lines, REGISTRY 12종, coverage **12/38 = 31.6%**
+→ 인프라 재활용 효과 누적, 신규 코드 비용 ↘ + coverage 향상 ↗
+
+---
+
 ### 세션 273 (2026-05-05) — Sprint 261 F428 (Phase 3b 분할 1/2 Multi-domain parser 검증) ✅ DONE (Master inline ~3h, Match 95%)
 
 **핵심 결과**: 7 spec-containers 일괄 파싱 + parser regex 보강 + DOMAIN_MAP 7 entries 정리 + detector 적용 매트릭스 도출. **38 total BLs across 5 active domains 파싱 PASS**. Detector coverage 5/38 = **13.2%** (refund 단독). 후속 보편 detector 3종 도입 시 **47.4% 도달 가능성 정량 분석**.

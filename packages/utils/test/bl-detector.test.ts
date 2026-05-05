@@ -5,6 +5,9 @@ import {
   detectTemporalCheck,
   detectExpiryCheck,
   detectCashbackBranch,
+  detectThresholdCheck,
+  detectStatusTransition,
+  detectAtomicTransaction,
   parseTypeScriptSource,
   BL_DETECTOR_REGISTRY,
 } from "../src/divergence/bl-detector.js";
@@ -276,9 +279,146 @@ describe("BL-026 — detectCashbackBranch", () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// F429 (Sprint 262) — Threshold/Status transition/Atomic transaction tests
+// ---------------------------------------------------------------------------
+
+describe("BL-005~008/015 — detectThresholdCheck", () => {
+  it("does NOT flag when threshold comparison present (RESOLVED)", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function check(amount: number) {
+  if (amount > DAILY_LIMIT) {
+    throw new Error("limit exceeded");
+  }
+}`,
+    );
+    const markers = detectThresholdCheck(src, "test.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("does NOT flag for amount >= 50_000 numeric literal", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function f(amount: number) {
+  if (amount >= 50000) {
+    sendSms();
+  }
+}`,
+    );
+    const markers = detectThresholdCheck(src, "test.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("flags missing threshold check (DIVERGENCE)", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function noThreshold(input: string) {
+  return input.toUpperCase();
+}`,
+    );
+    const markers = detectThresholdCheck(src, "test.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.pattern).toBe("missing_threshold_check");
+    expect(markers[0]?.confidence).toBe(0.7);
+  });
+});
+
+describe("BL-014 — detectStatusTransition", () => {
+  it("does NOT flag when comparison + assignment both present (RESOLVED)", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function pay(voucher: { status: string }) {
+  if (voucher.status !== 'ACTIVE') {
+    throw new Error("not active");
+  }
+  return { status: 'PAID' };
+}`,
+    );
+    const markers = detectStatusTransition(src, "test.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("flags when only comparison present (no assignment)", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function check(s: { status: string }) {
+  if (s.status === 'ACTIVE') return true;
+  return false;
+}`,
+    );
+    const markers = detectStatusTransition(src, "test.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.detail).toContain("comparison=true");
+    expect(markers[0]?.detail).toContain("assignment=false");
+  });
+
+  it("flags when only assignment present (no comparison)", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function create() {
+  return { status: 'PAID' };
+}`,
+    );
+    const markers = detectStatusTransition(src, "test.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.detail).toContain("comparison=false");
+  });
+});
+
+describe("BL-022 — detectAtomicTransaction", () => {
+  it("does NOT flag when db.transaction present (RESOLVED)", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function approve(db: any) {
+  const tx = db.transaction(() => {
+    db.prepare('INSERT ...').run();
+    db.prepare('UPDATE ...').run();
+  });
+  tx();
+}`,
+    );
+    const markers = detectAtomicTransaction(src, "test.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("does NOT flag for database.transaction (alias receiver)", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function f(database: any) {
+  database.transaction(() => { /* atomic */ })();
+}`,
+    );
+    const markers = detectAtomicTransaction(src, "test.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("flags missing transaction (sequential statements)", () => {
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function approveLegacy(db: any) {
+  db.prepare('INSERT ...').run();
+  db.prepare('UPDATE ...').run();
+  db.prepare('UPDATE balance ...').run();
+}`,
+    );
+    const markers = detectAtomicTransaction(src, "test.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.pattern).toBe("missing_atomic_transaction");
+    expect(markers[0]?.confidence).toBe(0.85);
+  });
+});
+
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 5 detectors (BL-024/026/027/028/029)", () => {
+  it("exposes 12 detectors (Sprint 262 expanded)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
+      "BL-005",
+      "BL-006",
+      "BL-007",
+      "BL-008",
+      "BL-014",
+      "BL-015",
+      "BL-022",
       "BL-024",
       "BL-026",
       "BL-027",

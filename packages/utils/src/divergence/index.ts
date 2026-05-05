@@ -4,6 +4,9 @@ export {
   detectTemporalCheck,
   detectExpiryCheck,
   detectCashbackBranch,
+  detectThresholdCheck,
+  detectStatusTransition,
+  detectAtomicTransaction,
   parseTypeScriptSource,
   BL_DETECTOR_REGISTRY,
 } from "./bl-detector.js";

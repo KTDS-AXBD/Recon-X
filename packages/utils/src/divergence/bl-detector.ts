@@ -405,6 +405,193 @@ export function detectCashbackBranch(
   return [];
 }
 
+// ---------------------------------------------------------------------------
+// F429 (Sprint 262) — 보편 detector 3종 (Threshold/Status transition/Atomic transaction).
+// 동일 detector를 여러 BL에 매핑하여 도메인 cross-cutting 패턴 검출.
+// ---------------------------------------------------------------------------
+
+const THRESHOLD_VAR_PATTERN = /amount|limit|threshold|max|min|count|total|balance|fee/i;
+
+/**
+ * BL-005/006/007/008/015 — Threshold check PRESENCE/ABSENCE 검출.
+ *
+ * PRESENCE 패턴:
+ *   - BinaryExpression with >, >=, <, <= operator
+ *   - left side identifier matches THRESHOLD_VAR_PATTERN OR property access (a.b)
+ *   - right side NumericLiteral OR UPPERCASE_CONSTANT identifier
+ *
+ * Positive (RESOLVED): if (dailyRow.total + amount > DAILY_LIMIT) throw ...
+ * Positive (RESOLVED): if (amount >= 50_000) sendSms(...)
+ * Negative (DIVERGENCE): no threshold comparison
+ *
+ * 신뢰도 70% — 일반 조건문 false positive 우려이나 변수명+상수 동시 매칭으로 완화.
+ */
+export function detectThresholdCheck(
+  sourceFile: ts.SourceFile,
+  fileName: string,
+): BLDivergenceMarker[] {
+  let foundThreshold = false;
+
+  function visit(node: ts.Node): void {
+    if (
+      ts.isBinaryExpression(node) &&
+      [
+        ts.SyntaxKind.GreaterThanToken,
+        ts.SyntaxKind.GreaterThanEqualsToken,
+        ts.SyntaxKind.LessThanToken,
+        ts.SyntaxKind.LessThanEqualsToken,
+      ].includes(node.operatorToken.kind)
+    ) {
+      const leftText = node.left.getText(sourceFile);
+      const rightText = node.right.getText(sourceFile);
+      const leftIsVarLike =
+        THRESHOLD_VAR_PATTERN.test(leftText) || leftText.includes(".");
+      const rightIsLiteral = ts.isNumericLiteral(node.right);
+      const rightIsConstant = /^[A-Z][A-Z_0-9]+$/.test(rightText);
+
+      if (leftIsVarLike && (rightIsLiteral || rightIsConstant)) {
+        foundThreshold = true;
+      }
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(sourceFile);
+
+  if (!foundThreshold) {
+    return [
+      {
+        ruleId: "BL-THRESHOLD-GENERIC",
+        severity: "MEDIUM",
+        pattern: "missing_threshold_check",
+        sourceFile: fileName,
+        sourceLine: 0,
+        detail:
+          "No threshold/limit comparison found. Expected: variable >|>=|<|<= literal or UPPERCASE_CONSTANT.",
+        confidence: 0.7,
+        autoDetected: true,
+      },
+    ];
+  }
+  return [];
+}
+
+const STATUS_FIELD_PATTERN = /\bstatus\b/i;
+
+/**
+ * BL-014 — Status transition PRESENCE/ABSENCE 검출.
+ *
+ * PRESENCE 조건 (AND):
+ *   1. BinaryExpression `status === 'X'` or `status !== 'X'`
+ *   2. PropertyAssignment `status: 'Y'` OR SQL string `status = 'Y'` OR INSERT...VALUES(...,'Y',...)
+ *
+ * Positive (RESOLVED): if (voucher.status !== 'ACTIVE') throw + INSERT INTO ... VALUES(..., 'PAID', ...)
+ *
+ * 신뢰도 75%. comparison + assignment 동시 매칭으로 false positive 회피.
+ */
+export function detectStatusTransition(
+  sourceFile: ts.SourceFile,
+  fileName: string,
+): BLDivergenceMarker[] {
+  let foundComparison = false;
+  let foundAssignment = false;
+
+  function visit(node: ts.Node): void {
+    if (
+      ts.isBinaryExpression(node) &&
+      [
+        ts.SyntaxKind.EqualsEqualsEqualsToken,
+        ts.SyntaxKind.ExclamationEqualsEqualsToken,
+      ].includes(node.operatorToken.kind)
+    ) {
+      const leftText = node.left.getText(sourceFile);
+      if (STATUS_FIELD_PATTERN.test(leftText) && ts.isStringLiteral(node.right)) {
+        foundComparison = true;
+      }
+    }
+
+    if (ts.isPropertyAssignment(node)) {
+      const nameText = node.name.getText(sourceFile);
+      if (STATUS_FIELD_PATTERN.test(nameText) && ts.isStringLiteral(node.initializer)) {
+        foundAssignment = true;
+      }
+    }
+
+    if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+      const text = node.getText(sourceFile);
+      if (/\bstatus\s*=\s*['"]\w+['"]|VALUES\s*\([^)]*'[A-Z_]+'/.test(text)) {
+        foundAssignment = true;
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  }
+  visit(sourceFile);
+
+  if (!(foundComparison && foundAssignment)) {
+    return [
+      {
+        ruleId: "BL-STATUS-TRANSITION-GENERIC",
+        severity: "MEDIUM",
+        pattern: "missing_status_transition",
+        sourceFile: fileName,
+        sourceLine: 0,
+        detail: `Missing status state-machine pattern. comparison=${foundComparison}, assignment=${foundAssignment}. Expected both: \`status === 'X'\` + \`status: 'Y'\`.`,
+        confidence: 0.75,
+        autoDetected: true,
+      },
+    ];
+  }
+  return [];
+}
+
+const TX_RECEIVER_PATTERN = /\bdb\b|\bdatabase\b|\btx\b/i;
+
+/**
+ * BL-022 — Atomic transaction PRESENCE/ABSENCE 검출.
+ *
+ * PRESENCE 패턴: `db.transaction(() => {...})` 형태 호출 (better-sqlite3 표준).
+ *
+ * 신뢰도 85% — 표준 API 호출 패턴이라 false positive risk 낮음.
+ */
+export function detectAtomicTransaction(
+  sourceFile: ts.SourceFile,
+  fileName: string,
+): BLDivergenceMarker[] {
+  let foundTransaction = false;
+
+  function visit(node: ts.Node): void {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression) &&
+      node.expression.name.getText(sourceFile) === "transaction"
+    ) {
+      const receiverText = node.expression.expression.getText(sourceFile);
+      if (TX_RECEIVER_PATTERN.test(receiverText)) {
+        foundTransaction = true;
+      }
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(sourceFile);
+
+  if (!foundTransaction) {
+    return [
+      {
+        ruleId: "BL-ATOMIC-TX-GENERIC",
+        severity: "MEDIUM",
+        pattern: "missing_atomic_transaction",
+        sourceFile: fileName,
+        sourceLine: 0,
+        detail:
+          "No atomic transaction found. Expected: db.transaction(() => {...}) call (better-sqlite3 pattern).",
+        confidence: 0.85,
+        autoDetected: true,
+      },
+    ];
+  }
+  return [];
+}
+
 /**
  * Detector function 시그니처 (BL_DETECTOR_REGISTRY 등록용).
  */
@@ -414,18 +601,39 @@ export type DetectorFn = (
 ) => BLDivergenceMarker[];
 
 /**
+ * 동일 detector 결과에 도메인별 ruleId 부여 (registry pattern 재사용).
+ */
+function withRuleId(
+  markers: BLDivergenceMarker[],
+  ruleId: string,
+): BLDivergenceMarker[] {
+  return markers.map((m) => ({ ...m, ruleId }));
+}
+
+/**
  * BL-ID → detector 매핑 table. Hybrid 접근의 핵심.
  *
- * BL-027/028: Sprint 259 (F426) detector. 단, 시그니처가 옵션 객체를 받으므로 here는 wrapping.
- * BL-024/026/029: F427 신규.
+ * Sprint 259 (F426): BL-027/028 (refund domain stubs).
+ * Sprint 260 (F427): BL-024/026/029 (refund domain temporal/expiry/cashback).
+ * Sprint 262 (F429): BL-005/006/007/008/014/015/022 (universal patterns via withRuleId).
  *
- * 미등록 BL-ID(BL-020/021/022/023/025/030 등)는 본 detector scope 외 — 하드코딩 detector
- * 가 부재하므로 skip 처리. provenance.yaml cross-check에서 UNKNOWN 분류.
+ * 미등록 BL-ID는 detector scope 외 — provenance cross-check에서 UNKNOWN 분류.
  */
 export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
+  // Sprint 260 (F427) — refund specific
   "BL-024": detectTemporalCheck,
   "BL-026": detectCashbackBranch,
   "BL-027": (sf, fn) => detectUnderImplementation(sf, fn),
   "BL-028": detectHardCodedExclusion,
   "BL-029": detectExpiryCheck,
+  // Sprint 262 (F429) — universal threshold
+  "BL-005": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BL-005"),
+  "BL-006": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BL-006"),
+  "BL-007": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BL-007"),
+  "BL-008": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BL-008"),
+  "BL-015": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BL-015"),
+  // Sprint 262 (F429) — universal status
+  "BL-014": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BL-014"),
+  // Sprint 262 (F429) — universal atomic
+  "BL-022": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-022"),
 };

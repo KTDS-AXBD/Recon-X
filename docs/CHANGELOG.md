@@ -2,6 +2,49 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 271 (2026-05-05) — Sprint 259 F426 (BL-028 단독 자동 검출 PoC + BL-027 heuristic) ✅ DONE (Master inline ~3h, Match 97%)
+
+**핵심 결과**: F354 5건 BL-level marker 자동화 **2/5 (40%) 즉시 구현 + production 사용 가능** 입증. 사전 조사에서 4/5 marker가 Sprint 251 F359로 이미 코드 RESOLVED 상태였음을 발견 → detector 가치 3축 재정의 (AST 정확도 + RESOLVED 자동 입증 + provenance status 권고). **자동화 시스템 설계 패턴 정립**: Detector capability 명시 + UNKNOWN 분류로 미지원 marker false positive 회피.
+
+**진행 흐름**:
+1. **사전 조사 메커니즘 한계 발견** — refund.ts(`반제품-스펙/.../refund.ts`, 252 lines, **TS 파일** Java 아님)에서 BL-024(line 98-102 7-day check) + BL-027(line 167 MANUAL_REQUIRED) + BL-028(line 116 `Math.round(cashback*1.1)`) + BL-029(line 93 expiration) 모두 Sprint 251 F359로 코드 RESOLVED. BL-026만 미구현. provenance.yaml 5 markers는 stale OPEN 상태
+2. **Plan/Design 작성** — AIF-PLAN-057 + AIF-DSGN-057. detector 가치 3축 재정의 + TS Compiler API 활용 결정
+3. **신규 타입** — `packages/types/src/divergence.ts` (BLDivergenceMarker + CrossCheckRecommendation + AutoDetectionResult + ProvenanceMarker, Zod 스키마)
+4. **Detector 구현** — `packages/utils/src/divergence/bl-detector.ts` 신규 — `detectHardCodedExclusion()` (BL-028 정확 매칭) + `detectUnderImplementation()` (BL-027 heuristic body lines + branch depth) + `parseTypeScriptSource()` helper. TS Compiler API 직접 호출(ts-morph 미사용)
+5. **Cross-check 모듈** — `packages/utils/src/divergence/provenance-cross-check.ts` 신규 — regex 기반 yaml 파서(js-yaml 의존성 회피) + `crossCheck()` 권고. **초기 false positive 발견 후 보강**: 미지원 marker(BL-024/026/029)도 RESOLVED 권고하는 문제 → `DETECTOR_SUPPORTED_RULES` Set + `recommendedStatus: UNKNOWN` enum 추가
+6. **단위 테스트** — `packages/utils/test/bl-detector.test.ts` 신규 11 cases (BL-028 5 + BL-027 3 + cross-check 3) **11/11 PASS**
+7. **합성 fixture** — `scripts/divergence/fixtures/refund-pre-f359.ts` 신규 — F354 시점 코드 시뮬레이션 (BL-028 hardcoded 0 + BL-027 stub 2개)
+8. **CLI** — `scripts/divergence/detect-bl.ts` 신규 — `--source` / `--provenance` / `--out` / `--target-functions` / `--verbose`
+9. **양쪽 실측** — 합성 fixture: BL-028 1 + BL-027 2 = **3 markers** (positive case PASS, Plan 2+ 초과). 현 refund.ts: **0 markers** (RESOLVED auto 입증). Provenance cross-check 5 markers — 2 RESOLVED 권고 (BL-027/028) + 3 UNKNOWN (BL-024/026/029)
+10. **Analysis + Report** — AIF-ANLS-057 + AIF-RPRT-057 + reports/sprint-259-bl-detection-2026-05-05.{json,md}
+11. **SPEC §5/§6 갱신** — Last Updated 세션 271 + Sprint 259 ✅ DONE + F426 [x] 마킹
+
+**핵심 발견**:
+- 사전 조사가 detector 가치 재정의 — 만약 4/5 RESOLVED 상태 발견 못 했다면 "detector가 marker 검출 못 함 = 실패" 오판 위험. "stale provenance.yaml 자동 감지" 가치 발견
+- Detector capability 명시 패턴 — 자동화 도구가 모든 케이스를 다룰 수 없을 때 `DETECTOR_SUPPORTED_RULES` 명시 + `UNKNOWN` 분류 enum 도입이 false positive 회피의 핵심 (cross-check 1차 구현 false positive 발견 후 보강 학습)
+- 합성 fixture 가치 — 현 코드가 자연 RESOLVED일 때 positive case 검증 위해 합성 fixture 필수, detector regression 자동 catch 보장
+- TS AST는 Java AST보다 즉시 구현 용이 — refund.ts가 TS라 typescript Compiler API로 ~30분 detector 구현. Java domain 확장 시 Tree-sitter Java 동일 패턴 적용
+
+**Master inline 7회 연속 회피 패턴 유지** (S253~271).
+
+**산출물 (PDCA 4종 + 신규 모듈 + 테스트 + reports)**:
+- `docs/01-plan/features/F426-bl-detector.plan.md` (AIF-PLAN-057)
+- `docs/02-design/features/F426-bl-detector.design.md` (AIF-DSGN-057)
+- `docs/03-analysis/features/sprint-259-bl-detection.analysis.md` (AIF-ANLS-057)
+- `docs/04-report/features/sprint-259-F426.report.md` (AIF-RPRT-057)
+- `packages/types/src/divergence.ts` (신규)
+- `packages/utils/src/divergence/{bl-detector,provenance-cross-check,index}.ts` (신규 3 file)
+- `packages/utils/test/bl-detector.test.ts` (신규 11 tests)
+- `scripts/divergence/{detect-bl.ts,fixtures/refund-pre-f359.ts}` (신규 CLI + fixture)
+- `reports/sprint-259-bl-detection-2026-05-05.{json,md}`
+
+**다음 액션**:
+- Sprint 260 (가칭 F428) — Phase 3b LPON 35 R2 재패키징 + F356-A 재평가 (~8h, ~$5)
+- F427 (가칭) — rules.md NL parser (~16h, BL-024/026/029 unblock → 자동화 5/5 가능)
+- F429 (가칭) — provenance.yaml status auto-write (~4h)
+
+---
+
 ### 세션 270 (2026-05-05) — Sprint 258 F425 (F358 Phase 3a) ✅ DONE (Master inline ~2.5h, Match 95%, 원안 메커니즘 한계 발견 후 C형 분할)
 
 **핵심 결과**: F358 Phase 3 잔여 분리 후 Phase 3a 종결. Sprint 257 production deploy 7일+ alive 입증 + silent drift 17건 정확 재현 + Tree-sitter ground truth 0 drift + reconcile.ts sanity 7 markers PASS + F354 5건 BL-level 자동화 분류 완료. 즉시 차기 Sprint 권고: **BL-028 단독 자동 검출 PoC** (95% 신뢰도, AST literal `0` 매칭).

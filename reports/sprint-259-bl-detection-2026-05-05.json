@@ -1,0 +1,147 @@
+{
+  "sprint": 259,
+  "fItem": "F426",
+  "phase": "F354 자동화 1/5 (BL-027/028)",
+  "measuredAt": "2026-05-05T15:48:00+09:00",
+  "session": 271,
+  "method": "Master inline (Sprint 259, AIF-PLAN-057)",
+  "detectorVersion": "1.0.0",
+  "deliverables": {
+    "newTypes": ["BLDivergenceMarker", "CrossCheckRecommendation", "AutoDetectionResult"],
+    "newModules": [
+      "packages/utils/src/divergence/bl-detector.ts",
+      "packages/utils/src/divergence/provenance-cross-check.ts",
+      "packages/utils/src/divergence/index.ts"
+    ],
+    "newTests": "packages/utils/test/bl-detector.test.ts (11 cases)",
+    "newCli": "scripts/divergence/detect-bl.ts",
+    "newFixture": "scripts/divergence/fixtures/refund-pre-f359.ts"
+  },
+  "syntheticFixture": {
+    "file": "scripts/divergence/fixtures/refund-pre-f359.ts",
+    "purpose": "F354 (Sprint 218) 시점 코드 시뮬레이션 — refund.ts pre-Sprint 251 F359 fix 상태",
+    "detectionResult": {
+      "bl028": {
+        "count": 1,
+        "details": [{ "line": 20, "matchedText": "exclusionAmount = 0" }]
+      },
+      "bl027": {
+        "count": 2,
+        "details": [
+          { "line": 18, "function": "processRefundRequest", "bodyLines": 5, "branchDepth": 0 },
+          { "line": 25, "function": "approveRefund", "bodyLines": 3, "branchDepth": 0 }
+        ]
+      },
+      "verdict": "PASS — positive case 입증"
+    }
+  },
+  "realRefundTs": {
+    "file": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/refund.ts",
+    "totalLines": 252,
+    "detectionResult": {
+      "bl028": { "count": 0 },
+      "bl027": { "count": 0, "targetFunctions": ["approveRefund", "processRefundRequest"] },
+      "verdict": "PASS — Sprint 251 F359로 BL-027/BL-028 모두 코드 RESOLVED 입증",
+      "evidence": [
+        "refund.ts:116 — const exclusionAmount = Math.round((voucher.cashback_amount) * 1.1) (BL-028 RESOLVED)",
+        "refund.ts:142~210 — approveRefund 50+ lines + try/catch + 5+ branches (BL-027 RESOLVED)"
+      ]
+    }
+  },
+  "provenanceCrossCheck": {
+    "yamlPath": ".decode-x/spec-containers/lpon-refund/provenance.yaml",
+    "manualMarkersCount": 5,
+    "detectorSupportedRules": ["BL-027", "BL-028"],
+    "recommendations": [
+      {
+        "ruleId": "BL-024",
+        "manualStatus": "OPEN",
+        "autoDetectionCount": 0,
+        "recommendedStatus": "UNKNOWN",
+        "detectorSupported": false,
+        "reason": "Detector does not support BL-024 (Sprint 259 scope: BL-027/BL-028 only). Future F427 rules.md NL parser may unblock."
+      },
+      {
+        "ruleId": "BL-028",
+        "manualStatus": "OPEN",
+        "autoDetectionCount": 0,
+        "recommendedStatus": "RESOLVED",
+        "detectorSupported": true,
+        "reason": "Manual=OPEN but auto-detector found 0 occurrences. Code may have RESOLVED this issue. Review and update provenance.yaml status."
+      },
+      {
+        "ruleId": "BL-026",
+        "manualStatus": "OPEN",
+        "autoDetectionCount": 0,
+        "recommendedStatus": "UNKNOWN",
+        "detectorSupported": false,
+        "reason": "Detector does not support BL-026 (cashback ALT 분기 NL parser 선결)."
+      },
+      {
+        "ruleId": "BL-029",
+        "manualStatus": "OPEN",
+        "autoDetectionCount": 0,
+        "recommendedStatus": "UNKNOWN",
+        "detectorSupported": false,
+        "reason": "Detector does not support BL-029."
+      },
+      {
+        "ruleId": "BL-027",
+        "manualStatus": "OPEN",
+        "autoDetectionCount": 0,
+        "recommendedStatus": "RESOLVED",
+        "detectorSupported": true,
+        "reason": "Manual=OPEN but auto-detector found 0 occurrences. Code may have RESOLVED this issue."
+      }
+    ],
+    "summary": {
+      "total": 5,
+      "recommendResolved": 2,
+      "keepOpen": 0,
+      "regressionRisk": 0,
+      "unknown": 3
+    }
+  },
+  "verification": {
+    "unitTests": { "passed": 11, "total": 11, "framework": "vitest" },
+    "typecheck": { "passed": 14, "total": 14, "framework": "tsc" },
+    "lint": { "passed": 9, "total": 9, "framework": "eslint" }
+  },
+  "matchRate": 0.97,
+  "dod": {
+    "planDesign": "PASS — AIF-PLAN-057 + AIF-DSGN-057",
+    "specSection6": "PASS — Sprint 259 + F426 등록",
+    "newTypes": "PASS — divergence.ts BLDivergenceMarker + CrossCheckRecommendation",
+    "blDetectorCode": "PASS — bl-detector.ts 2 detector",
+    "unitTests": "PASS — 11/11 (DoD 6+ 초과 달성)",
+    "syntheticFixture": "PASS — refund-pre-f359.ts",
+    "cli": "PASS — detect-bl.ts",
+    "realRefundZeroDetection": "PASS — 0 markers (RESOLVED auto 입증)",
+    "fixturePositiveCase": "PASS — 3 markers (DoD 2 초과 달성)",
+    "provenanceAnalysis": "PASS — 2 RESOLVED + 3 UNKNOWN",
+    "reportsRealFiles": "PASS — JSON + MD",
+    "matchRateGte90": "PASS — 97%"
+  },
+  "nextSprint": {
+    "f427Stub": {
+      "title": "rules.md NL parser",
+      "estimateHours": 16,
+      "priority": "P2",
+      "unblocks": ["BL-024", "BL-026", "BL-029"],
+      "candidates": ["regex-based", "Haiku LLM-based"]
+    },
+    "f428Stub": {
+      "title": "Phase 3b LPON 35 R2 재패키징 + F356-A 재평가",
+      "estimateHours": 8,
+      "estimateCost": "$5",
+      "priority": "P1",
+      "hypothesis": "Tree-sitter AST → svc-policy 재추론 → source_consistency 점수 향상"
+    },
+    "f429Stub": {
+      "title": "provenance.yaml status auto-write",
+      "estimateHours": 4,
+      "priority": "P3",
+      "scope": "본 detector 권고를 yaml write로 자동화 (audit metadata 보강 포함)"
+    }
+  }
+}

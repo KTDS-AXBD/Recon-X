@@ -2,6 +2,53 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 273 (2026-05-05) — Sprint 261 F428 (Phase 3b 분할 1/2 Multi-domain parser 검증) ✅ DONE (Master inline ~3h, Match 95%)
+
+**핵심 결과**: 7 spec-containers 일괄 파싱 + parser regex 보강 + DOMAIN_MAP 7 entries 정리 + detector 적용 매트릭스 도출. **38 total BLs across 5 active domains 파싱 PASS**. Detector coverage 5/38 = **13.2%** (refund 단독). 후속 보편 detector 3종 도입 시 **47.4% 도달 가능성 정량 분석**.
+
+**진행 흐름**:
+1. **F428 시작 + 분할 결정** — AskUserQuestion 2회: (1) "분할 접근 (Recommended)" + Master inline / (2) 사전조사 후 추가: "Multi-domain parser 먼저" (R2 재패키징은 Sprint 262+ 분리)
+2. **사전 조사** — 7 spec-containers BL 분포 확인. 핵심 발견 2종: (a) gift `BL-G001` 형식이 현 regex `/^BL-\d{3}$/` 미매칭 → parser 보강 필요, (b) refund 외 4 도메인 BL ID 충돌 없음 (charge BL-005 ≠ refund BL-005)
+3. **Plan/Design 작성** — AIF-PLAN/DSGN-059. 4-tuple DOMAIN_MAP (container/rules/source/provenance) + spec-only 분류 명시
+4. **SPEC §6 Sprint 261 등록**
+5. **Parser regex 보강** — `/^BL-[A-Z]?\d{1,3}$/`로 gift `BL-G001` 매칭. types + utils 양쪽 동기화. 회귀 0 (refund 11/charge 8/payment 7/settlement 6 모두 호환)
+6. **DOMAIN_MAP 신규** — `scripts/divergence/domain-source-map.ts` 7 entries (refund/charge/payment present + gift/settlement/budget/purchase spec-only). charge↔charging.ts alias 명시
+7. **단위 테스트 +3건** — gift G prefix + settlement 6-column + invalid prefix boundary. 111/111 PASS
+8. **CLI `--all-domains` flag** — `runMultiDomain()` 추가. detect-bl.ts detectorVersion 2.0.0 → 2.1.0
+9. **첫 실측 + BL-027 false positive 발견** — `mockDepositApi.requestDeposit` (2 line stub) BL-027에 잡힘 → DOMAIN_MAP `underImplTargets` 화이트리스트 도입 → refund 2 markers → 1 marker (정확)
+10. **재실측 PASS** — 38 BLs 매칭 + 5/38 = 13.2% detector coverage + refund BL-026 ABSENCE (Sprint 260 일관)
+11. **Reports + PDCA 4종** — AIF-PLAN/DSGN/ANLS/RPRT-059 + reports/sprint-261-multi-domain-2026-05-05.{json, md}
+12. **SPEC §6 Sprint 261 ✅ DONE 마킹 + F428 [x]** + §5 Last Updated 갱신
+
+**검증 통과**:
+- typecheck (utils + types): clean
+- lint (utils): clean
+- test: **111/111 PASS** (Sprint 260 108 → Sprint 261 111, +3 신규)
+- Master 독립 실측: 7 containers 일괄 파싱 + 38 BLs 매칭 PASS
+
+**산출물**:
+- 코드: `packages/types/src/divergence.ts` (regex 보강), `packages/utils/src/divergence/rules-parser.ts` (BL_ID_PATTERN 동기화), `scripts/divergence/{detect-bl, domain-source-map}.ts`
+- 테스트: `packages/utils/test/rules-parser.test.ts` (+3 cases)
+- 문서: `docs/{01-plan, 02-design, 03-analysis, 04-report}/features/F428-* | sprint-261-*`
+- Reports: `reports/sprint-261-multi-domain-2026-05-05.{json, md}`
+- SPEC: §6 Sprint 261 블록 + F428 [x] + §5 Last Updated 갱신
+- CHANGELOG: 본 세션 273 항목
+
+**Master inline 9회 연속 회피 패턴 유지** (S253~273).
+
+**Sprint 262 권고 변경**:
+- 원안: R2 재패키징 (production 작업, autopilot Production Smoke 14회차 직후 risk)
+- **권고**: 보편 detector 3종 도입 (Threshold/Status transition/Atomic transaction) → coverage 13.2% → 47.4% (+34%p), code-only Master inline 적합
+- R2 재패키징은 Sprint 263+ 별도 검토 (production smoke 직접 검증 가능 시점)
+
+**F427 → F428 인프라 재활용 효과 정량**:
+- Sprint 260 신규 코드: ~400 lines
+- Sprint 261 신규 코드: ~150 lines
+- 도메인 확장: 1 → 7 (7배)
+- REGISTRY 패턴 + parser + detector 모두 재활용
+
+---
+
 ### 세션 272 (2026-05-05) — Sprint 260 F427 (rules.md NL parser + BL-024/026/029 detector) ✅ DONE (Master inline ~2.5h, Match 95%)
 
 **핵심 결과**: F354 5건 BL-level marker 자동화 **5/5 (100%) 완성**. Sprint 259 (BL-027/028, 2/5 = 40%) → Sprint 260 (BL-024/026/029 추가, 5/5 = 100%). **사용자 결정 적중**: Hybrid 접근(NL→AST 자동 추출 회피, BL_DETECTOR_REGISTRY 매핑 table)으로 신뢰도 BL-029 80% / BL-024 75% / BL-026 65% 도달 — Sprint 258 분류 50-60% 예상 대비 평균 ~73%로 상회.

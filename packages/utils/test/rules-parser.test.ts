@@ -58,6 +58,45 @@ describe("rules-parser — parseRulesMarkdown", () => {
     expect(rules.map((r) => r.id)).toEqual(["BL-020", "BL-021"]);
   });
 
+  // F428 Sprint 261 — multi-domain support
+  it("matches gift BL-G001 prefix format", () => {
+    const md = `| ID | condition | criteria | outcome | exception |
+|----|-----------|----------|---------|-----------|
+| BL-G001 | a | b | c | d |
+| BL-G002 | a | b | c | d |
+| BL-G006 | a | b | c | d |
+`;
+    const rules = parseRulesMarkdown(md);
+    expect(rules.map((r) => r.id)).toEqual(["BL-G001", "BL-G002", "BL-G006"]);
+  });
+
+  it("handles settlement 6-column row (extra policyId column ignored)", () => {
+    const md = `| ID | condition | criteria | outcome | exception | policyId |
+|----|-----------|----------|---------|-----------|----------|
+| BL-031 | a | b | c | d | POL-X |
+| BL-036 | a | b | c | d | POL-Y |
+`;
+    const rules = parseRulesMarkdown(md);
+    expect(rules).toHaveLength(2);
+    expect(rules[0]?.id).toBe("BL-031");
+    expect(rules[0]?.exception).toBe("d");
+  });
+
+  it("rejects invalid prefix patterns (BL- without digits, BL-A only)", () => {
+    const md = `| ID | condition | criteria | outcome | exception |
+|----|-----------|----------|---------|-----------|
+| BL- | a | b | c | d |
+| BL-A | a | b | c | d |
+| BL-1 | a | b | c | d |
+| BL-001 | a | b | c | d |
+| BL-G99 | a | b | c | d |
+`;
+    const rules = parseRulesMarkdown(md);
+    // 매칭: 1+ digit (BL-1, BL-001) + optional prefix (BL-G99)
+    // 거부: BL- (digit 부재), BL-A (digit 부재)
+    expect(rules.map((r) => r.id)).toEqual(["BL-1", "BL-001", "BL-G99"]);
+  });
+
   it("parses real refund-rules.md structure (BL-020 ~ BL-030)", () => {
     const md = `# Spec Container — POL-LPON-REFUND-001
 

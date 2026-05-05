@@ -15,7 +15,7 @@
  *     [--target-functions <name1,name2>] \
  *     [--verbose]
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import {
   parseTypeScriptSource,
   parseRulesMarkdown,
@@ -32,6 +32,7 @@ import type {
   BLRule,
   CrossCheckRecommendation,
 } from "../../packages/types/src/index.js";
+import { DOMAIN_MAP, type DomainMapping } from "./domain-source-map.js";
 
 void detectHardCodedExclusion;
 void detectTemporalCheck;
@@ -45,6 +46,7 @@ interface CliArgs {
   out: string;
   targetFunctions: string[];
   verbose: boolean;
+  allDomains: boolean;
 }
 
 function parseArgs(): CliArgs {
@@ -56,6 +58,7 @@ function parseArgs(): CliArgs {
     out: "",
     targetFunctions: [],
     verbose: false,
+    allDomains: false,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -67,14 +70,16 @@ function parseArgs(): CliArgs {
     else if (arg === "--target-functions") {
       out.targetFunctions = (args[++i] ?? "").split(",").filter(Boolean);
     } else if (arg === "--verbose") out.verbose = true;
+    else if (arg === "--all-domains") out.allDomains = true;
     else if (arg === "--help" || arg === "-h") {
       printUsage();
       process.exit(0);
     }
   }
 
-  if (!out.source) {
-    process.stderr.write("Error: --source is required\n");
+  // --all-domains는 --source 불필요
+  if (!out.allDomains && !out.source) {
+    process.stderr.write("Error: --source or --all-domains is required\n");
     printUsage();
     process.exit(1);
   }
@@ -83,13 +88,15 @@ function parseArgs(): CliArgs {
 
 function printUsage(): void {
   process.stderr.write(
-    `Usage: tsx scripts/divergence/detect-bl.ts \\
-  --source <path-to-ts> \\
-  [--rules <path-to-md>] \\
-  [--provenance <path-to-yaml>] \\
-  [--out <output-json>] \\
-  [--target-functions <name1,name2>] \\
-  [--verbose]\n`,
+    `Usage:
+  Single domain:
+    tsx scripts/divergence/detect-bl.ts \\
+      --source <path-to-ts> [--rules <path-to-md>] [--provenance <path-to-yaml>] [--out <json>] \\
+      [--target-functions <name1,name2>] [--verbose]
+
+  Multi-domain (Sprint 261 F428):
+    tsx scripts/divergence/detect-bl.ts \\
+      --all-domains [--out <json>] [--verbose]\n`,
   );
 }
 
@@ -100,8 +107,145 @@ interface PerRuleResult {
   rule?: BLRule;
 }
 
+interface DomainResult {
+  container: string;
+  rulesPath: string;
+  sourcePath: string | null;
+  sourceCodeStatus: string;
+  rulesParsed: number;
+  parsedBLs: string[];
+  applicableDetectors: number;
+  perRule: PerRuleResult[];
+  crossCheck: CrossCheckRecommendation[];
+  summary: {
+    totalMarkers: number;
+    presenceCount: number;  // detector PRESENCE (RESOLVED 자동 입증)
+    absenceCount: number;   // detector ABSENCE (DIVERGENCE 발행)
+    notApplicableCount: number; // BL이 detector 미커버
+  };
+}
+
+function runMultiDomain(args: CliArgs): void {
+  const results: DomainResult[] = [];
+
+  for (const mapping of DOMAIN_MAP) {
+    const rulesText = existsSync(mapping.rulesPath)
+      ? readFileSync(mapping.rulesPath, "utf8")
+      : "";
+    const rules: BLRule[] = rulesText ? parseRulesMarkdown(rulesText) : [];
+
+    const perRule: PerRuleResult[] = [];
+    let applicableDetectors = 0;
+    let absenceCount = 0;
+    let presenceCount = 0;
+    let notApplicableCount = 0;
+
+    if (mapping.sourcePath && existsSync(mapping.sourcePath)) {
+      const sf = parseTypeScriptSource(
+        mapping.sourcePath,
+        readFileSync(mapping.sourcePath, "utf8"),
+      );
+      for (const rule of rules) {
+        const fn = BL_DETECTOR_REGISTRY[rule.id];
+        if (fn) {
+          applicableDetectors++;
+          let markers: BLDivergenceMarker[];
+          // BL-027 under-implementation은 도메인별 target functions 적용 필요 (mock/helper false positive 회피)
+          if (rule.id === "BL-027" && mapping.underImplTargets) {
+            markers = detectUnderImplementation(sf, mapping.sourcePath, {
+              targetFunctionNames: mapping.underImplTargets,
+            });
+          } else {
+            markers = fn(sf, mapping.sourcePath);
+          }
+          perRule.push({ ruleId: rule.id, detected: markers.length, markers, rule });
+          if (markers.length === 0) presenceCount++;
+          else absenceCount++;
+        } else {
+          notApplicableCount++;
+          perRule.push({ ruleId: rule.id, detected: 0, markers: [], rule });
+        }
+      }
+    } else {
+      // spec-only domain — detector 실행 skip
+      for (const rule of rules) {
+        notApplicableCount++;
+        perRule.push({ ruleId: rule.id, detected: 0, markers: [], rule });
+      }
+    }
+
+    let recommendations: CrossCheckRecommendation[] = [];
+    if (existsSync(mapping.provenancePath)) {
+      const yamlText = readFileSync(mapping.provenancePath, "utf8");
+      const allMarkers = perRule.flatMap((p) => p.markers);
+      recommendations = crossCheck(yamlText, allMarkers);
+    }
+
+    results.push({
+      container: mapping.container,
+      rulesPath: mapping.rulesPath,
+      sourcePath: mapping.sourcePath,
+      sourceCodeStatus: mapping.sourceCodeStatus,
+      rulesParsed: rules.length,
+      parsedBLs: rules.map((r) => r.id),
+      applicableDetectors,
+      perRule,
+      crossCheck: recommendations,
+      summary: {
+        totalMarkers: perRule.reduce((s, p) => s + p.detected, 0),
+        presenceCount,
+        absenceCount,
+        notApplicableCount,
+      },
+    });
+  }
+
+  // Stdout summary
+  process.stdout.write(`=== Multi-Domain BL Detector — ${DOMAIN_MAP.length} containers ===\n`);
+  let totalBLs = 0;
+  let totalApplicable = 0;
+  for (const r of results) {
+    totalBLs += r.rulesParsed;
+    totalApplicable += r.applicableDetectors;
+    const sourceTag = r.sourceCodeStatus === "spec-only" ? "[spec-only]" : `[source: ${r.sourcePath}]`;
+    process.stdout.write(
+      `  ${r.container} ${sourceTag}: ${r.rulesParsed} BLs, ${r.applicableDetectors} applicable detectors, ${r.summary.absenceCount} ABSENCE markers\n`,
+    );
+    if (args.verbose && r.parsedBLs.length > 0) {
+      process.stdout.write(`    BL IDs: ${r.parsedBLs.join(", ")}\n`);
+    }
+  }
+  process.stdout.write(
+    `\nSummary: ${totalBLs} total BLs, ${totalApplicable} detector applications across ${DOMAIN_MAP.length} containers\n`,
+  );
+  process.stdout.write(
+    `Detector coverage: ${totalApplicable}/${totalBLs} = ${((totalApplicable / totalBLs) * 100).toFixed(1)}%\n`,
+  );
+
+  const output = {
+    detectorVersion: "2.1.0",
+    measuredAt: new Date().toISOString(),
+    mode: "all-domains",
+    totalContainers: DOMAIN_MAP.length,
+    totalBLs,
+    totalApplicableDetectors: totalApplicable,
+    coverage: totalBLs > 0 ? totalApplicable / totalBLs : 0,
+    results,
+  };
+
+  if (args.out) {
+    writeFileSync(args.out, JSON.stringify(output, null, 2), "utf8");
+    process.stdout.write(`\n[detect-bl] Written: ${args.out}\n`);
+  }
+}
+
 function main(): void {
   const args = parseArgs();
+
+  if (args.allDomains) {
+    runMultiDomain(args);
+    return;
+  }
 
   const sourceText = readFileSync(args.source, "utf8");
   const sf = parseTypeScriptSource(args.source, sourceText);

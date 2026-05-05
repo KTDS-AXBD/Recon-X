@@ -29,8 +29,12 @@ export type BLDivergenceMarker = z.infer<typeof BLDivergenceMarkerSchema>;
  * F427 (Sprint 260) — rules.md 마크다운 테이블 파싱 결과.
  * BL-NNN | condition (When) | criteria (If) | outcome (Then) | exception (Else)
  */
+/**
+ * F428 (Sprint 261) — multi-domain support: optional 1자 prefix(`BL-G001`) + 1~3 digit.
+ * lpon-gift `BL-G001~G006` 매칭 + 기존 lpon-refund `BL-020~030` 호환.
+ */
 export const BLRuleSchema = z.object({
-  id: z.string().regex(/^BL-\d{3}$/),
+  id: z.string().regex(/^BL-[A-Z]?\d{1,3}$/),
   condition: z.string(),
   criteria: z.string(),
   outcome: z.string(),

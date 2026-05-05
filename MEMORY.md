@@ -33,6 +33,7 @@
 
 ## 최근 세션 흐름 (v0.7 마일스톤 기준)
 
+- 세션 273 (2026-05-05): Sprint 261 F428 ✅ DONE Master inline ~3h Match 95% — Phase 3b 분할 1/2 Multi-domain parser 검증. 7 containers 38 BLs 일괄 파싱 PASS (parser regex `/^BL-[A-Z]?\d{1,3}$/` 보강 + gift G prefix 매칭). Detector coverage 5/38 = 13.2% (refund 단독). DOMAIN_MAP `underImplTargets`로 BL-027 mock false positive 회피 패턴 정립. Sprint 262 권고 변경: R2 재패키징 → 보편 detector 3종 도입(coverage 47.4% 도달). F427 인프라 재활용 효과 — 신규 코드 ~150 lines로 7배 도메인 확장. 차기: Sprint 262 보편 detector 3종 / Sprint 263+ R2 재패키징 별도 검토.
 - 세션 272 (2026-05-05): Sprint 260 F427 ✅ DONE Master inline ~2.5h Match 95% — F354 5건 BL-level marker 자동화 **5/5 (100%) 완성** (S259 2/5 → S260 5/5). 사용자 결정 적중: Hybrid 접근(NL→AST 자동 추출 회피, BL_DETECTOR_REGISTRY 매핑)으로 신뢰도 BL-029 80% / BL-024 75% / BL-026 65% 도달 — Sprint 258 50-60% 예상 평균 ~73% 상회. 현 refund.ts 4 RESOLVED 권고 + 1 OPEN 유지(BL-026) + **0 UNKNOWN**. 합성 fixture 5/5 ABSENCE 정확 검출. 108/108 PASS. 차기: F428 Phase 3b LPON R2 재패키징 + multi-domain rules.md / F429 provenance.yaml auto-write.
 - 세션 244 (2026-04-29): Sprint 242 잔여 (a) ✅ DONE — INTERNAL_API_SECRET 9 Worker rotation. app-web Pages→Worker 이전(F406) 시 secret migration 누락 발견 + 9개 일괄 신규 값 교체. F-item 후보 1건(worker.ts:33 silent fail → explicit throw) 등록 보류.
 - 세션 196~198: API Gateway(Hono+JWT) + 11 Service Bindings + 하이브리드 라우팅 완성

@@ -2,6 +2,77 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 268 (2026-05-05) — Sprint 256 F424 TD-62 web-tree-sitter Workers PoC ✅ MERGED (autopilot 자율 ~30min, Master Plan 사전 + 검증, 4-step 패턴 정립)
+
+**핵심 결과**: Sprint 255 PR #50 revert 후 차단된 F358 Phase 2 진입 조건 해소. TD-62(`web-tree-sitter@0.26.8` `createRequire(import.meta.url)` undefined) PoC를 Sprint 256 단일 Sprint로 진행 → autopilot 30분 자율 완주 → PR #51 squash MERGED `711d573`. **autopilot Production Smoke Test 13회차 회피** (reports에 `wrangler --dry-run` 실 호출 결과 포함, Master 독립 검증 결과 합격).
+
+**4-step 표준 패턴 정립 (`scripts/poc/td-62/` PoC 참조 구현)**:
+1. `[alias]` wrangler.toml — `web-tree-sitter` → cjs entry 강제 (ESM `import.meta.url` 회피)
+2. `patch-package` — CJS 파일 환경 감지 변수 2-patch (`__dirname` guard + `self.location` guard)
+3. `[[rules]] type="CompiledWasm" globs=["**/*.wasm"] fallthrough=true` — build-time WASM 컴파일
+4. `Parser.init({ instantiateWasm })` hook — runtime instantiate-only (no compilation, CF Workers safe)
+
+**근본 원인 3종 동시 발생**:
+- ENVIRONMENT_IS_NODE 오감지: `nodejs_compat` polyfill로 `process.versions.node` true → emscripten Node 환경 오인식 → ESM에서 `import.meta.url` undefined throw / CJS에서 `__dirname` ReferenceError
+- ENVIRONMENT_IS_WORKER 오작동: `WorkerGlobalScope` 존재 → true → `_scriptName = self.location.href` → `self.location` undefined → TypeError
+- WASM 런타임 컴파일 금지: emscripten 기본 코드 `WebAssembly.instantiate(rawBytes, imports)` → CF Workers `CompileError: Wasm code generation disallowed by embedder`
+
+**3 commits**:
+- `ded37bc` docs: Sprint 256 — F424 TD-62 PoC 등록 (Plan 사전 + SPEC §6 + §8)
+- `711d573` feat: Sprint 256 — F424 TD-62 web-tree-sitter Workers PoC ✅ DONE (#51, autopilot, 11 files +609/-14)
+- `(session-end)` docs: 세션 268 CHANGELOG + MEMORY 갱신
+
+**Match Rate**: autopilot 자체 100% / Master 독립 검증 100% (in-memory 단순 Workers PoC 한정 신뢰).
+
+**DoD 결과 (8/8)**:
+- (a) ✅ `reports/td-62-poc-2026-05-05.md` 191줄 + 권고
+- (b) ✅ `wrangler dev` PASS exports=152
+- (c) ✅ `wrangler deploy --dry-run` PASS 430.64 KiB (Cloudflare API code 10021 미발생)
+- (d) ✅ SPEC §8 TD-62 RESOLVED 갱신
+- (e) N/A (모든 패턴 fail 아님 — fallback 불필요)
+- (f) ✅ Match 100%
+- (g) ✅ typecheck 14/14 + lint 9/9 + E2E 47/47
+- (h) ✅ F424 DONE + TD-62 RESOLVED + TD-26/TD-28 Sprint 257 통합 해소 예정
+
+**산출물**:
+- `docs/01-plan/features/F424-td-62-poc.plan.md` (AIF-PLAN-055)
+- `docs/02-design/features/F424-td-62-poc.design.md` (AIF-DSGN-055, +180)
+- `docs/03-analysis/features/F424-td-62-poc.analysis.md` (AIF-ANLS-055, +55)
+- `docs/04-reports/F424-td-62-poc.report.md` (AIF-RPRT-055, +59 — 경로 misnamed `04-reports/` cosmetic)
+- `reports/td-62-poc-2026-05-05.md` (+190, 우회 패턴 시도 + 신규 교훈 4건)
+- `scripts/poc/td-62/` (package.json + patches/web-tree-sitter+0.26.8.patch + src/index.ts + src/web-tree-sitter.wasm 196KB + wrangler.toml)
+
+**Sprint 257 진입 권고** (F358 Phase 2 재시도 GO 판정, ~3h 추정):
+1. `pnpm add web-tree-sitter@0.26.8 patch-package` in `packages/utils`
+2. `patches/web-tree-sitter+0.26.8.patch` 생성 (PoC 라인 동일)
+3. `package.json postinstall: "patch-package"`
+4. `loader-workers.ts` instantiateWasm hook 적용
+5. `services/svc-ingestion/wrangler.toml` `[alias]` + `[[rules]]` 추가
+6. wrangler dev → staging deploy validation
+7. PR 생성. Sprint 255 PR #50 코드 자산(java-controller.ts 50 라인 + multi-path/Map<K,V> + unit test 12건) 재활용 가능. TD-26 + TD-28 통합 해소.
+
+**신규 교훈 5건**:
+1. **emscripten 패키지 CF Workers 호환성 4-step 패턴** (web-tree-sitter, sql.js, opencv-wasm, sharp-wasm 등 일반화 가능) → feedback memory 정착 (`feedback_emscripten_cf_workers_compat.md`)
+2. **`wrangler deploy --dry-run` 의무화**: autopilot/CI unit test pass + production deploy validation은 별개 단계. PR 생성 전 필수.
+3. **CF Workers WASM 패턴 표준**: `[[rules]] type="CompiledWasm"` build-time + `WebAssembly.instantiate(Module, imports)` runtime — runtime byte 컴파일 금지 우회.
+4. **`instantiateWasm` hook = emscripten WASM 표준 진입점**: `receive(instance, module)` 두 인자 모두 전달 필수.
+5. **S262 stale `.sprint-context` 5회차 재현** (이번 세션 5회차) — Sprint 252/253/254/255/256 모두 직전 Sprint 컨텍스트 캐시 추출. lifecycle 승격 조건(2회+) 이미 충족, rules/development-workflow.md 또는 bashrc `sprint()` 함수 자체 fix 필요. 차기 세션 검토.
+
+**Master inline 보정**:
+- `.sprint-context` SPRINT_NUM=254→256 + F_ITEMS=F358-phase-1→F424 + CHECKPOINT 비움
+- signal F_ITEMS 보정
+- tmux window 이름 보정
+
+**Cleanup 완료**:
+- WT 디렉토리 force-remove (`.sprint-context` modified 잔존)
+- 로컬 branch `sprint/256` 삭제
+- Remote branch 자동 삭제 (squash merge `--delete-branch`)
+- signal archive (`/tmp/sprint-signals/archive/Decode-X-256.signal.MERGED.{ts}`)
+
+**ndjson 4-layer 알림 정상 작동**: `~/.foundry-x/notifications.ndjson`에 `sprint_merged` 이벤트 발생 + consumed:true → master pane tmux toast + UserPromptSubmit hook surface 검증.
+
+---
+
 ### 세션 267 (2026-05-04~05) — Sprint 255 F358 Phase 2 PR #50 MERGED → REVERTED (web-tree-sitter Workers `import.meta.url` 호환성 결함, ~3h, 3 commits)
 
 **핵심 결과**: F358 Phase 2 + F361 통합 Sprint 255 — autopilot self-Match=100% + PR #50 squash MERGED 후 Master post-merge 검증에서 **production deploy validation FAILED** 발견 → main에서 revert. autopilot Production Smoke Test **13회차 정확 재현 패턴**. Production downtime 0 (Cloudflare validation reject로 이전 안정 버전 유지).

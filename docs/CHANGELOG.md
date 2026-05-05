@@ -2,6 +2,36 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 267 (2026-05-04~05) — Sprint 255 F358 Phase 2 PR #50 MERGED → REVERTED (web-tree-sitter Workers `import.meta.url` 호환성 결함, ~3h, 3 commits)
+
+**핵심 결과**: F358 Phase 2 + F361 통합 Sprint 255 — autopilot self-Match=100% + PR #50 squash MERGED 후 Master post-merge 검증에서 **production deploy validation FAILED** 발견 → main에서 revert. autopilot Production Smoke Test **13회차 정확 재현 패턴**. Production downtime 0 (Cloudflare validation reject로 이전 안정 버전 유지).
+
+**3 commits**:
+- `f2110c1` docs: Sprint 255 F358 Phase 2 + F361 흡수 등록 (Plan 사전 + SPEC 등록)
+- `9d5d091` docs: Sprint 255 F358 Phase 2 + F361 ✅ MERGED PDCA 3건 retroactive + SPEC 마킹 (Master post-merge inline)
+- `9fc024d` revert: Sprint 255 PR #50 — F358 Phase 2 + F361 (web-tree-sitter Workers 호환성 결함)
+
+**진행 흐름**:
+1. **Plan 사전 작성** (AIF-PLAN-054, Master inline) — 2 Sprint 분할(Phase 2 본체 + Sprint 256 Phase 3), 8 Steps + DoD 11항. SPEC.md Sprint 255 등록.
+2. **WT 시동 + autopilot 주입** — `bash -i -c "sprint 255"` → `.sprint-context` stale 발견 (5회차 누적 패턴, F358-phase-1 → F358-phase-2,F361 보정) + ccs Sonnet 4.6 + `/ax:sprint-autopilot` + Phase 5d Monitor 자동 시작 (task `bjptc1d7s`).
+3. **autopilot 자율 ~25min, self-Match=100%**: packages/utils/src/java-parsing/ 5 file (loader/loader-workers/extractor/types/index, Plan 4건 → 5건으로 자율 분리) + 2 WASM 바이너리(414KB+196KB) + svc-ingestion java-controller.ts 288→50 lines + wrangler.toml `[[rules]] type="Data"` (Plan `CompiledWasm` 자율 정정) + multi-path/Map<K,V>/`element_value_array_initializer` 처리 + isController() regex fallback. typecheck/lint/svc-ingestion 365/365/packages/utils 78/78/CI 전체 PASS. PR #50 squash MERGED `eb1eda7`.
+4. **Master post-merge 검증 (Workers wrangler dev)**: `web-tree-sitter@0.26.8/lib/web-tree-sitter.js:1527` `createRequire(import.meta.url)` — Workers ESBuild bundle 시 `import.meta.url` undefined → throw. **Cloudflare API code 10021 production deploy validation FAILED**. emscripten 자동 생성 ESM 코드 — patch fragile.
+5. **PDCA 3건 retroactive 작성** (autopilot이 Plan 사전 존재로 Design/Analysis/Report 누락) — AIF-DSGN/ANLS/RPRT-054 Master inline + `retroactive: true` frontmatter.
+6. **revert 결정** + TD-62 신규 등록 (P1, web-tree-sitter Workers polyfill PoC 필요) + SPEC PARTIAL_FAIL/REVERTED 마킹 + push.
+
+**신규 교훈**:
+- **autopilot Production Smoke Test 13회차** — autopilot Match=100%/CI green/unit test PASS이지만 production deploy validation step 미수행으로 결함 미인지. rules/development-workflow.md "CI green ≠ Production deploy validation green" 강화 후보. npm dependency 추가 시 사전 wrangler dev 단독 import PoC 의무화 후보.
+- **Cloudflare deploy validation 1차 방어선 신뢰성 입증** — cold-start fail 코드를 사전 검증 reject 처리, production downtime 0.
+- **emscripten 자동 생성 ESM Workers 함정** — `web-tree-sitter` 등 emscripten 빌드된 npm package는 `import.meta.url`/`require` 사용으로 Workers ESBuild bundle에서 silent fail. 사전 PoC 의무화.
+- **revert 결정 표준 패턴** — 시간/risk 비용 측면에서 revert가 안전. PDCA + SPEC 학습 자산 보존 + TD 신규 등록으로 다음 Sprint 진입 준비.
+
+**잔여 (Sprint 256 진입 전제)**:
+- TD-62 PoC 확장 (~4h, wrangler dev 단독 import 부팅 + import.meta.url polyfill/alias 패턴 정립)
+- F358 Phase 2 재시도 (TD-62 fix 후 본 PR 코드 패턴 재활용)
+- Phase 3 (LPON production 재추출 + TD-24 + F356-A) — Phase 2 정상화 후
+
+---
+
 ### 세션 266 (2026-05-04) — Sprint 252 F357 + Sprint 253 TD-41 Pipeline Batch 1 ✅ MERGED + 보안 후속 3건 + TD-52 진단 + Sprint 254 등록 (Pipeline ~25min, Master inline ~15min)
 
 **핵심 결과**: sprint-pipeline Batch 1 첫 가동 — Sprint 252 (F357 AgentResume) + Sprint 253 (TD-41 CF Access JWT mock E2E) 병렬 진행 → 양쪽 ✅ MERGED. **Match 평균 98%** (Master 독립 Gap Analysis 일치, autopilot 11회차 패턴 미재현). 보안 후속 3건 + TD-52 진단 + Sprint 254 등록 사전 처리 완결.

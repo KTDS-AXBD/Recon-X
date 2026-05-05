@@ -1,14 +1,18 @@
 ---
 id: AIF-PLAN-054
 title: "F358 Phase 2 — Tree-sitter Java 파서 production 통합 (+ F361 shared module)"
-sprint: 255
+sprint: 257
 f_items: [F358, F361]
 req: AIF-REQ-035
 td: [TD-26, TD-28]
 status: PLANNED
 created: "2026-05-04"
-author: "Master (session 267)"
+revised: "2026-05-05"
+author: "Master (session 269, Sprint 257 retry)"
+related: [AIF-PLAN-055]
 ---
+
+> **Sprint 257 재시도 — Sprint 256 F424 (TD-62 PoC) 결과 반영판.** Sprint 255 PR #50은 production deploy validation FAILED (Cloudflare API code 10021)로 revert됨. 본 Plan은 동일 코드 베이스에 Sprint 256에서 확정된 **CJS alias + 2-patch + CompiledWasm + instantiateWasm hook** 4-step 우회 패턴을 추가 적용한다. 상세 패턴: `reports/td-62-poc-2026-05-05.md` §4 + AIF-PLAN-055.
 
 # F358 Phase 2 — Tree-sitter Java 파서 production 통합
 
@@ -67,7 +71,85 @@ Phase 3 (Sprint 256 후속): LPON 전수 production 재추출 + DIVERGENCE 5건 
 | B. `[wasm_modules]` 명시 매핑 | legacy, deprecated 권장 안 함 | ❌ |
 | C. R2/KV fetch + Language.load | cold start 페널티 + 인프라 종속 | ❌ |
 
-**runtime WASM 처리**: `web-tree-sitter.wasm` (192KB)은 npm 패키지 내부에 있으나 Cloudflare Workers ESBuild가 자동 처리. `Parser.init({ locateFile: ... })`을 fetch 패턴으로 우회하거나 `[[rules]]` glob에 포함.
+**runtime WASM 처리** (Sprint 256 F424 PoC 결과 갱신): Sprint 255는 `wrangler.toml [[rules]] type="Data"`로 했으나 Workers `WebAssembly.instantiate(bytes)` 런타임 컴파일 금지로 미작동. **확정 패턴**: `[[rules]] type="CompiledWasm" globs=["**/*.wasm"] fallthrough=true` + 코드에서 wasm import 후 `Parser.init({ instantiateWasm })` hook으로 pre-compiled `WebAssembly.Module` 전달.
+
+## PoC 패턴 적용 (Sprint 256 F424 결과)
+
+Sprint 256(F424)에서 확정한 4-step CF Workers 호환성 패턴을 본 Sprint 코드에 추가 적용한다. 미적용 시 Sprint 255 패턴 재현 (Cloudflare API code 10021 → revert).
+
+### Step P1 — `patch-package` 도입 (CJS 패치)
+
+```bash
+cd packages/utils
+pnpm add web-tree-sitter@0.26.8 patch-package
+# package.json
+"scripts": { "postinstall": "patch-package" }
+```
+
+`patches/web-tree-sitter+0.26.8.patch` 생성 (2개 라인):
+
+```diff
+# Patch 1: ENVIRONMENT_IS_NODE — CF Workers nodejs_compat은 process.versions.node 노출하지만 __dirname 미정의
+- var ENVIRONMENT_IS_NODE = typeof process == "object" && process.versions?.node && process.type != "renderer";
++ var ENVIRONMENT_IS_NODE = typeof process == "object" && process.versions?.node && process.type != "renderer" && typeof __dirname !== "undefined";
+
+# Patch 2: ENVIRONMENT_IS_WORKER — CF Workers self.location undefined
+-   _scriptName = self.location.href;
++   _scriptName = (typeof self !== "undefined" && self.location) ? self.location.href : void 0;
+```
+
+### Step P2 — `wrangler.toml [alias]` CJS entry 강제
+
+`services/svc-ingestion/wrangler.toml` 3 env 모두에 추가:
+
+```toml
+[alias]
+"web-tree-sitter" = "./node_modules/web-tree-sitter/web-tree-sitter.cjs"
+
+[[rules]]
+type = "CompiledWasm"
+globs = ["**/*.wasm"]
+fallthrough = true  # default rule 충돌 경고 회피
+```
+
+### Step P3 — `instantiateWasm` hook으로 Parser.init 우회
+
+`packages/utils/src/java-parsing/loader-workers.ts`:
+
+```ts
+// @ts-expect-error — wrangler [[rules]] type=CompiledWasm 빌드타임 변환, TS 타입 없음
+import runtimeWasm from "../../wasm/web-tree-sitter.wasm";
+// @ts-expect-error
+import javaWasm from "../../wasm/tree-sitter-java.wasm";
+
+let cachedParser: Parser | null = null;
+
+export async function getJavaParser(): Promise<Parser> {
+  if (cachedParser) return cachedParser;
+  await Parser.init({
+    instantiateWasm(imports, receive) {
+      // CF Workers 안전: WebAssembly.instantiate(Module, imports) — instantiation only
+      WebAssembly.instantiate(runtimeWasm as WebAssembly.Module, imports)
+        .then((instance) => receive(instance, runtimeWasm as WebAssembly.Module));
+    },
+  } as unknown as EmscriptenModule);
+  const parser = new Parser();
+  const lang = await Language.load(javaWasm as WebAssembly.Module);
+  parser.setLanguage(lang);
+  cachedParser = parser;
+  return parser;
+}
+```
+
+### Step P4 — `wrangler dev` + `--dry-run` 사전 검증 (필수)
+
+```bash
+cd services/svc-ingestion
+wrangler dev --local       # 200 OK 확인 (Cloudflare API code 10021 미발생)
+wrangler deploy --dry-run  # 번들 사이즈 + Cloudflare validation 통과 확인
+```
+
+**autopilot Production Smoke Test 14회차 회피**: 본 검증 PASS 없이 PR 생성 금지. unit test PASS만으로는 production deploy validation 보장 안 됨 (Sprint 255 13회차 재현).
 
 ## Sprint Steps (8 steps)
 
@@ -112,18 +194,21 @@ Phase 3 (Sprint 256 후속): LPON 전수 production 재추출 + DIVERGENCE 5건 
 
 ## DoD
 
-- [ ] `packages/utils/src/java-parsing/` 4 file (loader + extractor + types + index)
-- [ ] WASM 파일 packages/utils/wasm/ 위치 + workspace export
-- [ ] `services/svc-ingestion/src/parsing/java-controller.ts` Tree-sitter 호출
-- [ ] `services/svc-ingestion/wrangler.toml` 3 env `[[rules]]` 추가
+- [ ] `packages/utils/src/java-parsing/` 5 file (loader + loader-workers + extractor + types + index)
+- [ ] WASM 파일 `packages/utils/wasm/{web-tree-sitter.wasm, tree-sitter-java.wasm}` 위치 + workspace export
+- [ ] `patches/web-tree-sitter+0.26.8.patch` 2-line 패치 + `package.json postinstall: patch-package`
+- [ ] `services/svc-ingestion/src/parsing/java-controller.ts` Tree-sitter 호출 (외부 시그니처 유지)
+- [ ] `services/svc-ingestion/wrangler.toml` 3 env: `[alias]` + `[[rules]] type="CompiledWasm" fallthrough=true`
+- [ ] **`wrangler dev` 로컬 부팅 200 OK + Cloudflare API code 10021 미발생** (Sprint 255 패턴 회피)
+- [ ] **`wrangler deploy --dry-run` PASS** (번들 사이즈 ≤ 1MB, validation 통과)
 - [ ] PoC 5 sample silent drift 0건 회귀 검증
 - [ ] multi-path + Map<K,V> 신규 케이스 PASS
-- [ ] unit test ≥10건 PASS
-- [ ] Workers E2E (wrangler dev + production) 각 1건 PASS
+- [ ] unit test ≥10건 PASS (기존 7 + 신규 3 이상)
+- [ ] Workers E2E (wrangler dev + production deploy) 각 1건 PASS
 - [ ] typecheck 14/14 + lint 9/9 + test 전 통과
 - [ ] Match Rate ≥90%
 - [ ] F361 status DONE
-- [ ] TD-26 해소 마킹
+- [ ] TD-26 해소 마킹 + TD-28 부분 해소 (Phase 3 완전 해소)
 
 ## Risks
 
@@ -144,10 +229,10 @@ Phase 3 (Sprint 256 후속): LPON 전수 production 재추출 + DIVERGENCE 5건 
 
 ## 참조
 
-- AIF-PLAN-053 (Sprint 254 Phase 1 Plan)
-- AIF-DSGN-053 (Sprint 254 Phase 1 Design)
-- AIF-ANLS-053 (Sprint 254 Phase 1 분석)
-- AIF-RPRT-053 (Sprint 254 Phase 1 리포트)
+- AIF-PLAN-053 / AIF-DSGN-053 / AIF-ANLS-053 / AIF-RPRT-053 (Sprint 254 Phase 1 PoC)
+- AIF-PLAN-055 / AIF-DSGN-055 / AIF-ANLS-055 / AIF-RPRT-055 (Sprint 256 F424 TD-62 PoC)
+- `reports/td-62-poc-2026-05-05.md` §4 (확정 우회 패턴) + §5 (적용 순서 7-step)
 - `scripts/java-ast/src/poc-tree-sitter.ts` (PoC 구현)
 - `reports/f358-poc-tree-sitter-2026-05-04.json` (PoC 산출물)
 - AIF-REQ-035 PRD: `docs/req-interview/decode-x-v1.3-phase-3/prd-final.md`
+- 회피 패턴 (재발 방지): rules/development-workflow.md "Autopilot Production Smoke Test"

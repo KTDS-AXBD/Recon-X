@@ -2,6 +2,55 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 269 (2026-05-05) — Sprint 257 F358 Phase 2 + F361 ✅ MERGED (autopilot 자율 ~40min, Master 독립 검증 PASS, autopilot 14회차 변종 패턴 발견)
+
+**핵심 결과**: Sprint 256 F424 PoC 4-step 패턴 적용으로 Sprint 255 web-tree-sitter Workers 호환성 결함 완전 회피 성공. autopilot 자율 ~40분 만에 self-Match=95% / TEST=pass / PR #52 ✅ MERGED `552056d`. **Master 독립 검증 PASS** (`wrangler --dry-run` 2,764 KiB / `wrangler dev` 9분 alive + /health HTTP 200 OK). **F358 Phase 2 + F361 + TD-26 + TD-28 Phase 2 일괄 해소**.
+
+**진행 흐름**:
+1. **Plan 갱신** — `F358-phase-2.plan.md` sprint 255→257 + PoC 4-step 적용 P1~P4 step 추가 + DoD에 `wrangler dev 200 OK + --dry-run PASS` 명시 (autopilot 14회차 회피 의도)
+2. **SPEC.md 등록** — Sprint 257 신규 블록 + F358/F361 status PARTIAL_FAIL → IN_PROGRESS + §8 TD-26/TD-28 pointer 갱신 + Last Updated 세션 269 → commit `6c57a04` push
+3. **WT 시동** — `bash -i -c "sprint 257"` → `.sprint-context` stale F_ITEMS 발견 (S262 6회차 재현, F424 → F358-phase-2,F361 보정) + Monitor 도구 시작 (task `b974y17qz`, persistent) + `ccs --model sonnet` + `/ax:sprint-autopilot` 주입
+4. **autopilot 자율 ~40min** — Sprint 256 PoC 4-step 패턴 모두 적용 (CJS alias + 2-patch + CompiledWasm + instantiateWasm hook) + `packages/utils/src/java-parsing/` 5 file (loader/loader-workers/extractor/types/index) + WASM 2개 + `services/svc-ingestion/wrangler.toml` 3 env + svc-ingestion java-controller.ts Tree-sitter 호출 교체 + multi-path/Map<K,V> 처리. Self-Match 95% / TEST PASS / CI Migration ✅ + E2E ✅ + Typecheck & Test ✅
+5. **Master 독립 검증 (15:57 KST)** — `wrangler deploy --dry-run` PASS 2,764.08 KiB / gzip 615.74 KiB / Cloudflare validation 통과 (API code 10021 미발생) + 기존 `wrangler dev` (PID 1239951, port 8702, 9분 13초 alive) `/health` HTTP 200 OK + Sprint 256 PoC 4-step 패턴 코드 inspection 모두 적용 확인
+6. **PR #52 MERGED** — task-daemon 자동 merge 완료 `552056d` (15:57 UTC) + Cleanup 완료 (WT/local branch/remote branch/signal archive 모두 정리)
+7. **Post-merge fixup commit `c047a83`** — `reports/sprint-257-master-validation-2026-05-05.md` 신규 + AIF-RPRT-054 Sprint 257 결과 단락 + sprint_history [255,257] 마킹 + SPEC.md ✅ MERGED 마킹 + F358/F361 [x] DONE + TD-26 ✅ 해소 + TD-28 Phase 2 PASS
+
+**autopilot Production Smoke Test 14회차 변종 발견 (S269)**:
+- 기존 13회차까지: "autopilot Match 100% 자체 보고이지만 실 미수행"
+- **본 변종**: "autopilot이 wrangler dev 실 수행 + 9분간 alive 유지했지만 reports에 evidence 미첨부"
+- Master는 `ps -ef | grep wrangler dev` + `curl /health`로 process 생존 + 응답 검증해서 PASS 판정 가능
+- 분류: documentation 누락 (post-merge fixup 가능 사항) ≠ 실 production 결함
+
+**rules/ 승격 2건 (ax-config repo)**:
+- `21aa65f` Autopilot Production Smoke Test 섹션 보강 — 14회차 변종 점검 절차 5단계 + 판정 원칙 + Plan DoD 회피 패턴 4종 정착
+- `24ca55b` Sprint stale `.sprint-context` / signal F_ITEMS 패턴 신규 — 6회 누적 (S256/262/263/266×3/267/269) → development-workflow.md 신규 섹션 + Master 표준 보정 절차 + L1~L4 근본 fix 후보
+
+**Decode-X 3 commits (+ 1 PR squash merge)**:
+- `6c57a04` docs: Sprint 257 등록 (Plan 갱신 + SPEC + TD pointer)
+- `552056d` (autopilot Sprint 257 — squash merged via PR #52)
+- `c047a83` docs: Sprint 257 ✅ MERGED 후속 — Master validation evidence + SPEC 마킹
+
+**4-step 패턴 정공 입증**:
+| 패턴 | 위치 | 적용 |
+|------|------|------|
+| `[alias]` web-tree-sitter → CJS entry | `services/svc-ingestion/wrangler.toml` | ✅ |
+| Patch 1: `__dirname` guard | `patches/web-tree-sitter@0.26.8.patch` | ✅ |
+| Patch 2: `self.location?.href` guard | `patches/web-tree-sitter@0.26.8.patch` | ✅ |
+| `[[rules]] type="CompiledWasm"` | `services/svc-ingestion/wrangler.toml` | ✅ |
+| `instantiateWasm` hook | `packages/utils/src/java-parsing/loader-workers.ts` | ✅ |
+| `package.json postinstall: patch-package` | root | ✅ |
+| WASM 위치 | `packages/utils/wasm/{web-tree-sitter,tree-sitter-java}.wasm` | ✅ |
+
+**비용**: autopilot ~$0.15 (Sonnet 4.6, 27.6k tokens, 12분 thinking) + Master $0 (shell only ~10min) = **~$0.15 / 총 ~1시간**.
+
+**잔여 (다음 세션)**:
+- Phase 3 (LPON 전수 production 재추출 + DIVERGENCE 5건 재실측 + F356-A 통합) — 1 Sprint 추정
+- 보안 후속 2건 (1Password CLI signin / MP 변경 콘솔 — 사용자 콘솔 작업)
+- TD-52 27zip stats backfill (P3 cosmetic, R2 fetch 필요)
+- P3 fix-forward 2건 (wrangler.toml KV binding 주석 + auth-me-response role import)
+
+---
+
 ### 세션 268 (2026-05-05) — Sprint 256 F424 TD-62 web-tree-sitter Workers PoC ✅ MERGED (autopilot 자율 ~30min, Master Plan 사전 + 검증, 4-step 패턴 정립)
 
 **핵심 결과**: Sprint 255 PR #50 revert 후 차단된 F358 Phase 2 진입 조건 해소. TD-62(`web-tree-sitter@0.26.8` `createRequire(import.meta.url)` undefined) PoC를 Sprint 256 단일 Sprint로 진행 → autopilot 30분 자율 완주 → PR #51 squash MERGED `711d573`. **autopilot Production Smoke Test 13회차 회피** (reports에 `wrangler --dry-run` 실 호출 결과 포함, Master 독립 검증 결과 합격).

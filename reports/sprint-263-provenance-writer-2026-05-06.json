@@ -1,0 +1,83 @@
+{
+  "sprint": 263,
+  "fItems": ["F430"],
+  "plan": "AIF-PLAN-061",
+  "design": null,
+  "analysis": null,
+  "report": "AIF-RPRT-061",
+  "title": "F430 — provenance.yaml auto-write",
+  "status": "DONE",
+  "matchRate": 95,
+  "executedAt": "2026-05-06T08:32:00+09:00",
+  "executor": "Master inline (Sprint 263)",
+  "decisions": {
+    "applyMode": "dry-run default + --apply opt-in",
+    "appendPolicy": "severity defaults to marker.severity (detector output) + recommendation = TODO template",
+    "presenceHandling": "status transition only (PRESENCE evidence stays in reports/*.json)"
+  },
+  "deliverables": {
+    "library": {
+      "path": "packages/utils/src/divergence/provenance-writer.ts",
+      "exports": [
+        "renderDivergenceMarker",
+        "updateMarkerStatus",
+        "appendDivergenceMarker",
+        "parseExistingMarkers",
+        "recomputeDivergenceSummary"
+      ],
+      "loc": 230
+    },
+    "cli": {
+      "path": "scripts/divergence/write-provenance.ts",
+      "modes": ["--all-domains", "--container <name>", "--apply", "--verbose"],
+      "loc": 200
+    },
+    "tests": {
+      "path": "packages/utils/test/provenance-writer.test.ts",
+      "count": 18,
+      "result": "18/18 PASS"
+    },
+    "totalUtilsTests": "138/138 PASS"
+  },
+  "dryRunBaseline": {
+    "scope": "7 spec-containers",
+    "containersWithChanges": 1,
+    "lpon-refund": {
+      "statusUpdates": [
+        { "ruleId": "BL-024", "from": "OPEN", "to": "RESOLVED" },
+        { "ruleId": "BL-028", "from": "OPEN", "to": "RESOLVED" },
+        { "ruleId": "BL-029", "from": "OPEN", "to": "RESOLVED" },
+        { "ruleId": "BL-027", "from": "OPEN", "to": "RESOLVED" }
+      ],
+      "appends": 0,
+      "noChange": ["BL-026 (cashback ABSENCE detector still finds, manual=OPEN consistent)"]
+    },
+    "otherContainers": "no detector ABSENCE markers (Sprint 262 multi-domain output already showed 7 BLs PRESENCE auto-evidence)"
+  },
+  "applyResult": {
+    "container": "lpon-refund",
+    "fileWritten": ".decode-x/spec-containers/lpon-refund/provenance.yaml",
+    "diffStats": "4 lines changed (status: OPEN → RESOLVED on BL-024/027/028/029)",
+    "preserved": "auditEvidence, recommendation, sourceReference, divergenceSummary all intact"
+  },
+  "idempotency": {
+    "rerunDryRun": "0/7 containers with changes",
+    "rerunDetectBl": "12 detector applications, coverage 31.6% (unchanged from Sprint 262 baseline)"
+  },
+  "verification": {
+    "typecheck": "PASS",
+    "lint": "PASS (warnings only, no errors)",
+    "unitTests": "138/138 PASS",
+    "gitDiff": "4 surgical line changes on lpon-refund/provenance.yaml"
+  },
+  "metaInsights": [
+    "F427 인프라 (BL_DETECTOR_REGISTRY + crossCheck) 그대로 활용. 신규 코드 ~430 lines (lib 230 + CLI 200) for 12 detector + 7 container 운영 자동화.",
+    "Manual provenance와 detector 결과의 1.5개월 누적 drift (F359 Sprint 251 코드 RESOLVED) 한 번에 정합화.",
+    "Master inline 11회 연속 회피 패턴 유지 (S253~275)."
+  ],
+  "nextCandidates": [
+    "옵션 A — gift source PoC (8-12h, +5 BL coverage 44.7%)",
+    "옵션 E — LPON 35 R2 재패키징 (production smoke 직접 검증)",
+    "F356-A 수기 검증 실행 (후속)"
+  ]
+}

@@ -76,7 +76,7 @@ divergenceMarkers:
         actualOutcome: "refund succeeded (WRONG_OUTCOME)"
         reportLocation: "scripts/roundtrip-verify/last-report.json:182-187"
         failReason: "WRONG_OUTCOME"
-    status: OPEN
+    status: RESOLVED
     recommendation: "Phase 3 이후 Working Prototype refund 구현 시 BL-024 기간 체크 로직 추가. payment.createdAt 대비 7일 경과 여부 판정 + FULL_REFUND_PERIOD_EXPIRED 에러 반환."
 
   - marker: DIVERGENCE
@@ -103,7 +103,7 @@ divergenceMarkers:
         reportLocation: "scripts/roundtrip-verify/last-report.json (TC-REFUND-006 passed=true, silent)"
         failReason: "HARNESS_SILENT_PASS — 실 검증 필요 (Phase 3 F359 TD-22에서 교체 예정)"
         relatedEdgeSpec: "ES-REFUND-005"
-    status: OPEN
+    status: RESOLVED
     recommendation: "Phase 3 이후 Working Prototype에 ES-REFUND-005 edge spec 기반 제외금액 공식 구현. F359(TD-22) comparator 실 D1 조회 교체로 검증 갭 보완."
 
   - marker: DIVERGENCE
@@ -149,7 +149,7 @@ divergenceMarkers:
         note: "BL-029 대응 contract scenario 미작성. expiredDate 필드 사용 경로 없음."
         relatedEdgeSpec: "ES-REFUND-004"
         edgeSpecFile: ".decode-x/spec-containers/lpon-refund/tests/ES-REFUND-004.yaml"
-    status: OPEN
+    status: RESOLVED
     recommendation: "ES-REFUND-004 edge spec 확정 (만료 거부 + ADMIN 강제환불 경로) → 구현 → TC-REFUND-EXP-xxx 추가."
 
   - marker: DIVERGENCE
@@ -172,7 +172,7 @@ divergenceMarkers:
         note: "BL-027 대응 contract scenario 미작성. refund_accounts 없는 케이스에서 MANUAL_REQUIRED 상태 도달까지는 도달하나 복구 경로 테스트 부재."
         relatedEdgeSpec: "ES-REFUND-003"
         edgeSpecFile: ".decode-x/spec-containers/lpon-refund/tests/ES-REFUND-003.yaml"
-    status: OPEN
+    status: RESOLVED
     recommendation: "ES-REFUND-003 edge spec 확정 (재등록 API + 수기 접수 트리거) → 구현 → TC-REFUND-ACCT-xxx 추가."
 
 divergenceSummary:

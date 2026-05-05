@@ -17,3 +17,10 @@ export {
   DETECTOR_SUPPORTED_RULES,
 } from "./provenance-cross-check.js";
 export { parseRulesMarkdown } from "./rules-parser.js";
+export {
+  renderDivergenceMarker,
+  updateMarkerStatus,
+  appendDivergenceMarker,
+  parseExistingMarkers,
+  recomputeDivergenceSummary,
+} from "./provenance-writer.js";
